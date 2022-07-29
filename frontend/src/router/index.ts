@@ -1,23 +1,46 @@
-import Vue from 'vue'
-import VueRouter, { RouteConfig } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import Vue from 'vue';
+import VueRouter, { RouteConfig } from 'vue-router';
 
-Vue.use(VueRouter)
+import PaladinCalculator from
+  '../components/calculator/PaladinComponent.vue';
+
+Vue.use(VueRouter);
+
+// const routes = [
+//   // {path: '/priestoom', component: PriestTimeToOOM, name: 'priest-time-to-oom'},
+//   // {path: '/greaterheal', component: GreaterHeal, name: 'greater-heal'},
+//   // {path: '/flashheal', component: FlashHeal, name: 'flash-heal'},
+//   // {path: '/renew', component: Renew, name: 'renew'},
+//   // {path: '/circleofhealing', component: CircleOfHealing, name: 'coh'},
+//   // {path: '/shamanoom', component: ShamanTimeToOOM, name: 'shaman-time-to-oom'},
+//   // {path: '/chainheal', component: ChainHeal, name: 'chain-heal'},
+//   // {path: '/lesserhealingwave', component: LesserHealingWave, name: 'lesser-healing-wave'},
+//   // {path: '/healingwave', component: HealingWave, name: 'healing-wave'},
+//   // {path: '/holylight', component: HolyLight, name: 'holy-light'},
+//   // {path: '/flashoflight', component: FlashOfLight, name: 'flash-of-light'},
+//   {path: '/calculator/paladin', component: PaladinCalculator, name: 'paladin-calculator'},
+//   // {path: '/death-analyzer', component: DeathAnalyzer, name: 'death-analyzer'},
+//   // {path: '*', component: DeathAnalyzer, name: 'death-analyzer'},
+// ];
+
+// const router = new VueRouter({
+//   routes,
+//   mode: 'history',
+//   base: '/',
+// });
+
 
 const routes: Array<RouteConfig> = [
   {
-    path: '/',
-    name: 'home',
-    component: HomeView
+    path: '/calculator/paladin',
+    name: 'paladin-calculator',
+    component: PaladinCalculator,
   },
   {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
-  }
+    path: '/',
+    name: 'home',
+    component: PaladinCalculator
+  },
 ]
 
 const router = new VueRouter({
