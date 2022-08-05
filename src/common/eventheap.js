@@ -1,5 +1,13 @@
 const { Heap } = require('heap-js');
 
+const timestampComparator = (a, b) => a.timestamp - b.timestamp;
+
+/*
+    eventType: subEvent
+    SPELLCAST: HOLY_LIGHT, HOLY_SHOCK, etc
+    MANA: DIVINE_PLEA_TICK, RUNIC_MANA_POTION
+*/
+
 class Event {
     // procs include isCrit, isEoG, etc
     constructor(timestamp, eventType, subEvent, procs) {
@@ -14,7 +22,9 @@ class Event {
     }
 }
 
-const timestampComparator = (a, b) => a.timestamp - b.timestamp;
+/*
+    EventHeap class stores and pops events based on timestamp.
+*/
 
 class EventHeap {
     constructor() {
