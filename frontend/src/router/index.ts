@@ -4,6 +4,9 @@ import VueRouter, { RouteConfig } from 'vue-router';
 import PaladinCalculator from
   '../components/calculator/PaladinComponent.vue';
 
+import PaladinTTOOM from
+  '../components/ttoom/PaladinComponent.vue';
+
 Vue.use(VueRouter);
 
 // const routes = [
@@ -35,6 +38,11 @@ const routes: Array<RouteConfig> = [
     path: '/calculator/paladin',
     name: 'paladin-calculator',
     component: PaladinCalculator,
+  },
+  {
+    path: '/ttoom/paladin',
+    name: 'paladin-ttoom',
+    component: PaladinTTOOM,
   },
   {
     path: '/',
