@@ -23,6 +23,21 @@ const data = {
     classes: {
         paladin: {
             intModifier: 1.1 * 1.1, //blessing of kings and divine intellect
+            spells: [
+            {
+                'key': 'HOLY_SHOCK',
+                'name': 'Holy Shock',
+                'cooldown': 6, // the actual cooldown of spell
+                'instant': true,
+                'baseManaCost': 1274.26,
+            },
+            {
+                'key': 'HOLY_LIGHT',
+                'name': 'Holy Light',
+                'cooldown': 0,
+                'instant': false,
+                'baseManaCost': 790.92,
+            }]
         }
     }
 }

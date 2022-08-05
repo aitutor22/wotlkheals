@@ -45,3 +45,23 @@ test('maxMana and critChance when dmcg active', () => {
     expect(player.maxMana).toBe(35078);
     expect((Math.abs(player.critChance - 0.328308338))).toBeLessThan(1e-5);
 });
+
+test('selectSpell overrideSpellSelection', () => {
+    let player = new Paladin(28000, 300, 0.3, {trinkets: ['dmcg']});
+    let spell = player.selectSpell(2, 'HOLY_LIGHT');
+    expect(spell['key']).toBe('HOLY_LIGHT');
+});
+
+test('selectSpell', () => {
+    let player = new Paladin(28000, 300, 0.3, {trinkets: ['dmcg']});
+    let spell = player.selectSpell(1);
+    // if we don't override, then first spell should be holy shock
+    expect(spell['key']).toBe('HOLY_SHOCK');
+    let holyShockSpell = player._spells.find((_spell) => _spell['key'] === 'HOLY_SHOCK');
+    expect(holyShockSpell['lastUsed']).toBe(1);
+    expect(holyShockSpell['availableForUse']).toBe(false);
+
+    spell = player.selectSpell(3.5);
+    expect(spell['key']).toBe('HOLY_LIGHT');
+});
+

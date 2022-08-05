@@ -1,4 +1,4 @@
-const DATA = require('../common/gamevalues');
+const DATA = require('./gamevalues');
 
 class BasePlayer {
     // procs include isCrit, isEoG, etc
@@ -12,7 +12,7 @@ class BasePlayer {
         }
 
         this._playerClass = playerClass;
-        this._otherMP5 = otherMP5; // does not include raid buffs
+        // console.log(DATA);
         this._intModifier = DATA['classes'][playerClass]['intModifier']; // different classes have different int modifiers
 
         // when there is dmc: greatness proc, we increase mana_pool, so need baseMaxMana as a reference
@@ -24,16 +24,17 @@ class BasePlayer {
             let item = DATA['items'][key];
             if (typeof item['base']['int'] !== 'undefined') {
                 this._baseMaxMana += this.manaIncreaseFromInt(item['base']['int']);
-                // console.log(this.getCritIncreaseFromInt(item['base']['int']));
                 this._baseCritChance += this.critIncreaseFromInt(item['base']['int']);
             }
         }
 
+        this._otherMP5 = otherMP5; // does not include raid buffs
         this._currentMana = this._baseMaxMana;
 
         // tracks potential buffs like dmcg
         this._buffs = {};
         this.initialiseBuffs();
+        this._spells = this.initialiseSpells();
     }
 
     // start getters
@@ -71,8 +72,6 @@ class BasePlayer {
             console.log(`Crit Chance: ${this.critChance}`);
         }
     }
-
-
     // end setters
 
     initialiseBuffs() {
@@ -86,6 +85,51 @@ class BasePlayer {
             Object.assign(this._buffs['dmcg'], defaultValue);
         }
     }
+
+    initialiseSpells() {
+        let results = [];
+        for (let _spell of DATA['classes'][this._playerClass]['spells']) {
+            let entry = Object.assign({}, _spell);
+            entry['availableForUse'] = true;
+            entry['lastUsed'] = -9999;
+            results.push(entry);
+        }
+        return results;
+    }
+
+    selectSpell(timestamp, overrideSpellSelection='') {
+        let spellSelected = null;
+
+        // # we first look among spells with cd (e.g. holy shock, sacred shield), and update their availability
+        let spellsWithCooldown = this._spells.filter((_spell) => _spell['cooldown'] > 0);
+        let spellsWithNoCooldown = this._spells.filter((_spell) => _spell['cooldown'] === 0);
+
+        for (let _spell of spellsWithCooldown) {
+            if (!_spell['availableForUse'] && (timestamp - _spell['lastUsed'] >= _spell['cooldown'])) {
+                _spell['availableForUse'] = true;
+            }
+        }
+
+        // if there is an overrideSpellSelection, cast it if its not on cd
+        if (overrideSpellSelection !== '') {
+            spellSelected = this._spells.find((_spell) => (_spell['key'] === overrideSpellSelection && _spell['availableForUse']));
+            if (spellSelected) return spellSelected;
+        }
+
+        // otherwise, we first try to cast spells that have cd and are available
+        const availableSpellsWithCd = spellsWithCooldown.filter((_spell) => _spell['availableForUse'])
+        if (availableSpellsWithCd.length > 0) {
+            spellSelected = availableSpellsWithCd[0];
+            spellSelected['lastUsed'] = timestamp
+            spellSelected['availableForUse'] = false
+            return spellSelected   
+        }
+
+        // if all cd spells are not available, then cast a non-cd spell
+        // in future return based on cast profile
+        return spellsWithNoCooldown[0];
+    }
+
 
     manaIncreaseFromInt(value) {
         return Math.floor(value * DATA['constants']['manaFromOneInt'] * this._intModifier);
