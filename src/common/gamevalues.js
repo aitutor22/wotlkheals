@@ -14,6 +14,30 @@ const data = {
                 duration: 15,
             },
         },
+        soup: {
+            name: 'Soul Preserver',
+            itemType: 'trinket',
+            base: {
+                spellpower: 75,
+            },
+            proc: {
+                icd: 0,
+                chance: 0.02,
+                manaReduction: 800,
+            },
+        },
+        eog: {
+            name: 'Eye of Gruul',
+            itemType: 'trinket',
+            base: {
+                spellpower: 23,
+            },
+            proc: {
+                icd: 0,
+                chance: 0.02,
+                manaReduction: 450,
+            },
+        },
     },
     constants: {
         manaFromOneInt: 15,
@@ -29,14 +53,14 @@ const data = {
                 'name': 'Holy Shock',
                 'cooldown': 6, // the actual cooldown of spell
                 'instant': true,
-                'baseManaCost': 1274.26,
+                'baseManaCost': 790.92,
             },
             {
                 'key': 'HOLY_LIGHT',
                 'name': 'Holy Light',
                 'cooldown': 0,
                 'instant': false,
-                'baseManaCost': 790.92,
+                'baseManaCost': 1274.26,
             }]
         }
     }

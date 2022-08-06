@@ -12,8 +12,7 @@ class BasePlayer {
         }
 
         this._playerClass = playerClass;
-        // console.log(DATA);
-        this._intModifier = DATA['classes'][playerClass]['intModifier']; // different classes have different int modifiers
+        this._intModifier = this.classInfo['intModifier']; // different classes have different int modifiers
 
         // when there is dmc: greatness proc, we increase mana_pool, so need baseMaxMana as a reference
         this._baseMaxMana = maxMana;
@@ -35,6 +34,9 @@ class BasePlayer {
         this._buffs = {};
         this.initialiseBuffs();
         this._spells = this.initialiseSpells();
+        this._statistics = {
+            'manaGenerated': {},
+        }
     }
 
     // start getters
@@ -53,6 +55,10 @@ class BasePlayer {
         } else {
             return this._baseCritChance;
         }
+    }
+
+    get classInfo() {
+        return DATA['classes'][this._playerClass];
     }
     // end getters
 
@@ -88,7 +94,7 @@ class BasePlayer {
 
     initialiseSpells() {
         let results = [];
-        for (let _spell of DATA['classes'][this._playerClass]['spells']) {
+        for (let _spell of this.classInfo['spells']) {
             let entry = Object.assign({}, _spell);
             entry['availableForUse'] = true;
             entry['lastUsed'] = -9999;
@@ -120,15 +126,104 @@ class BasePlayer {
         const availableSpellsWithCd = spellsWithCooldown.filter((_spell) => _spell['availableForUse'])
         if (availableSpellsWithCd.length > 0) {
             spellSelected = availableSpellsWithCd[0];
-            spellSelected['lastUsed'] = timestamp
-            spellSelected['availableForUse'] = false
-            return spellSelected   
+            spellSelected['lastUsed'] = timestamp;
+            spellSelected['availableForUse'] = false;
+            return spellSelected;
         }
 
         // if all cd spells are not available, then cast a non-cd spell
         // in future return based on cast profile
         return spellsWithNoCooldown[0];
     }
+
+
+    // returns [manaSuccessfullySubtracted, currentMana, errorMessage]
+    // example
+    // (DI * basecost - relic - soup/eog) * (1 - SoW - 4pcT7)
+    // baseCostMultiplicativeFactors and baseCostAdditiveFactors are dictionaries, with key being the factorName and value being the amount of the discount
+    // otherMultiplicativeTotal should be just a float total of all the other multiplicative factors added together
+    // (e.g. for pally with 4pT7 and glyph of SoW, should be 0.9)
+    // if there are no discounts, then should be 1
+    subtractMana(spellKey, timestamp, baseCostMultiplicativeFactors, baseCostAdditiveFactors, otherMultiplicativeTotal=1) {
+        const BASE_MANA_COST = this.classInfo['spells'].find((_spell) => _spell['key'] === spellKey)['baseManaCost'];
+        let value = BASE_MANA_COST, oldValue;
+        let manaSaved;
+
+        // unsure how to handle if there are multiple values in baseCostMultiplicativeFactors
+        // for now, assume it's multiplicative
+        for (let key in baseCostMultiplicativeFactors) {
+            if (typeof this._statistics['manaGenerated'][key] === 'undefined') {
+                this._statistics['manaGenerated'][key] = 0;
+            }
+            oldValue = value;
+            value = value * (1 - baseCostMultiplicativeFactors[key]);
+            this._statistics['manaGenerated'][key] += Math.floor(value - oldValue);
+        }
+
+        // examples are soup/eog and libram
+        for (let key in baseCostAdditiveFactors) {
+            if (typeof this._statistics['manaGenerated'][key] === 'undefined') {
+                this._statistics['manaGenerated'][key] = 0;
+            }
+            oldValue = value;
+            // e.g. if soup proc (800) for a paladin with otherMultiplicativeFactor of 0.9, we should record soup savings as 800 x 0.9  under statistics
+            // but the actual value, we subtract by 800 first, since we will be discounting by 0.9 in next step
+            value = Math.max(value - baseCostAdditiveFactors[key], 0);
+            this._statistics['manaGenerated'][key] += Math.floor(otherMultiplicativeTotal * (value - oldValue));
+        }
+
+        value *= otherMultiplicativeTotal;
+
+        return Math.floor(value);
+       //  let manaCost;
+       //  // can only proc either soup or eog, and priority given to soup
+       //  if (procs['soup']) {
+       //      manaCost = max(0, value - DATA['items']['soup']['proc']['manaReduction']);
+       //      // # just in case we have FoL in future, then soup doesnt get full value
+       //      // self._statistics['mana_generated']['SOUP'] += value - mana_cost
+       // }
+       //  else if (procs['eog']) {
+       //      manaCost = max(0, value - DATA['items']['eog']['proc']['manaReduction']);
+       //      // self._statistics['mana_generated']['EOG'] += value - mana_cost
+       //  } else {
+       //      manaCost = value;
+       //  }
+
+       //  if (manaCost > this._currentMana):
+       //      return [0, this._currentMana, 'Insufficient Mana'];
+       //  else {
+       //      this._currentMana -= mana_cost;
+       //      // self._statistics['overall']['total_mana_used'] += mana_cost
+       //      return [1, this._currentMana, null];
+       //  }
+    }
+
+    // def subtract_mana(self, value, current_time, is_soup_proc=False, is_eog_proc=False):
+    //     # if lets say soup happens  when divine illumination is up, then we subtract 800 first, then half
+    //     # if spell cost is 1200, then divine illumination is credited with 600, and soup credited with 600
+    //     if self._divine_illumination_ends >= current_time:
+    //         value = math.floor(value / 2)
+    //         self._statistics['mana_generated']['DIVINE_ILLUMINATION'] += value
+
+    //     # can only proc either soup or eog, and priority given to soup
+    //     if is_soup_proc:
+    //         mana_cost = max(0, value - TRINKET_STATS['soup_mana_saved'])
+    //         # just in case we have FoL in future, then soup doesnt get full value
+    //         self._statistics['mana_generated']['SOUP'] += value - mana_cost
+    //     elif is_eog_proc:
+    //         mana_cost = max(0, value - TRINKET_STATS['eog_mana_saved'])
+    //         self._statistics['mana_generated']['EOG'] += value - mana_cost
+    //     else:
+    //         mana_cost = value
+
+    //     mana_savings_from_proc = value - mana_cost
+    //     if mana_cost > self._current_mana:
+    //         return (0, self._current_mana, 'Insufficient Mana')
+    //     else:
+    //         self._current_mana -= mana_cost
+    //         self._statistics['overall']['total_mana_used'] += mana_cost
+    //         return (1, self._current_mana, None)
+
 
 
     manaIncreaseFromInt(value) {

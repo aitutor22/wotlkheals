@@ -65,3 +65,36 @@ test('selectSpell', () => {
     expect(spell['key']).toBe('HOLY_LIGHT');
 });
 
+test('passing no discount factors in subtractMana returns just base cost', () => {
+    let player = new Paladin(28000, 300, 0.3, {});
+    expect(player.subtractMana('HOLY_LIGHT', 2)).toBe(1274);
+});
+
+test('testing baseCostMultiplicativeFactors arugment for subtractMana', () => {
+    let player = new Paladin(28000, 300, 0.3, {});
+    expect(player.subtractMana('HOLY_LIGHT', 2, {'divineIllumination': 0.5}, {})).toBe(637);
+    expect(player.subtractMana('HOLY_LIGHT', 2, {'powerInfusion': 0.2}, {})).toBe(1019);
+});
+
+test('testing baseCostAdditiveFactors arugment for subtractMana', () => {
+    let player = new Paladin(28000, 300, 0.3, {});
+    expect(player.subtractMana('HOLY_LIGHT', 2, {}, {'libramOfRenewal': 113})).toBe(1161);
+});
+
+test('testing baseCostAdditiveFactors arugment for subtractMana', () => {
+    let player = new Paladin(28000, 300, 0.3, {});
+    expect(player.subtractMana('HOLY_LIGHT', 2, {}, {'soup': 800})).toBe(474);
+    expect(player.subtractMana('HOLY_LIGHT', 2, {}, {'soup': 800, 'libramOfRenewal': 113})).toBe(361);
+    expect(player.subtractMana('HOLY_LIGHT', 2, {'divineIllumination': 0.5}, {'libramOfRenewal': 113})).toBe(524);
+    expect(player.subtractMana('HOLY_LIGHT', 2, {'divineIllumination': 0.5}, {'libramOfRenewal': 113, soup: 800})).toBe(0);
+});
+
+test('testing subtractMana', () => {
+    let player = new Paladin(28000, 300, 0.3, {});
+    expect(player.subtractMana('HOLY_LIGHT', 2, {}, {soup: 800}, 0.9)).toBe(426);
+    expect(player.subtractMana('HOLY_LIGHT', 2, {}, {soup: 800}, 0.95)).toBe(450);
+    expect(player.subtractMana('HOLY_LIGHT', 2, {}, {libramOfRenewal: 113}, 0.9)).toBe(1045);
+    expect(player.subtractMana('HOLY_LIGHT', 2, {}, {soup: 800, libramOfRenewal: 113}, 0.9)).toBe(325);
+    expect(player.subtractMana('HOLY_LIGHT', 2, {divineIllumination: 0.5}, {libramOfRenewal: 113}, 0.9)).toBe(471);
+    expect(player.subtractMana('HOLY_LIGHT', 2, {divineIllumination: 0.5}, {soup: 800, libramOfRenewal: 113}, 0.9)).toBe(0);
+});
