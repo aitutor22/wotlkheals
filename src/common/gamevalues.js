@@ -61,7 +61,12 @@ const data = {
                 'cooldown': 0,
                 'instant': false,
                 'baseManaCost': 1274.26,
-            }]
+            }],
+            manaCostModifiers: {
+                '4pT7': 0.05, // 5% mana discount on HL
+                'glyphSOW': 0.05, // 5% mana discount on all spells
+                'libramOfRenewal': 113, // subtracts 113
+            }
         }
     }
 }
