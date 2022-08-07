@@ -160,13 +160,16 @@ class BasePlayer {
         return spellsWithNoCooldown[0];
     }
 
+    checkProcHelper(key, spellIndex, numHits, procChance) {
+        let arr = this._rngThresholds[key].slice(spellIndex * numHits, (spellIndex + 1) * numHits);
+        return Utility.anyValueBelowThreshold(arr, procChance);
+    }
+
     // can be either soup or eog
     isSoupEogProc(isSoup, spellIndex, numHits) {
         let key = isSoup ? 'soup' : 'eog',
-            procChance = DATA['items'][key]['proc']['chance'],
-            arr = this._rngThresholds[key].slice(spellIndex * numHits, (spellIndex + 1) * numHits);
-
-        return Utility.anyValueBelowThreshold(arr, DATA['items'][key]['proc']['chance']);
+            procChance = DATA['items'][key]['proc']['chance'];
+        return this.checkProcHelper(key, spellIndex, numHits, procChance);
     }
 
     // returns [wasManaSuccessfullySubtracted, costOfSpell, currentMana, errorMessage]
@@ -214,6 +217,23 @@ class BasePlayer {
             // self._statistics['overall']['total_mana_used'] += mana_cost
             return [1, value, this._currentMana, null];
         }
+    }
+
+    addManaHelper(amount, category) {
+        let oldMana = this._currentMana;
+        this._currentMana += amount
+
+        if (typeof this._statistics['manaGenerated'][category] === 'undefined') {
+            this._statistics['manaGenerated'][category] = 0;
+        }        
+
+        // cannot exceed max mana
+        if (this._currentMana > this.maxMana) {
+            this._currentMana = this.maxMana;
+        }
+
+        this._statistics['manaGenerated'][category] += this._currentMana - oldMana;
+        return this._currentMana - oldMana;
     }
 
     manaIncreaseFromInt(value) {

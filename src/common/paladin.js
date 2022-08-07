@@ -41,19 +41,23 @@ class Paladin extends BasePlayer {
 
         // player.add_spellcast_to_statistics(event._name, event._is_crit, event._is_soup_proc, event._is_eog_proc)
         let procs = {};
-        let status, manaUsed, currentMana, errorMessage, offset;
+        let status, manaUsed, currentMana, errorMessage, offset, isCrit, msg;
 
         // checks for soup, and eog procs
+        // holy light has more hits; all other spells have 2 hits (due to beacon)
         for (let _key of ['soup', 'eog']) {
             if (this._options['trinkets'].indexOf(_key) > -1) {
                 procs[_key] = this.isSoupEogProc(_key === 'soup', spellIndex, spellKey === 'HOLY_LIGHT' ? this._numHitsPerHolyLight : 2);
             };
         }
 
+        // all pally spells have 1 chance to crit (beacon just mirrors the spell cast)
+        isCrit = this.checkProcHelper('crit', spellIndex, 1, this.critChance);
+
         [status, manaUsed, currentMana, errorMessage] = this.subtractMana(spellKey, timestamp, procs);
-        // holy light has more hits; all other spells have 2 hits (due to beacon)
+
         // player oom
-        if (status === 0){
+        if (status === 0) {
             return [status, errorMessage, 0];
         }
 
@@ -61,9 +65,6 @@ class Paladin extends BasePlayer {
         // if event._name == 'Holy Shock' and event._is_sow_proc:
         //     player.add_mana_from_sow_proc()
 
-        // # player not oom -> can either be normal cast or crit
-        // if event._is_crit:
-        //     player.add_mana_from_illumination(spell_key)
 
         if (procs['soup']) {
             logger.log('🥣🥣🥣 SOUP 🥣🥣🥣', 2);
@@ -71,10 +72,14 @@ class Paladin extends BasePlayer {
             logger.log('👀 👀 EOG 👀 👀', 2);
         }
 
-            // msg = f'{event._time}s: **CRIT {event._name}** (spent {original_mana - player._current_mana} mana)' if event._is_crit \
-            //     else f'{event._time}s: Casted {event._name} (spent {original_mana - player._current_mana} mana)'
-        let msg = `${timestamp}s: Casted ${spellKey} (spent ${originalMana - currentMana} mana)`;
+        msg = isCrit ? `${timestamp}s: **CRIT ${spellKey}** (spent ${originalMana - currentMana} mana)` :
+            `${timestamp}s: Casted ${spellKey} (spent ${originalMana - currentMana} mana)`;
+
         logger.log(msg, 2);
+
+        if (isCrit) {
+            this.addManaFromIllumination(spellKey, logger);
+        }
 
         // if we cast an instant spell, we need to account for it using the gcd
         offset = this._instantSpells.indexOf(spellKey) > -1 ? this._options['gcd'] : 0;
@@ -141,6 +146,13 @@ class Paladin extends BasePlayer {
             baseCostAdditiveFactors['eog'] = DATA['items']['eog']['proc']['manaReduction'];
         }
         return this.subtractManaHelper(spellKey, timestamp, {}, baseCostAdditiveFactors, otherMultiplicativeTotal);
+    }
+
+    addManaFromIllumination(spellKey, logger) {
+        let baseManaCost = this.classInfo['spells'].find((_spell) => _spell['key'] === spellKey)['baseManaCost'];
+        let amount = Math.floor(baseManaCost * 0.3);
+        logger.log(`Gained ${amount} from Illumination`, 2);
+        return this.addManaHelper(amount, 'illumination');
     }
 }
 

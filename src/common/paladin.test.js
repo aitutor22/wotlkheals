@@ -171,3 +171,28 @@ test('testing subtractMana', () => {
     expect(currentMana).toBe(25665);
 });
 
+test('testing addManaHelper cannot add beyond maxMana', () => {
+    let player = new Paladin(defaultOptions);
+    player._currentMana = 27000;
+    player.addManaHelper(1300, 'adhoc');
+    expect(player._currentMana).toBe(28000);
+    expect(player._statistics.manaGenerated['adhoc']).toBe(1000);
+});
+
+test('testing addManaFromIllumination', () => {
+    let player = new Paladin(defaultOptions);
+    player._currentMana = 20000;
+    player.addManaFromIllumination('HOLY_LIGHT');
+    expect(player._currentMana).toBe(20382);
+    player.addManaFromIllumination('HOLY_SHOCK');
+    expect(player._currentMana).toBe(20619);
+});
+
+// test('testing addManaHelper cannot add beyond maxMana', () => {
+//     let player = new Paladin(defaultOptions);
+//     player._currentMana = 27000;
+//     player.addManaHelper(1300, 'adhoc');
+//     expect(player._currentMana).toBe(28000);
+// });
+
+
