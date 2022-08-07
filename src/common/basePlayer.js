@@ -33,6 +33,12 @@ class BasePlayer {
 
         // tracks potential buffs like dmcg
         this._buffs = {};
+        // dmcg is a unique case where we want to initialise it at the start under _buffs
+        // this is because it can be procced by every spell cast
+        if (this._options['trinkets'].indexOf('dmcg') > -1) {
+            this.setBuffActive('dmcg', false, 0, true);
+        }
+
         this._rngThresholds = {};
         this._spells = this.initialiseSpells();
         this._validSpells = this._spells.map((_spell) => _spell['key']);
@@ -66,7 +72,10 @@ class BasePlayer {
     // end getters
 
     // start setters
-    setBuffActive(buffKey, isActive, timestamp) {
+    // typically, we don't pass in availableForUse, as usually it will be set to false here
+    // and set back to active in another function.
+    // exceptions to these include initialising dmcg (where we want active to be false, but have it still be availableForUse)
+    setBuffActive(buffKey, isActive, timestamp, availableForUse=false) {
         if (typeof this._buffs[buffKey] === 'undefined') {
             this._buffs[buffKey] = {
                 active: false, // is it currently active
@@ -77,10 +86,10 @@ class BasePlayer {
 
         this._buffs[buffKey]['active'] = isActive;
         if (isActive) {
-            this._buffs[buffKey]['availableForUse'] = false;
+            this._buffs[buffKey]['availableForUse'] = availableForUse;
             this._buffs[buffKey]['lastUsed'] = timestamp;
         } else {
-           this._buffs[buffKey]['availableForUse'] = false;
+           this._buffs[buffKey]['availableForUse'] = availableForUse;
         }
     }
     // end setters

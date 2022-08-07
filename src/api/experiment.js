@@ -19,6 +19,9 @@ class Logger {
 
 class Experiment {
     constructor(playerOptions) {
+        if (playerOptions['trinkets'].length > 2) {
+            throw new Error('Please select no more than two trinkets');
+        }
         this._playerOptions = playerOptions;
     }
 

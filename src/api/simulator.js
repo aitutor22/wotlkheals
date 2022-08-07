@@ -1,12 +1,10 @@
-// // import Heap from 'heap-js';
-
 const Experiment = require('./experiment');
-// const Paladin = require('../common/paladin');
+
 let playerOptions = {
     playerClass: 'paladin',
     glyphSOW: true,
     '4pT7': true,
-    trinkets: ['soup', 'eog'],
+    trinkets: ['soup', 'dmcg'],
     // trinkets: [],
     // only for spells that are not instants
     castTimes: {
@@ -19,11 +17,6 @@ let playerOptions = {
     mp5FromGearAndRaidBuffs: 300,
     critChance: 0.41 // 30% from gear and buffs, 11% from talents
 };
-
-
-// let experimentOptions = {
-//     logsLevel: 2,
-// };
 
 
 let experiment = new Experiment(playerOptions);

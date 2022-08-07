@@ -10,6 +10,8 @@ function getKeyBoolean(obj, key) {
 // methods that must be implemented by all player class
 // subtractMana
 
+// kiv -> have we implemented function that checks avaialbility of spells and cds?
+
 class Paladin extends BasePlayer {
     // note that maxMana doesn't include mana pool from dmcg
     constructor(options) {
@@ -52,7 +54,17 @@ class Paladin extends BasePlayer {
         }
 
         // all pally spells have 1 chance to crit (beacon just mirrors the spell cast)
+        // kiv -> consider added crit chance
         isCrit = this.checkProcHelper('crit', spellIndex, 1, this.critChance);
+
+        // if dmcg is worn, see if it can proc
+        if ((typeof this._buffs['dmcg'] !== 'undefined') && this._buffs['dmcg']['availableForUse']) {
+            let isDmcg = this.checkProcHelper('dmcg', spellIndex, 1, DATA['items']['dmcg']['proc']['chance']);
+            this.setBuffActive('dmcg', true, timestamp);
+            console.log(this._buffs);
+            // NEED TO THINK OF A WAY TO pass back DMCG INACIVE EVEnt
+            // heapq.heappush(event_heap, Event('DMCG Buff Inactive', False, False, False, False, current_time + 15, 'DMCG_BUFF_INACTIVE'))
+        }
 
         [status, manaUsed, currentMana, errorMessage] = this.subtractMana(spellKey, timestamp, procs);
 
