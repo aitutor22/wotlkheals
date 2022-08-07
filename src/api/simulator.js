@@ -6,7 +6,8 @@ let playerOptions = {
     playerClass: 'paladin',
     glyphSOW: true,
     '4pT7': true,
-    trinkets: [],
+    trinkets: ['soup', 'eog'],
+    // trinkets: [],
     // only for spells that are not instants
     castTimes: {
         HOLY_LIGHT: 1.5,
@@ -26,21 +27,9 @@ let playerOptions = {
 
 
 let experiment = new Experiment(playerOptions);
-experiment.runSingleLoop(logsLevel=2);
+// arguments: logsLevel, seed, maxMinsToOOM=10
 
-// let eventHeap = new EventHeap()
-// eventHeap.addEvent(2, 'MANA', 'TICK', {});
-// eventHeap.addEvent(4, 'MANA', 'TICK', {});
-// eventHeap.addEvent(3, 'SPELLCAST', 'HOLYSHOCK', {});
-// // eventHeap.printEvents();
-
-// let player = new Paladin(28000, 300, 0.3, {});
-// // console.log(player.getManaIncreaseFromInt(300));
-
-// // const timestampComparator = (a, b) => a.timestamp - b.timestamp;
-
-// // let event = new Event(2, 'MANA', 'TICK', {})
-// // console.log(`${event}`);
+experiment.runSingleLoop(2);
 
 
 // OPTIONS = {

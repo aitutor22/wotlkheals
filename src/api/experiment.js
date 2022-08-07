@@ -1,6 +1,21 @@
+const seedrandom = require('seedrandom');
+
 const EventHeap = require('../common/eventheap');
 const Paladin = require('../common/paladin');
 const DATA = require('../common/gamevalues');
+
+class Logger {
+    constructor(logLevel) {
+        this._logLevel = logLevel;
+    }
+
+    // logs message if logger's level exceeds minLogLevel
+    log(message, minLogLevel) {
+        if (this._logLevel >= minLogLevel) {
+            console.log(message);
+        }
+    }
+}
 
 class Experiment {
     constructor(playerOptions) {
@@ -42,11 +57,29 @@ class Experiment {
 
     // }
 
-    runSingleLoop(logsLevel=0, maxMinsToOOM=10) {
+    // seeding rng if a seed is passed in (default is 0, which means user didnt pass in)
+    // otherwise just use random seed
+    setSeed(seed) {
+        let curr = new Date();
+        let rng;
+        if (seed > 0) {
+            rng = seedrandom(seed);
+        } else {
+            rng = seedrandom(Math.random());
+        }
+        return rng;
+    }
+
+    // seed === 0 means we don't use a seed
+    runSingleLoop(logsLevel=0, seed=0, maxMinsToOOM=10) {
+        let rng = this.setSeed(seed);
+        this.logger = new Logger(logsLevel);
+
         // rather than saving player/eventHeap to experiement, we recreate it each time we run a loop
         // this ensures that we are always starting anew when we run a loop
         // makes a copy of playerOptions to avoid bugs where we override the original options
         let player = new Paladin(Object.assign({}, this._playerOptions));
+        player.createRngThresholds(rng, ['crit', 'soup', 'eog', 'sow', 'dmcg'], maxMinsToOOM);
         let eventHeap = new EventHeap();
         let currentTime = 0,
             lastCastTimestamp = 0,
@@ -59,16 +92,14 @@ class Experiment {
         spellSelected = this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, 0, this._playerOptions['firstSpell']);
         while (eventHeap.hasElements() && currentTime <= maxMinsToOOM * 60) {
             nextEvent = eventHeap.pop();
-            // console.log(nextEvent);
             currentTime = nextEvent._timestamp;
 
             if (nextEvent._eventType === 'SPELL_CAST') {
-                [status, errorMessage, offset] = player.castSpell(nextEvent._subEvent, currentTime, logsLevel);
+                [status, errorMessage, offset] = player.castSpell(nextEvent._subEvent, currentTime, spellIndex, this.logger);
 
                 // ends simulation if player is oom
                 if (status == 0) {
-                    // if self._logs_level == 2:
-                    //     print(err_message)
+                    this.logger.log(errorMessage, 2);
                     break;
                 }
 
@@ -91,20 +122,16 @@ class Experiment {
                 spellIndex += 1
             }
 
-            if (logsLevel >= 2) {
-                console.log(`${player}`);
-                console.log('----------');
-            }
+            this.logger.log(`${player}\n----------`, 2);
         } //end while loop
     }
 
-    selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spell_index, offset, overrideSpellSelection='') {
-        let spellSelected = player.selectSpell(currentTime, overrideSpellSelection);
-        // let spellInfo = player.classInfo['spells'].find((_spell) => _spell['key'] === spellSelected['key']);
-        let spellFinishCastingTimestamp = currentTime + spellSelected['castTime'];
+    selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, offset, overrideSpellSelection='') {
+        let spellSelected = player.selectSpell(currentTime, spellIndex, overrideSpellSelection);
+        let spellFinishCastingTimestamp = currentTime + spellSelected['castTime'] + offset;
 
         // self.add_spell_cast_helper(event_heap, selected_spell['name'], is_crit, is_soup_proc, is_sow_proc, is_eog_proc, current_time, cast_time + offset)
-        eventHeap.addEvent(spellFinishCastingTimestamp, 'SPELL_CAST', spellSelected['key'], {});
+        eventHeap.addEvent(spellFinishCastingTimestamp, 'SPELL_CAST', spellSelected['key']);
         return spellSelected;
     }
 }

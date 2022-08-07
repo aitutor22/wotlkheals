@@ -66,7 +66,8 @@ const data = {
                 '4pT7': 0.05, // 5% mana discount on HL
                 'glyphSOW': 0.05, // 5% mana discount on all spells
                 'libramOfRenewal': 113, // subtracts 113
-            }
+            },
+            maxSoupHits: 7, //up to 7 for HL
         }
     }
 }

@@ -21,25 +21,37 @@ class Paladin extends BasePlayer {
         this._otherMultiplicativeTotal = 1;
         // glyph of SOW reduces healing cost by 5%; note that we don't put 4pt7 here as it only affects HL
         this._baseOtherMultiplicativeTotal = Utility.getKeyBoolean(this._options, 'glyphSOW') ? (1 - this.classInfo['manaCostModifiers']['glyphSOW']) : 1;
+        this._numHitsPerHolyLight = Math.floor(2 + this._options['glyphHolyLightHits']) // beacon + original target + glpyh
     }
 
     // when eventHeap gets a spellcast event, it tries to cast it
 
     // # returns (status, error_message, offset_timing)
 
+    // selectSpell and castSpell work differently
+    // selectSpell (in basePlayer) selects a spell given spellIndex, and returns the spell
+    // castSpell is run when the event loop receves the spellcast event, and we determine if the spell is a crit, or has other procs
+    // one might wonder might we don't just cast the spell directly after selecting it. 
+    // this is because there could be events in between like mana ticks and/or buffs expiring (like dmcg)
 
-    castSpell(spellKey, timestamp, logsLevel=0) {
-        if (this._validSpells.indexOf(spellKey) === -1) {
-            throw new Error('other spells not handled yet');
-        }
+    castSpell(spellKey, timestamp, spellIndex, logger) {
+        if (this._validSpells.indexOf(spellKey) === -1) throw new Error('other spells not handled yet');
 
         let originalMana = this._currentMana;
 
         // player.add_spellcast_to_statistics(event._name, event._is_crit, event._is_soup_proc, event._is_eog_proc)
         let procs = {};
         let status, manaUsed, currentMana, errorMessage, offset;
-        [status, manaUsed, currentMana, errorMessage] = this.subtractMana(spellKey, timestamp, procs);
 
+        // checks for soup, and eog procs
+        for (let _key of ['soup', 'eog']) {
+            if (this._options['trinkets'].indexOf(_key) > -1) {
+                procs[_key] = this.isSoupEogProc(_key === 'soup', spellIndex, spellKey === 'HOLY_LIGHT' ? this._numHitsPerHolyLight : 2);
+            };
+        }
+
+        [status, manaUsed, currentMana, errorMessage] = this.subtractMana(spellKey, timestamp, procs);
+        // holy light has more hits; all other spells have 2 hits (due to beacon)
         // player oom
         if (status === 0){
             return [status, errorMessage, 0];
@@ -53,28 +65,61 @@ class Paladin extends BasePlayer {
         // if event._is_crit:
         //     player.add_mana_from_illumination(spell_key)
 
-        if (logsLevel >= 2) {
-        //     if event._is_soup_proc:
-        //         print('🥣🥣🥣SOUP🥣🥣🥣')
-        //     elif event._is_eog_proc:
-        //         print('👀 👀EOG👀 👀')
+        if (procs['soup']) {
+            logger.log('🥣🥣🥣 SOUP 🥣🥣🥣', 2);
+        } else if (procs['eog']) {
+            logger.log('👀 👀 EOG 👀 👀', 2);
+        }
+
             // msg = f'{event._time}s: **CRIT {event._name}** (spent {original_mana - player._current_mana} mana)' if event._is_crit \
             //     else f'{event._time}s: Casted {event._name} (spent {original_mana - player._current_mana} mana)'
-            let msg = `${timestamp}s: Casted ${spellKey} (spent ${originalMana - currentMana} mana)`;
-            console.log(msg);
-        }
+        let msg = `${timestamp}s: Casted ${spellKey} (spent ${originalMana - currentMana} mana)`;
+        logger.log(msg, 2);
 
         // if we cast an instant spell, we need to account for it using the gcd
         offset = this._instantSpells.indexOf(spellKey) > -1 ? this._options['gcd'] : 0;
         return [status, errorMessage, offset];
 
-        // let originalMana = this._currentMana;
-        // status, current_mana, error_message = player.subtract_mana(self.get_spell_cost(spell_key, self._options), event._time, event._is_soup_proc, event._is_eog_proc)
-        // player.add_spellcast_to_statistics(event._name, event._is_crit, event._is_soup_proc, event._is_eog_proc)
 
-        // # player oom
-        // if status == 0:
-        //     return (0, error_message, 0)
+        // # selects next spell
+        // selected_spell = player.select_spell(current_time, override_spell_selection)
+
+        // cast_time = self._options['CAST_TIMES'][selected_spell['key']]
+        // # adding next spell cast
+        // crit_chance = player._crit_chance
+        // # 10% additional crit chance to holy shock
+        // if selected_spell['key'] == 'HOLY_SHOCK' and self._options['2p_t7']:
+        //     crit_chance += 0.1
+        // if selected_spell['key'] == 'HOLY_LIGHT' and player._buffs['INFUSION_OF_LIGHT']:
+        //     player._buffs['INFUSION_OF_LIGHT'] = False
+        //     crit_chance += 0.2
+
+        // if self._logs_level == 3:
+        //     print('Crit chance of next spell: {}; {}'.format(selected_spell['key'], crit_chance))
+        // is_crit = self.crit_rng_thresholds[spell_index] <= crit_chance
+
+        // # holy shock crits triggers infusion of light, which adds 20% to next HL crit
+        // if selected_spell['key'] == 'HOLY_SHOCK' and is_crit:
+        //     player._buffs['INFUSION_OF_LIGHT'] = True
+
+        // # print('{}; crit_chance: {}'.format(selected_spell['key'], crit_chance))
+        // # soup_proc of next spell based off the current spell
+        // # holy shock only has 2 soup procs
+        // # both eog and soup share same number of hits
+        // num_chances_for_soup = self._num_hits_per_holy_light if selected_spell['key'] == 'HOLY_LIGHT' else 2
+        // is_soup_proc = self.get_soup_eog_proc(self.soup_rng_thresholds[spell_index * num_chances_for_soup: (spell_index + 1) * num_chances_for_soup], 'soup')
+        // is_eog_proc = self.get_soup_eog_proc(self.eog_rng_thresholds[spell_index * num_chances_for_soup: (spell_index + 1) * num_chances_for_soup], 'eog')
+        // # checks and see if dmcg is proc
+        // is_dmcg_proc = self.dmcg_rng_thresholds[spell_index] <= TRINKET_STATS['dmcg_proc_rate'] if self._options['dmcg'] else False
+        // if is_dmcg_proc and player.check_dmcg_available(current_time):
+        //     player.set_dmcg_active(True, current_time)
+        //     heapq.heappush(event_heap, Event('DMCG Buff Inactive', False, False, False, False, current_time + 15, 'DMCG_BUFF_INACTIVE'))
+
+        // is_sow_proc = self.sow_rng_thresholds[spell_index] <= SOW_PROC_RATE
+        // if self._logs_level == 3 and selected_spell['key'] == 'HOLY_SHOCK' and is_sow_proc:
+        //     print('SOW PROC FOR UPCOMING HOLY SHOCK')
+
+
     }
 
     // procs can be eog/soup

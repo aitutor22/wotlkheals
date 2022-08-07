@@ -12,11 +12,10 @@ const timestampComparator = (a, b) => a.timestamp - b.timestamp;
 
 class Event {
     // procs include isCrit, isEoG, etc
-    constructor(timestamp, eventType, subEvent, procs) {
+    constructor(timestamp, eventType, subEvent) {
         this._timestamp = Utility.roundDp(timestamp, 2); // time in seconds from start of fight
         this._eventType = eventType;
         this._subEvent = subEvent;
-        this._procs = procs;
     }
 
     toString() {
@@ -36,8 +35,8 @@ class EventHeap {
         this.priorityQueue.init([]);
     }
 
-    addEvent(timestamp, eventType, subEvent, procs) {
-        let event = new Event(timestamp, eventType, subEvent, procs);
+    addEvent(timestamp, eventType, subEvent) {
+        let event = new Event(timestamp, eventType, subEvent);
         this.priorityQueue.push(event);
     }
 

@@ -33,6 +33,7 @@ class BasePlayer {
 
         // tracks potential buffs like dmcg
         this._buffs = {};
+        this._rngThresholds = {};
         this._spells = this.initialiseSpells();
         this._validSpells = this._spells.map((_spell) => _spell['key']);
         this._instantSpells = this._spells.filter((_spell) => _spell['instant']).map((_spell) => _spell['key']);
@@ -84,6 +85,7 @@ class BasePlayer {
     }
     // end setters
 
+    // start functions that are used for initialisation
     initialiseSpells() {
         let results = [];
         for (let _spell of this.classInfo['spells']) {
@@ -104,7 +106,28 @@ class BasePlayer {
         return results;
     }
 
-    selectSpell(timestamp, overrideSpellSelection='') {
+    // rng is the random number generator
+    // creates thresholds for each of the items and talents, and saves it to the player
+    createRngThresholds(rng, items, maxMinsToOOM) {
+        function createHelper(numItems) {
+            let results = [];
+            for (let i = 0; i < numItems; i++) {
+                results.push(rng());
+            }
+            return results;
+        }
+        const soupHits = this.classInfo['maxSoupHits'];
+        for (let item of items) {
+            // soup and eog should have multiple chances to proc
+            let factor = (['soup', 'eog'].indexOf(item) > -1) ? soupHits : 1;
+            this._rngThresholds[item] = createHelper(maxMinsToOOM * 60 * factor);
+        }
+    }
+
+    // end functions that are used for initialisation
+
+
+    selectSpell(timestamp, spellIndex, overrideSpellSelection='') {
         let spellSelected = null;
 
         // # we first look among spells with cd (e.g. holy shock, sacred shield), and update their availability
@@ -137,6 +160,14 @@ class BasePlayer {
         return spellsWithNoCooldown[0];
     }
 
+    // can be either soup or eog
+    isSoupEogProc(isSoup, spellIndex, numHits) {
+        let key = isSoup ? 'soup' : 'eog',
+            procChance = DATA['items'][key]['proc']['chance'],
+            arr = this._rngThresholds[key].slice(spellIndex * numHits, (spellIndex + 1) * numHits);
+
+        return Utility.anyValueBelowThreshold(arr, DATA['items'][key]['proc']['chance']);
+    }
 
     // returns [wasManaSuccessfullySubtracted, costOfSpell, currentMana, errorMessage]
     // example
