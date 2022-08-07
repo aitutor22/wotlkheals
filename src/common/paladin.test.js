@@ -4,15 +4,44 @@ const defaultOptions = {
     manaPool: 28000,
     mp5FromGearAndRaidBuffs: 300,
     critChance: 0.3,
-    trinkets: []
+    trinkets: [],
+    castTimes: {
+        HOLY_LIGHT: 1.5,
+    },
 };
 
 const dmcgOptions = {
     manaPool: 28000,
     mp5FromGearAndRaidBuffs: 300,
     critChance: 0.3,
-    trinkets: ['dmcg']
+    trinkets: ['dmcg'],
+    castTimes: {
+        HOLY_LIGHT: 1.5,
+    },
 };
+
+
+test('setBuffActive should create a buff entry if not currently present', () => {
+    let player = new Paladin(defaultOptions);
+    expect(Object.keys(player._buffs).length).toBe(0);
+
+    player.setBuffActive('dmcg', true, 2);
+    expect(Object.keys(player._buffs).length).toBe(1);
+});
+
+test('setBuffActive', () => {
+    let player = new Paladin(defaultOptions);
+    player.setBuffActive('dmcg', true, 2);
+    expect(player._buffs['dmcg']['active']).toBe(true);
+    expect(player._buffs['dmcg']['availableForUse']).toBe(false);
+    expect(player._buffs['dmcg']['lastUsed']).toBe(2);
+
+    player.setBuffActive('dmcg', false, 16);
+    expect(player._buffs['dmcg']['active']).toBe(false);
+    expect(player._buffs['dmcg']['availableForUse']).toBe(false);
+    // lastUsed is updated when active is set to true not when set to false
+    expect(player._buffs['dmcg']['lastUsed']).toBe(2);
+});
 
 
 test('getManaIncreaseFromInt for a paladin should use 1.1 x 1.1 modifier', () => {
@@ -37,9 +66,9 @@ test('system should add crit from 90 int if dmcg is selected', () => {
     expect((Math.abs(player.critChance - 0.306533869322614))).toBeLessThan(1e-5);
 });
 
-test('setDmcgActive to true', () => {
+test('testing setting dmcg to true', () => {
     let player = new Paladin(dmcgOptions);
-    player.setDmcgActive(true, 2);
+    player.setBuffActive('dmcg', true, 2);
     expect(player._buffs['dmcg']['active']).toBe(true);
     expect(player._buffs['dmcg']['availableForUse']).toBe(false);
     expect(player._buffs['dmcg']['lastUsed']).toBe(2);
@@ -47,8 +76,8 @@ test('setDmcgActive to true', () => {
 
 test('setDmcgActive to true', () => {
     let player = new Paladin(dmcgOptions);
-    player.setDmcgActive(true, 2);
-    player.setDmcgActive(false, 17);
+    player.setBuffActive('dmcg', true, 2);
+    player.setBuffActive('dmcg', false, 17);
     expect(player._buffs['dmcg']['active']).toBe(false);
     expect(player._buffs['dmcg']['availableForUse']).toBe(false);
     expect(player._buffs['dmcg']['lastUsed']).toBe(2);
@@ -56,8 +85,7 @@ test('setDmcgActive to true', () => {
 
 test('maxMana and critChance when dmcg active', () => {
     let player = new Paladin(dmcgOptions);
-    console.log(player.maxMana);
-    player.setDmcgActive(true, 2);
+    player.setBuffActive('dmcg', true, 2);
     expect(player.maxMana).toBe(35078);
     expect((Math.abs(player.critChance - 0.328308338))).toBeLessThan(1e-5);
 });

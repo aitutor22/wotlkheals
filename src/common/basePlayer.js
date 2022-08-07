@@ -1,4 +1,5 @@
 const DATA = require('./gamevalues');
+const Utility = require('./utilities');
 
 class BasePlayer {
     // procs include isCrit, isEoG, etc
@@ -32,7 +33,6 @@ class BasePlayer {
 
         // tracks potential buffs like dmcg
         this._buffs = {};
-        this.initialiseBuffs();
         this._spells = this.initialiseSpells();
         this._validSpells = this._spells.map((_spell) => _spell['key']);
         this._instantSpells = this._spells.filter((_spell) => _spell['instant']).map((_spell) => _spell['key']);
@@ -65,46 +65,24 @@ class BasePlayer {
     // end getters
 
     // start setters
-    setDmcgActive(val, timestamp) {
-        if (typeof this._buffs['dmcg'] === 'undefined') return;
-        this._buffs['dmcg']['active'] = val;
-        // if it has been toggled active, we need to track when it was last used
-        if (val) {
-            this._buffs['dmcg']['availableForUse'] = false;
-            this._buffs['dmcg']['lastUsed'] = timestamp;
+    setBuffActive(buffKey, isActive, timestamp) {
+        if (typeof this._buffs[buffKey] === 'undefined') {
+            this._buffs[buffKey] = {
+                active: false, // is it currently active
+                availableForUse: true, // can it be used
+                lastUsed: -9999, // timestamp of last usage
+            }
+        }
+
+        this._buffs[buffKey]['active'] = isActive;
+        if (isActive) {
+            this._buffs[buffKey]['availableForUse'] = false;
+            this._buffs[buffKey]['lastUsed'] = timestamp;
         } else {
-           this._buffs['dmcg']['availableForUse'] = false;
-        }
-        if (this._options['logsLevel'] === 2) {
-            console.log(`${timestamp}s: SETTING DMCG to ${val}`);
-            console.log(`Crit Chance: ${this.critChance}`);
+           this._buffs[buffKey]['availableForUse'] = false;
         }
     }
-
-    // setBuff(buffKey, val, timestamp) {
-    //     if (typeof this._buffs[buffKey] === 'undefined') {
-    //         this._buffs[buffKey] = {
-    //             active: false, // is it currently active
-    //             availableForUse: true, // can it be used; should be set to false if currently active
-    //             lastUsed: -9999, // timestamp of last usage
-    //         }
-    //     }
-    //     this._buffs[buffKey] = val;
-    //     this._buffs[buffKey]['lastUsed'] = timestamp;
-    // }
     // end setters
-
-    initialiseBuffs() {
-        let defaultValue = {
-            active: false, // is it currently active
-            availableForUse: true, // can it be used; should be set to false if currently active
-            lastUsed: -9999, // timestamp of last usage
-        };
-        if (this._options['trinkets'].indexOf('dmcg') > -1) {
-            this._buffs['dmcg'] = {};
-            Object.assign(this._buffs['dmcg'], defaultValue);
-        }
-    }
 
     initialiseSpells() {
         let results = [];
