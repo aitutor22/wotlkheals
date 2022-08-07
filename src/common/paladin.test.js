@@ -1,33 +1,44 @@
 const Paladin = require('./paladin');
 
-const defaultOptions = {trinkets: []};
-const dmcgOptions = {trinkets: ['dmcg']};
+const defaultOptions = {
+    manaPool: 28000,
+    mp5FromGearAndRaidBuffs: 300,
+    critChance: 0.3,
+    trinkets: []
+};
+
+const dmcgOptions = {
+    manaPool: 28000,
+    mp5FromGearAndRaidBuffs: 300,
+    critChance: 0.3,
+    trinkets: ['dmcg']
+};
 
 
 test('getManaIncreaseFromInt for a paladin should use 1.1 x 1.1 modifier', () => {
-    let player = new Paladin(28000, 300, 0.3, defaultOptions);
+    let player = new Paladin(defaultOptions);
     let manaGenerated = player.manaIncreaseFromInt(300);
     expect(manaGenerated).toBe(5445);
 });
 
 test('getCritIncreaseFromInt for a paladin should use 1.1 x 1.1 modifier', () => {
-    let player = new Paladin(28000, 300, 0.3, defaultOptions);
+    let player = new Paladin(defaultOptions);
     let getCritIncreaseFromInt = player.critIncreaseFromInt(300);
     expect((Math.abs(getCritIncreaseFromInt - 0.021779956440087123))).toBeLessThan(1e-9);
 });
 
 test('system should add mana from 90 int if dmcg is selected', () => {
-    let player = new Paladin(28000, 300, 0.3, dmcgOptions);
+    let player = new Paladin(dmcgOptions);
     expect(player.maxMana).toBe(29633);
 });
 
 test('system should add crit from 90 int if dmcg is selected', () => {
-    let player = new Paladin(28000, 300, 0.3, dmcgOptions);
+    let player = new Paladin(dmcgOptions);
     expect((Math.abs(player.critChance - 0.306533869322614))).toBeLessThan(1e-5);
 });
 
 test('setDmcgActive to true', () => {
-    let player = new Paladin(28000, 300, 0.3, dmcgOptions);
+    let player = new Paladin(dmcgOptions);
     player.setDmcgActive(true, 2);
     expect(player._buffs['dmcg']['active']).toBe(true);
     expect(player._buffs['dmcg']['availableForUse']).toBe(false);
@@ -35,7 +46,7 @@ test('setDmcgActive to true', () => {
 });
 
 test('setDmcgActive to true', () => {
-    let player = new Paladin(28000, 300, 0.3, dmcgOptions);
+    let player = new Paladin(dmcgOptions);
     player.setDmcgActive(true, 2);
     player.setDmcgActive(false, 17);
     expect(player._buffs['dmcg']['active']).toBe(false);
@@ -44,20 +55,21 @@ test('setDmcgActive to true', () => {
 });
 
 test('maxMana and critChance when dmcg active', () => {
-    let player = new Paladin(28000, 300, 0.3, dmcgOptions);
+    let player = new Paladin(dmcgOptions);
+    console.log(player.maxMana);
     player.setDmcgActive(true, 2);
     expect(player.maxMana).toBe(35078);
     expect((Math.abs(player.critChance - 0.328308338))).toBeLessThan(1e-5);
 });
 
 test('selectSpell overrideSpellSelection', () => {
-    let player = new Paladin(28000, 300, 0.3, dmcgOptions);
+    let player = new Paladin(dmcgOptions);
     let spell = player.selectSpell(2, 'HOLY_LIGHT');
     expect(spell['key']).toBe('HOLY_LIGHT');
 });
 
 test('selectSpell', () => {
-    let player = new Paladin(28000, 300, 0.3, dmcgOptions);
+    let player = new Paladin(dmcgOptions);
     let spell = player.selectSpell(1);
     // if we don't override, then first spell should be holy shock
     expect(spell['key']).toBe('HOLY_SHOCK');
@@ -70,23 +82,23 @@ test('selectSpell', () => {
 });
 
 test('passing no discount factors in subtractManaHelper returns just base cost', () => {
-    let player = new Paladin(28000, 300, 0.3, defaultOptions);
+    let player = new Paladin(defaultOptions);
     expect(player.subtractManaHelper('HOLY_LIGHT', 2)[1]).toBe(1274);
 });
 
 test('testing baseCostMultiplicativeFactors arugment for subtractManaHelper', () => {
-    let player = new Paladin(28000, 300, 0.3, defaultOptions);
+    let player = new Paladin(defaultOptions);
     expect(player.subtractManaHelper('HOLY_LIGHT', 2, {'divineIllumination': 0.5}, {})[1]).toBe(637);
     expect(player.subtractManaHelper('HOLY_LIGHT', 2, {'powerInfusion': 0.2}, {})[1]).toBe(1019);
 });
 
 test('testing baseCostAdditiveFactors arugment for subtractManaHelper', () => {
-    let player = new Paladin(28000, 300, 0.3, {});
+    let player = new Paladin(defaultOptions);
     expect(player.subtractManaHelper('HOLY_LIGHT', 2, {}, {'libramOfRenewal': 113})[1]).toBe(1161);
 });
 
 test('testing baseCostAdditiveFactors arugment for subtractManaHelper', () => {
-    let player = new Paladin(28000, 300, 0.3, {});
+    let player = new Paladin(defaultOptions);
     expect(player.subtractManaHelper('HOLY_LIGHT', 2, {}, {'soup': 800})[1]).toBe(474);
     expect(player.subtractManaHelper('HOLY_LIGHT', 2, {}, {'soup': 800, 'libramOfRenewal': 113})[1]).toBe(361);
     expect(player.subtractManaHelper('HOLY_LIGHT', 2, {'divineIllumination': 0.5}, {'libramOfRenewal': 113})[1]).toBe(524);
@@ -94,7 +106,7 @@ test('testing baseCostAdditiveFactors arugment for subtractManaHelper', () => {
 });
 
 test('testing subtractManaHelper', () => {
-    let player = new Paladin(28000, 300, 0.3, {});
+    let player = new Paladin(defaultOptions);
     expect(player.subtractManaHelper('HOLY_LIGHT', 2, {}, {soup: 800}, 0.9)[1]).toBe(426);
     expect(player.subtractManaHelper('HOLY_LIGHT', 2, {}, {soup: 800}, 0.95)[1]).toBe(450);
     expect(player.subtractManaHelper('HOLY_LIGHT', 2, {}, {libramOfRenewal: 113}, 0.9)[1]).toBe(1045);
@@ -104,12 +116,15 @@ test('testing subtractManaHelper', () => {
 });
 
 test('testing subtractMana', () => {
-    let player = new Paladin(28000, 300, 0.3, {'glyphSOW': true, '4pT7': true});
+    let options = Object.assign({}, defaultOptions);
+    options['glyphSOW'] = true;
+    options['4pT7'] = true;
+    let player = new Paladin(options);
+
     [status, manaCost, currentMana, _] = player.subtractMana('HOLY_LIGHT', 2);
     expect(status).toBe(1);
     expect(manaCost).toBe(1045);
     expect(currentMana).toBe(26955);
-
 
     [status, manaCost, currentMana, _] = player.subtractMana('HOLY_LIGHT', 4, {soup: true});
     expect(status).toBe(1);

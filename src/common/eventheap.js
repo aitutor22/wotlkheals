@@ -1,5 +1,7 @@
 const { Heap } = require('heap-js');
 
+const Utility = require('./utilities');
+
 const timestampComparator = (a, b) => a.timestamp - b.timestamp;
 
 /*
@@ -11,7 +13,7 @@ const timestampComparator = (a, b) => a.timestamp - b.timestamp;
 class Event {
     // procs include isCrit, isEoG, etc
     constructor(timestamp, eventType, subEvent, procs) {
-        this._timestamp = Math.round(timestamp, 2); // time in seconds from start of fight
+        this._timestamp = Utility.roundDp(timestamp, 2); // time in seconds from start of fight
         this._eventType = eventType;
         this._subEvent = subEvent;
         this._procs = procs;
@@ -37,6 +39,14 @@ class EventHeap {
     addEvent(timestamp, eventType, subEvent, procs) {
         let event = new Event(timestamp, eventType, subEvent, procs);
         this.priorityQueue.push(event);
+    }
+
+    hasElements() {
+        return this.priorityQueue.length > 0;
+    }
+
+    pop () {
+        return this.priorityQueue.pop();
     }
 
     printEvents() {

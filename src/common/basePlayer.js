@@ -34,6 +34,8 @@ class BasePlayer {
         this._buffs = {};
         this.initialiseBuffs();
         this._spells = this.initialiseSpells();
+        this._validSpells = this._spells.map((_spell) => _spell['key']);
+        this._instantSpells = this._spells.filter((_spell) => _spell['instant']).map((_spell) => _spell['key']);
         this._statistics = {
             'manaGenerated': {},
         }
@@ -108,6 +110,15 @@ class BasePlayer {
         let results = [];
         for (let _spell of this.classInfo['spells']) {
             let entry = Object.assign({}, _spell);
+
+            // setting cast time for each spell based on user options
+            if (_spell['instant']) {
+                entry['castTime'] = 0;
+            } else if (typeof this._options['castTimes'][_spell['key']] === 'undefined') {
+                throw new Error('missing cast time for ' + _spell['key']);
+            } else {
+                entry['castTime'] = this._options['castTimes'][_spell['key']];
+            }
             entry['availableForUse'] = true;
             entry['lastUsed'] = -9999;
             results.push(entry);
@@ -204,8 +215,8 @@ class BasePlayer {
         return value * this._intModifier * DATA['constants']['critChanceFromOneInt'];
     }
 
-    // return 'Mana: {:d} / {:d}'.format(self._current_mana, self._max_mana)
     toString() {
+        return `Mana: ${this._currentMana} / ${this.maxMana}`;
         // return `${this._timestamp}s: ${this._eventType}`;
     }
 }

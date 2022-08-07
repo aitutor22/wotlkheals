@@ -1,19 +1,85 @@
 // // import Heap from 'heap-js';
 
-const EventHeap = require('../common/eventheap');
-const Paladin = require('../common/paladin');
+const Experiment = require('./experiment');
+// const Paladin = require('../common/paladin');
+let playerOptions = {
+    playerClass: 'paladin',
+    glyphSOW: true,
+    '4pT7': true,
+    trinkets: [],
+    // only for spells that are not instants
+    castTimes: {
+        HOLY_LIGHT: 1.5,
+    },
+    gcd: 1.5,
+    firstSpell: 'HOLY_LIGHT', // fix which is the first spell we want to cast
+    glyphHolyLightHits: 4, 
+    manaPool: 29000,
+    mp5FromGearAndRaidBuffs: 300,
+    critChance: 0.41 // 30% from gear and buffs, 11% from talents
+};
 
-let eventHeap = new EventHeap()
-eventHeap.addEvent(2, 'MANA', 'TICK', {});
-eventHeap.addEvent(4, 'MANA', 'TICK', {});
-eventHeap.addEvent(3, 'SPELLCAST', 'HOLYSHOCK', {});
-// eventHeap.printEvents();
 
-let player = new Paladin(28000, 300, 0.3, {});
-// console.log(player.getManaIncreaseFromInt(300));
+// let experimentOptions = {
+//     logsLevel: 2,
+// };
 
-// const timestampComparator = (a, b) => a.timestamp - b.timestamp;
 
-// let event = new Event(2, 'MANA', 'TICK', {})
-// console.log(`${event}`);
+let experiment = new Experiment(playerOptions);
+experiment.runSingleLoop(logsLevel=2);
 
+// let eventHeap = new EventHeap()
+// eventHeap.addEvent(2, 'MANA', 'TICK', {});
+// eventHeap.addEvent(4, 'MANA', 'TICK', {});
+// eventHeap.addEvent(3, 'SPELLCAST', 'HOLYSHOCK', {});
+// // eventHeap.printEvents();
+
+// let player = new Paladin(28000, 300, 0.3, {});
+// // console.log(player.getManaIncreaseFromInt(300));
+
+// // const timestampComparator = (a, b) => a.timestamp - b.timestamp;
+
+// // let event = new Event(2, 'MANA', 'TICK', {})
+// // console.log(`${event}`);
+
+
+// OPTIONS = {
+//     '2p_t7': True,
+//     'soup': True,
+//     'eog': True,
+//     'dmcg': False, # do not include dmcg buffs here, system will auto add if necesary
+//     'owl': False,
+//     # end trinket choices
+//     'MAX_TIME_TO_OOM': 10 * 60, # stop calculations after how many seconds; default is 10 mins
+//     'CAST_TIMES': {
+//         'HOLY_LIGHT': 1.6,
+//         'HOLY_SHOCK': 0,
+//     },
+//     'CAST_PROFILE': {
+//         'HOLY_SHOCK': {
+//             # for holy shock to proc sow, user is using a 1.6s weapon and/or pauses for a short while after.
+//             # for simplicity sakes, assume that after a holy_shock, player always waits for full GCD (1.5s) to allow for melee hit to happen
+//             'CPM': 0,
+//         },
+//     },
+//     'MP5_FROM_GEAR_AND_RAID_BUFFS': 300,
+//     'GCD': 1.5,
+//     'GLYPH_HOLY_LIGHT_HITS': 4, # please use integer here
+//     # the following values are base values
+//     # system will automatically add int/crit values from the trinket choices
+//     # e.g. if u select DMCG, DO NOT add 90 int to mana pool or crit chance
+//     'MANA_POOL': 29000,
+//     'CRIT_CHANCE': 0.41, #assume 30% from gear + buffs, 11% from talents
+//     # other mana options
+//     'MANA_TIDE_TOTEM': False,
+//     # cast profile options
+//     # holy shock is used as mana saver via infusion of light and SoW - assumption is there will always be 1 melee hit during HS, which has 45% chance to proc SoW
+//     # this requires a 1.6 attack speed weapon - e.g. PVP weapon, and not your usual 1.8 att weapon
+//     'USE_HOLY_SHOCK_ON_CD': False,
+//     # log options
+//     # 0 - hide all logs
+//     # 1 - show only summary
+//     # 2 - show summary and events
+//     # 3 - show crit chance as well
+//     'LOGS_LEVEL': 2
+// }
