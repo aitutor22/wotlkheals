@@ -130,6 +130,7 @@ class Experiment {
                 // self.select_and_add_spell_cast(event_heap, player, current_time + divine_plea_offset, spell_index, offset_timing)
                 spellIndex += 1
             } else if (nextEvent._eventType === 'BUFF_EXPIRE') {
+                // code here sets availableForUse to false; this is fine, as we have other code that checks for availability on next spellcast
                 player.setBuffActive(nextEvent._subEvent, false, currentTime, false, this.logger);
             }
 

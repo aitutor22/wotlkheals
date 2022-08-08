@@ -74,13 +74,23 @@ test('testing setting dmcg to true', () => {
     expect(player._buffs['dmcg']['lastUsed']).toBe(2);
 });
 
-test('setDmcgActive to true', () => {
+test('setting dmcg to true', () => {
     let player = new Paladin(dmcgOptions);
     player.setBuffActive('dmcg', true, 2);
     player.setBuffActive('dmcg', false, 17);
     expect(player._buffs['dmcg']['active']).toBe(false);
     expect(player._buffs['dmcg']['availableForUse']).toBe(false);
     expect(player._buffs['dmcg']['lastUsed']).toBe(2);
+});
+
+test('testing isBuffActive', () => {
+    let player = new Paladin(defaultOptions);
+    expect(player.isBuffActive('dmcg')).toBe(false);
+    player.setBuffActive('dmcg', true, 2);
+    expect(player.isBuffActive('dmcg')).toBe(true);
+    player.setBuffActive('dmcg', false, 17);
+    expect(player.isBuffActive('dmcg')).toBe(false);
+    expect(player.isBuffActive('others')).toBe(false);
 });
 
 test('maxMana and critChance when dmcg active', () => {
@@ -146,6 +156,7 @@ test('testing subtractManaHelper', () => {
 test('testing subtractMana', () => {
     let options = Object.assign({}, defaultOptions);
     options['glyphSOW'] = true;
+    options['2pT7'] = true;
     options['4pT7'] = true;
     let player = new Paladin(options);
 
@@ -188,11 +199,6 @@ test('testing addManaFromIllumination', () => {
     expect(player._currentMana).toBe(20619);
 });
 
-// test('testing addManaHelper cannot add beyond maxMana', () => {
-//     let player = new Paladin(defaultOptions);
-//     player._currentMana = 27000;
-//     player.addManaHelper(1300, 'adhoc');
-//     expect(player._currentMana).toBe(28000);
-// });
+
 
 

@@ -3,8 +3,9 @@ const Experiment = require('./experiment');
 let playerOptions = {
     playerClass: 'paladin',
     glyphSOW: true,
-    '4pT7': true,
-    trinkets: ['soup', 'dmcg'],
+    '2pT7': true, // +10% crit chance to holy shock
+    '4pT7': true, // 5% reduction to HL mana cost
+    trinkets: ['soup'],
     // trinkets: [],
     // only for spells that are not instants
     castTimes: {
@@ -22,7 +23,7 @@ let playerOptions = {
 let experiment = new Experiment(playerOptions);
 // arguments: logsLevel, seed, maxMinsToOOM=10
 
-experiment.runSingleLoop(2);
+experiment.runSingleLoop(3);
 
 
 // OPTIONS = {

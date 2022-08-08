@@ -97,6 +97,10 @@ class BasePlayer {
     }
     // end setters
 
+    isBuffActive(buffKey) {
+        return (typeof this._buffs[buffKey] !== 'undefined') && this._buffs[buffKey]['active'];
+    }
+
     // start functions that are used for initialisation
     initialiseSpells() {
         let results = [];

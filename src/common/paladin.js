@@ -17,6 +17,10 @@ class Paladin extends BasePlayer {
     constructor(options) {
         super(options['manaPool'], 'paladin', options['otherMP5'], options['critChance'], options);
 
+        if (!this._options['2pT7'] && this._options['4pT7']) {
+            throw new Error('4PT7 was selected but not 2PT7');
+        }
+
         // second part of this is we assume 1.1 sow procs a min, and convert it to mp5 terms
         // should be refactored in future
         this._otherMP5 = options['otherMP5'] + 1.1 * this._baseMaxMana * 0.04 / 12;
@@ -44,7 +48,7 @@ class Paladin extends BasePlayer {
         // player.add_spellcast_to_statistics(event._name, event._is_crit, event._is_soup_proc, event._is_eog_proc)
         let procs = {},
             eventsToCreate = [];
-        let status, manaUsed, currentMana, errorMessage, offset, isCrit, msg;
+        let status, manaUsed, currentMana, errorMessage, offset, isCrit, msg, modifiedCritChance;
 
         // checks for soup, and eog procs
         // holy light has more hits; all other spells have 2 hits (due to beacon)
@@ -54,9 +58,29 @@ class Paladin extends BasePlayer {
             };
         }
 
+        modifiedCritChance = this.critChance;
+        // 10% additional crit chance to holy shock from 2pT7
+        if (spellKey === 'HOLY_SHOCK' && this._options['2pT7']) {
+            modifiedCritChance += 0.1
+        } 
+        // infusion of lights adds 20% crit chance to holy light
+        if (spellKey === 'HOLY_LIGHT' && this.isBuffActive('infusionOfLight')) {
+            this.setBuffActive('infusionOfLight', false, timestamp, true, logger);
+            modifiedCritChance += 0.2
+        }
+
+        logger.log(`Crit Chance: ${modifiedCritChance}`, 3);
+        // if selected_spell['key'] == 'HOLY_LIGHT' and player._buffs['INFUSION_OF_LIGHT']:
+        //     player._buffs['INFUSION_OF_LIGHT'] = False
+        //     crit_chance += 0.2
+
+        // if self._logs_level == 3:
+        //     print('Crit chance of next spell: {}; {}'.format(selected_spell['key'], crit_chance))
+        // is_crit = self.crit_rng_thresholds[spell_index] <= crit_chance
+
         // all pally spells have 1 chance to crit (beacon just mirrors the spell cast)
         // kiv -> consider added crit chance
-        isCrit = this.checkProcHelper('crit', spellIndex, 1, this.critChance);
+        isCrit = this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance);
         [status, manaUsed, currentMana, errorMessage] = this.subtractMana(spellKey, timestamp, procs);
 
         // player oom
@@ -77,14 +101,20 @@ class Paladin extends BasePlayer {
 
         msg = isCrit ? `${timestamp}s: **CRIT ${spellKey}** (spent ${originalMana - currentMana} mana)` :
             `${timestamp}s: Casted ${spellKey} (spent ${originalMana - currentMana} mana)`;
-
         logger.log(msg, 2);
 
         // if we cast an instant spell, we need to account for it using the gcd
         offset = this._instantSpells.indexOf(spellKey) > -1 ? this._options['gcd'] : 0;
 
         // after spell is casted, add effects
-        if (isCrit) this.addManaFromIllumination(spellKey, logger);
+        if (isCrit) {
+            this.addManaFromIllumination(spellKey, logger);
+            // holy shock crits triggers infusion of light
+            if (spellKey === 'HOLY_SHOCK') {
+                this.setBuffActive('infusionOfLight', true, timestamp, true, logger);
+            }
+        }
+
         // if dmcg is worn, see if it can proc
         if ((typeof this._buffs['dmcg'] !== 'undefined') && this._buffs['dmcg']['availableForUse']) {
             let isDmcg = this.checkProcHelper('dmcg', spellIndex, 1, DATA['items']['dmcg']['proc']['chance']);
