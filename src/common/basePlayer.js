@@ -235,7 +235,7 @@ class BasePlayer {
         }
     }
 
-    addManaHelper(amount, category) {
+    addManaHelper(amount, category, logger=null) {
         let oldMana = this._currentMana;
         this._currentMana += amount
 
@@ -249,7 +249,17 @@ class BasePlayer {
         }
 
         this._statistics['manaGenerated'][category] += this._currentMana - oldMana;
+        if (logger) logger.log(`Gained ${this._currentMana - oldMana} from ${category}`, 2);
         return this._currentMana - oldMana;
+    }
+
+    // converts mp5 to a mp2 tick value
+    addManaRegenFromReplenishmentAndOtherMP5(logger=null, timestamp=null) {
+        // we could use a cached value, but DMCG increases max mana pool, so for time being, we recalculate each time we call this
+        const tickAmount = Math.floor((this.maxMana * DATA['constants']['replenishment'] + this._otherMP5) / 5 * 2);
+        // since replenishment might tick outside spellcast, we print timestamp
+        if (logger) logger.log(`${timestamp}s: Gained ${tickAmount} from mana tick`, 2);
+        return this.addManaHelper(tickAmount, 'otherMP5');
     }
 
     manaIncreaseFromInt(value) {

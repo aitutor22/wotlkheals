@@ -5,7 +5,7 @@ let playerOptions = {
     glyphSOW: true,
     '2pT7': true, // +10% crit chance to holy shock
     '4pT7': true, // 5% reduction to HL mana cost
-    trinkets: ['soup'],
+    trinkets: ['soup', 'eog'],
     // trinkets: [],
     // only for spells that are not instants
     castTimes: {
@@ -23,7 +23,7 @@ let playerOptions = {
 let experiment = new Experiment(playerOptions);
 // arguments: logsLevel, seed, maxMinsToOOM=10
 
-experiment.runSingleLoop(3);
+experiment.runSingleLoop(2);
 
 
 // OPTIONS = {

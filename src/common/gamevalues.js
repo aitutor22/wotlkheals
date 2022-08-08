@@ -43,10 +43,15 @@ const data = {
         manaFromOneInt: 15,
         // 166.667 points of Intellect equals 1% of Spell Critical; divide by 100 to convert to decimal points
         critChanceFromOneInt: 1 / 16666.7,
+        replenishment: 0.01, //returns 1% of mana pool every 5s
     },
     classes: {
         paladin: {
             intModifier: 1.1 * 1.1, //blessing of kings and divine intellect
+            sow: {
+                chance: 0.45 * (1 - 0.05 - 0.065), // 45% chance to proc on hit, include a 5% miss chance and 6.5% chance to be blocked,
+                value: 0.04, // 4% of max mana
+            },
             spells: [
             {
                 'key': 'HOLY_SHOCK',

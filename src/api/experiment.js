@@ -74,7 +74,7 @@ class Experiment {
     }
 
     // seed === 0 means we don't use a seed
-    runSingleLoop(logsLevel=0, seed=0, maxMinsToOOM=10) {
+    runSingleLoop(logsLevel=0, seed=0, maxMinsToOOM=1) {
         let rng = this.setSeed(seed);
         this.logger = new Logger(logsLevel);
 
@@ -95,6 +95,10 @@ class Experiment {
 
         // assume first cast is always holy light
         spellSelected = this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, 0, this._playerOptions['firstSpell']);
+        // assume first mana tick in 2s
+        eventHeap.addEvent(2, 'MANA_TICK', 'replenishment');
+
+
         while (eventHeap.hasElements() && currentTime <= maxMinsToOOM * 60) {
             nextEvent = eventHeap.pop();
             currentTime = nextEvent._timestamp;
@@ -132,6 +136,12 @@ class Experiment {
             } else if (nextEvent._eventType === 'BUFF_EXPIRE') {
                 // code here sets availableForUse to false; this is fine, as we have other code that checks for availability on next spellcast
                 player.setBuffActive(nextEvent._subEvent, false, currentTime, false, this.logger);
+            } else if (nextEvent._eventType === 'MANA_TICK') {
+                if (nextEvent._subEvent === 'replenishment') {
+                    player.addManaRegenFromReplenishmentAndOtherMP5(this.logger, currentTime);
+                    // assume replenishment ticks every 2s
+                    eventHeap.addEvent(currentTime + 2, 'MANA_TICK', 'replenishment');
+                }
             }
 
             this.logger.log(`${player}\n----------`, 2);

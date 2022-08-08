@@ -15,7 +15,7 @@ function getKeyBoolean(obj, key) {
 class Paladin extends BasePlayer {
     // note that maxMana doesn't include mana pool from dmcg
     constructor(options) {
-        super(options['manaPool'], 'paladin', options['otherMP5'], options['critChance'], options);
+        super(options['manaPool'], 'paladin', options['mp5FromGearAndRaidBuffs'], options['critChance'], options);
 
         if (!this._options['2pT7'] && this._options['4pT7']) {
             throw new Error('4PT7 was selected but not 2PT7');
@@ -23,7 +23,7 @@ class Paladin extends BasePlayer {
 
         // second part of this is we assume 1.1 sow procs a min, and convert it to mp5 terms
         // should be refactored in future
-        this._otherMP5 = options['otherMP5'] + 1.1 * this._baseMaxMana * 0.04 / 12;
+        this._otherMP5 = options['mp5FromGearAndRaidBuffs'] + 1.1 * this._baseMaxMana * 0.04 / 12;
         this._otherMultiplicativeTotal = 1;
         // glyph of SOW reduces healing cost by 5%; note that we don't put 4pt7 here as it only affects HL
         this._baseOtherMultiplicativeTotal = Utility.getKeyBoolean(this._options, 'glyphSOW') ? (1 - this.classInfo['manaCostModifiers']['glyphSOW']) : 1;
@@ -70,16 +70,8 @@ class Paladin extends BasePlayer {
         }
 
         logger.log(`Crit Chance: ${modifiedCritChance}`, 3);
-        // if selected_spell['key'] == 'HOLY_LIGHT' and player._buffs['INFUSION_OF_LIGHT']:
-        //     player._buffs['INFUSION_OF_LIGHT'] = False
-        //     crit_chance += 0.2
-
-        // if self._logs_level == 3:
-        //     print('Crit chance of next spell: {}; {}'.format(selected_spell['key'], crit_chance))
-        // is_crit = self.crit_rng_thresholds[spell_index] <= crit_chance
 
         // all pally spells have 1 chance to crit (beacon just mirrors the spell cast)
-        // kiv -> consider added crit chance
         isCrit = this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance);
         [status, manaUsed, currentMana, errorMessage] = this.subtractMana(spellKey, timestamp, procs);
 
@@ -87,11 +79,6 @@ class Paladin extends BasePlayer {
         if (status === 0) {
             return [status, errorMessage, 0, eventsToCreate];
         }
-
-        // # try to get 1 hit
-        // if event._name == 'Holy Shock' and event._is_sow_proc:
-        //     player.add_mana_from_sow_proc()
-
 
         if (procs['soup']) {
             logger.log('🥣🥣🥣 SOUP 🥣🥣🥣', 2);
@@ -124,48 +111,12 @@ class Paladin extends BasePlayer {
             }
         }
 
+        // checks if sow proc from holy shock
+        if (spellKey === 'HOLY_SHOCK' && this.checkProcHelper('sow', spellIndex, 1, this.classInfo['sow']['chance'])) {
+            this.addManaFromSOWProc(logger);
+        }
+
         return [status, errorMessage, offset, eventsToCreate];
-
-
-        // # selects next spell
-        // selected_spell = player.select_spell(current_time, override_spell_selection)
-
-        // cast_time = self._options['CAST_TIMES'][selected_spell['key']]
-        // # adding next spell cast
-        // crit_chance = player._crit_chance
-        // # 10% additional crit chance to holy shock
-        // if selected_spell['key'] == 'HOLY_SHOCK' and self._options['2p_t7']:
-        //     crit_chance += 0.1
-        // if selected_spell['key'] == 'HOLY_LIGHT' and player._buffs['INFUSION_OF_LIGHT']:
-        //     player._buffs['INFUSION_OF_LIGHT'] = False
-        //     crit_chance += 0.2
-
-        // if self._logs_level == 3:
-        //     print('Crit chance of next spell: {}; {}'.format(selected_spell['key'], crit_chance))
-        // is_crit = self.crit_rng_thresholds[spell_index] <= crit_chance
-
-        // # holy shock crits triggers infusion of light, which adds 20% to next HL crit
-        // if selected_spell['key'] == 'HOLY_SHOCK' and is_crit:
-        //     player._buffs['INFUSION_OF_LIGHT'] = True
-
-        // # print('{}; crit_chance: {}'.format(selected_spell['key'], crit_chance))
-        // # soup_proc of next spell based off the current spell
-        // # holy shock only has 2 soup procs
-        // # both eog and soup share same number of hits
-        // num_chances_for_soup = self._num_hits_per_holy_light if selected_spell['key'] == 'HOLY_LIGHT' else 2
-        // is_soup_proc = self.get_soup_eog_proc(self.soup_rng_thresholds[spell_index * num_chances_for_soup: (spell_index + 1) * num_chances_for_soup], 'soup')
-        // is_eog_proc = self.get_soup_eog_proc(self.eog_rng_thresholds[spell_index * num_chances_for_soup: (spell_index + 1) * num_chances_for_soup], 'eog')
-        // # checks and see if dmcg is proc
-        // is_dmcg_proc = self.dmcg_rng_thresholds[spell_index] <= TRINKET_STATS['dmcg_proc_rate'] if self._options['dmcg'] else False
-        // if is_dmcg_proc and player.check_dmcg_available(current_time):
-        //     player.set_dmcg_active(True, current_time)
-        //     heapq.heappush(event_heap, Event('DMCG Buff Inactive', False, False, False, False, current_time + 15, 'DMCG_BUFF_INACTIVE'))
-
-        // is_sow_proc = self.sow_rng_thresholds[spell_index] <= SOW_PROC_RATE
-        // if self._logs_level == 3 and selected_spell['key'] == 'HOLY_SHOCK' and is_sow_proc:
-        //     print('SOW PROC FOR UPCOMING HOLY SHOCK')
-
-
     }
 
     // procs can be eog/soup
@@ -192,8 +143,13 @@ class Paladin extends BasePlayer {
     addManaFromIllumination(spellKey, logger=null) {
         let baseManaCost = this.classInfo['spells'].find((_spell) => _spell['key'] === spellKey)['baseManaCost'];
         let amount = Math.floor(baseManaCost * 0.3);
-        if (logger) logger.log(`Gained ${amount} from Illumination`, 2);
-        return this.addManaHelper(amount, 'illumination');
+        return this.addManaHelper(amount, 'illumination', logger);
+    }
+
+    // seal of wisdom proc
+    addManaFromSOWProc(logger) {
+        let amount = Math.floor(this.maxMana * this.classInfo['sow']['value']);
+        return this.addManaHelper(amount, 'sow', logger);
     }
 }
 
