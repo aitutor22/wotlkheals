@@ -90,6 +90,7 @@ class Experiment {
             spellIndex = 0,
             spellSelected = null,
             nextEvent = null,
+            eventsToCreate = [],
             status, errorMessage, offset;
 
         // assume first cast is always holy light
@@ -99,12 +100,16 @@ class Experiment {
             currentTime = nextEvent._timestamp;
 
             if (nextEvent._eventType === 'SPELL_CAST') {
-                [status, errorMessage, offset] = player.castSpell(nextEvent._subEvent, currentTime, spellIndex, this.logger);
-
+                [status, errorMessage, offset, eventsToCreate] = player.castSpell(nextEvent._subEvent, currentTime, spellIndex, this.logger);
                 // ends simulation if player is oom
                 if (status == 0) {
                     this.logger.log(errorMessage, 2);
                     break;
+                }
+
+                // e.g. set a BUFF_EXPIRE event
+                for (let evt of eventsToCreate) {
+                    eventHeap.addEvent(evt['timestamp'], evt['eventType'], evt['subEvent']);
                 }
 
                 // not oom, so continue the simulation
@@ -124,6 +129,8 @@ class Experiment {
                 this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, offset);
                 // self.select_and_add_spell_cast(event_heap, player, current_time + divine_plea_offset, spell_index, offset_timing)
                 spellIndex += 1
+            } else if (nextEvent._eventType === 'BUFF_EXPIRE') {
+                player.setBuffActive(nextEvent._subEvent, false, currentTime, false, this.logger);
             }
 
             this.logger.log(`${player}\n----------`, 2);

@@ -2,7 +2,7 @@ const { Heap } = require('heap-js');
 
 const Utility = require('./utilities');
 
-const timestampComparator = (a, b) => a.timestamp - b.timestamp;
+const timestampComparator = (a, b) => a._timestamp - b._timestamp;
 
 /*
     eventType: subEvent
@@ -38,6 +38,7 @@ class EventHeap {
     addEvent(timestamp, eventType, subEvent) {
         let event = new Event(timestamp, eventType, subEvent);
         this.priorityQueue.push(event);
+        return event;
     }
 
     hasElements() {

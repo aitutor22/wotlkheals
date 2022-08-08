@@ -28,7 +28,7 @@ class Paladin extends BasePlayer {
 
     // when eventHeap gets a spellcast event, it tries to cast it
 
-    // # returns (status, error_message, offset_timing)
+    // # returns (status, error_message, offset_timing, eventsToCreate)
 
     // selectSpell and castSpell work differently
     // selectSpell (in basePlayer) selects a spell given spellIndex, and returns the spell
@@ -42,7 +42,8 @@ class Paladin extends BasePlayer {
         let originalMana = this._currentMana;
 
         // player.add_spellcast_to_statistics(event._name, event._is_crit, event._is_soup_proc, event._is_eog_proc)
-        let procs = {};
+        let procs = {},
+            eventsToCreate = [];
         let status, manaUsed, currentMana, errorMessage, offset, isCrit, msg;
 
         // checks for soup, and eog procs
@@ -56,21 +57,11 @@ class Paladin extends BasePlayer {
         // all pally spells have 1 chance to crit (beacon just mirrors the spell cast)
         // kiv -> consider added crit chance
         isCrit = this.checkProcHelper('crit', spellIndex, 1, this.critChance);
-
-        // if dmcg is worn, see if it can proc
-        if ((typeof this._buffs['dmcg'] !== 'undefined') && this._buffs['dmcg']['availableForUse']) {
-            let isDmcg = this.checkProcHelper('dmcg', spellIndex, 1, DATA['items']['dmcg']['proc']['chance']);
-            this.setBuffActive('dmcg', true, timestamp);
-            console.log(this._buffs);
-            // NEED TO THINK OF A WAY TO pass back DMCG INACIVE EVEnt
-            // heapq.heappush(event_heap, Event('DMCG Buff Inactive', False, False, False, False, current_time + 15, 'DMCG_BUFF_INACTIVE'))
-        }
-
         [status, manaUsed, currentMana, errorMessage] = this.subtractMana(spellKey, timestamp, procs);
 
         // player oom
         if (status === 0) {
-            return [status, errorMessage, 0];
+            return [status, errorMessage, 0, eventsToCreate];
         }
 
         // # try to get 1 hit
@@ -89,13 +80,21 @@ class Paladin extends BasePlayer {
 
         logger.log(msg, 2);
 
-        if (isCrit) {
-            this.addManaFromIllumination(spellKey, logger);
-        }
-
         // if we cast an instant spell, we need to account for it using the gcd
         offset = this._instantSpells.indexOf(spellKey) > -1 ? this._options['gcd'] : 0;
-        return [status, errorMessage, offset];
+
+        // after spell is casted, add effects
+        if (isCrit) this.addManaFromIllumination(spellKey, logger);
+        // if dmcg is worn, see if it can proc
+        if ((typeof this._buffs['dmcg'] !== 'undefined') && this._buffs['dmcg']['availableForUse']) {
+            let isDmcg = this.checkProcHelper('dmcg', spellIndex, 1, DATA['items']['dmcg']['proc']['chance']);
+            if (isDmcg) {
+                this.setBuffActive('dmcg', true, timestamp, false, logger);
+                eventsToCreate.push({timestamp: timestamp + DATA['items']['dmcg']['proc']['duration'], eventType: 'BUFF_EXPIRE', subEvent: 'dmcg'});
+            }
+        }
+
+        return [status, errorMessage, offset, eventsToCreate];
 
 
         // # selects next spell
@@ -160,10 +159,10 @@ class Paladin extends BasePlayer {
         return this.subtractManaHelper(spellKey, timestamp, {}, baseCostAdditiveFactors, otherMultiplicativeTotal);
     }
 
-    addManaFromIllumination(spellKey, logger) {
+    addManaFromIllumination(spellKey, logger=null) {
         let baseManaCost = this.classInfo['spells'].find((_spell) => _spell['key'] === spellKey)['baseManaCost'];
         let amount = Math.floor(baseManaCost * 0.3);
-        logger.log(`Gained ${amount} from Illumination`, 2);
+        if (logger) logger.log(`Gained ${amount} from Illumination`, 2);
         return this.addManaHelper(amount, 'illumination');
     }
 }

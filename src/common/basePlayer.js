@@ -75,7 +75,8 @@ class BasePlayer {
     // typically, we don't pass in availableForUse, as usually it will be set to false here
     // and set back to active in another function.
     // exceptions to these include initialising dmcg (where we want active to be false, but have it still be availableForUse)
-    setBuffActive(buffKey, isActive, timestamp, availableForUse=false) {
+    // takes an optional logger if we want to log when buff is activated or deactivated
+    setBuffActive(buffKey, isActive, timestamp, availableForUse=false, logger=null) {
         if (typeof this._buffs[buffKey] === 'undefined') {
             this._buffs[buffKey] = {
                 active: false, // is it currently active
@@ -88,8 +89,10 @@ class BasePlayer {
         if (isActive) {
             this._buffs[buffKey]['availableForUse'] = availableForUse;
             this._buffs[buffKey]['lastUsed'] = timestamp;
+            if (logger) logger.log(`${timestamp}s: ${buffKey} activated`, 2);
         } else {
            this._buffs[buffKey]['availableForUse'] = availableForUse;
+           if (logger) logger.log(`${timestamp}s: ${buffKey} expired`, 2);
         }
     }
     // end setters
