@@ -39,6 +39,7 @@ class BasePlayer {
             this.setBuffActive('dmcg', false, 0, true);
         }
 
+        this._manaCooldowns = [];
         this._rngThresholds = {};
         this._spells = this.initialiseSpells();
         this._validSpells = this._spells.map((_spell) => _spell['key']);
@@ -120,6 +121,16 @@ class BasePlayer {
             results.push(entry);
         }
         return results;
+    }
+
+    // takes an array of cooldowns, in order of cooldowns to be used first, together with relevant metrics
+    initialiseManaCooldowns(manaArr) {
+        for (let cd of manaArr) {
+            let entry = Object.assign({}, DATA['manaCooldowns'][cd['key']]);
+            entry['minimumManaDeficit'] = cd['minimumManaDeficit'];
+            entry['minimumTimeElapsed'] = cd['minimumTimeElapsed'];
+            this._manaCooldowns.push(entry);
+        }
     }
 
     // rng is the random number generator
