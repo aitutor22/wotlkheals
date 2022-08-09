@@ -3,6 +3,7 @@ const seedrandom = require('seedrandom');
 const EventHeap = require('../common/eventheap');
 const Paladin = require('../common/paladin');
 const DATA = require('../common/gamevalues');
+const Utility = require('../common/utilities');
 
 class Logger {
     constructor(logLevel) {
@@ -63,7 +64,6 @@ class Experiment {
     // seeding rng if a seed is passed in (default is 0, which means user didnt pass in)
     // otherwise just use random seed
     setSeed(seed) {
-        let curr = new Date();
         let rng;
         if (seed > 0) {
             rng = seedrandom(seed);
@@ -91,6 +91,7 @@ class Experiment {
             spellSelected = null,
             nextEvent = null,
             eventsToCreate = [],
+            cooldownUsed = null,
             status, errorMessage, offset;
 
         // assume first cast is always holy light
@@ -102,8 +103,23 @@ class Experiment {
         while (eventHeap.hasElements() && currentTime <= maxMinsToOOM * 60) {
             nextEvent = eventHeap.pop();
             currentTime = nextEvent._timestamp;
-
-            if (nextEvent._eventType === 'SPELL_CAST') {
+            if (nextEvent._eventType === 'MANA_COOLDOWN_SPELL_CAST') {
+                // console.log('here');
+                // console.log(currentTime)
+                // // UNSURE IF THIS IS THE BEST WAY, but WE JUST WRITE ALL THE COOLDOWNS HERE
+                // // in future, refactor and split out into different functions
+                if (nextEvent._subEvent === 'DIVINE_PLEA') {
+                    eventHeap.addIntervalEvents(currentTime, 'MANA_TICK', 'DIVINE_PLEA', 5, 3);
+                }
+                this.logger.log(`${currentTime}s: Used ${nextEvent._subEvent}`, 2);
+                this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime + this._playerOptions['gcd'], spellIndex, 0);
+                // console.log(a);
+                // eventHeap.printEvents();
+                // break;
+                spellIndex += 1
+            } else if (nextEvent._eventType === 'SPELL_CAST') {
+                lastCastTimestamp = currentTime;
+                // offset is when we cast an instant spell like holyshock, should put the next spell on gcd
                 [status, errorMessage, offset, eventsToCreate] = player.castSpell(nextEvent._subEvent, currentTime, spellIndex, this.logger);
                 // ends simulation if player is oom
                 if (status == 0) {
@@ -115,9 +131,27 @@ class Experiment {
                 for (let evt of eventsToCreate) {
                     eventHeap.addEvent(evt['timestamp'], evt['eventType'], evt['subEvent']);
                 }
+                eventsToCreate = [];
 
                 // not oom, so continue the simulation
-                // cooldown_used = player.use_mana_cooldown(current_time)
+                // before casting, check if we can use a mana cooldown
+                // if useManaCooldownStatus is 0, implies no cooldown used
+                // 1 implies manacooldown used but not on gcd (so don't worry)
+                // 2 implies it slows down gcd
+                let useManaCooldownStatus, useManaCooldownEvent;
+                [useManaCooldownStatus, useManaCooldownEvent] = player.useManaCooldown(currentTime + offset, this.logger);
+
+                // if we don't use up the gcd, then we just the spell/cooldown, and continue casting
+                // KIV -> what if cross class mana cooldown like innervate/mana tide?
+                if (useManaCooldownStatus === 0 || useManaCooldownStatus === 1) {
+                    this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, offset);
+                } 
+                // if we use a gcd, then we cast the mana cooldown spell instead
+                else {
+                    eventHeap.addEvent(useManaCooldownEvent['timestamp'], useManaCooldownEvent['eventType'], useManaCooldownEvent['subEvent']);
+                }
+
+                // if (useManaCooldownStatus > 0) console.log(useManaCooldownEvent);
                 // divine_plea_offset = 0
                 // # divine plea is on gcd, so we need to delay the next spell cast
                 // if cooldown_used == 'DIVINE_PLEA':
@@ -130,7 +164,7 @@ class Experiment {
                 //         heapq.heappush(event_heap, Event('Mana Tide Totem', False, False, False, False, current_time + i * 3, 'MANA_TIDE_TOTEM_TICK'))
                     
                 // adds next spell to simulation
-                this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, offset);
+                
                 // self.select_and_add_spell_cast(event_heap, player, current_time + divine_plea_offset, spell_index, offset_timing)
                 spellIndex += 1
             } else if (nextEvent._eventType === 'BUFF_EXPIRE') {
@@ -141,11 +175,31 @@ class Experiment {
                     player.addManaRegenFromReplenishmentAndOtherMP5(this.logger, currentTime);
                     // assume replenishment ticks every 2s
                     eventHeap.addEvent(currentTime + 2, 'MANA_TICK', 'replenishment');
+                } else if (nextEvent._subEvent === 'DIVINE_PLEA') {
+                    //kiv 
+                    this.logger.log('divine plea tick', 2);
                 }
             }
 
             this.logger.log(`${player}\n----------`, 2);
         } //end while loop
+
+        return lastCastTimestamp;
+    }
+
+    runBatch(batchSize=10, seed=0, logsLevel=0) {
+        let timings = [];
+        for (let i = 0; i < batchSize; i++) {
+            // passing seed == 0 into runSingleLoop will mean it's random
+            // thus, we multiply seed by i + 1 instead
+            timings.push(this.runSingleLoop(logsLevel, seed * (i + 1)));
+        }
+        console.log(Utility.median(timings));
+        // median_timing = np.median(timings)
+        // this.logger(, 1);
+        // if not silence:
+        //     print(f'Median TTOOM after {batch_size} runs: {median_timing:.1f}s')
+        // return median_timing
     }
 
     selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, offset, overrideSpellSelection='') {

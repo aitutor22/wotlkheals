@@ -21,4 +21,65 @@ test('eventheap should pop events correctly', () => {
     expect(evt).toBe(b);
 });
 
+test('addIntervalEvents', () => {
+    let eventHeap = new EventHeap(), evt;
+    eventHeap.addIntervalEvents(0, 'MANA_TICK', 'DIVINE_PLEA', 5, 3);
+    expect(eventHeap.priorityQueue.length).toBe(5);
+    evt = eventHeap.pop()
+    expect(evt._timestamp).toBe(3);
 
+    evt = eventHeap.pop()
+    expect(evt._timestamp).toBe(6);
+
+    evt = eventHeap.pop()
+    expect(evt._timestamp).toBe(9);
+
+    evt = eventHeap.pop()
+    expect(evt._timestamp).toBe(12);
+
+    evt = eventHeap.pop()
+    expect(evt._timestamp).toBe(15);
+
+    expect(eventHeap.hasElements()).toBe(false);
+});
+
+test('addIntervalEvents when timestamp is greater than 0', () => {
+    let eventHeap = new EventHeap(), evt;
+    eventHeap.addIntervalEvents(60, 'MANA_TICK', 'DIVINE_PLEA', 5, 3);
+    expect(eventHeap.priorityQueue.length).toBe(5);
+    evt = eventHeap.pop()
+    expect(evt._timestamp).toBe(63);
+
+    evt = eventHeap.pop()
+    expect(evt._timestamp).toBe(66);
+
+    evt = eventHeap.pop()
+    expect(evt._timestamp).toBe(69);
+
+    evt = eventHeap.pop()
+    expect(evt._timestamp).toBe(72);
+
+    evt = eventHeap.pop()
+    expect(evt._timestamp).toBe(75);
+
+    expect(eventHeap.hasElements()).toBe(false);
+});
+
+test('addIntervalEvents with startAtTimestamp', () => {
+    let eventHeap = new EventHeap(), evt;
+    eventHeap.addIntervalEvents(0, 'MANA_TICK', 'test', 4, 2, true);
+    expect(eventHeap.priorityQueue.length).toBe(4);
+    evt = eventHeap.pop()
+    expect(evt._timestamp).toBe(0);
+
+    evt = eventHeap.pop()
+    expect(evt._timestamp).toBe(2);
+
+    evt = eventHeap.pop()
+    expect(evt._timestamp).toBe(4);
+
+    evt = eventHeap.pop()
+    expect(evt._timestamp).toBe(6);
+
+    expect(eventHeap.hasElements()).toBe(false);
+});

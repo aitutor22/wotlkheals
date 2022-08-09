@@ -28,8 +28,15 @@ class Paladin extends BasePlayer {
         // glyph of SOW reduces healing cost by 5%; note that we don't put 4pt7 here as it only affects HL
         this._baseOtherMultiplicativeTotal = Utility.getKeyBoolean(this._options, 'glyphSOW') ? (1 - this.classInfo['manaCostModifiers']['glyphSOW']) : 1;
         this._numHitsPerHolyLight = Math.floor(2 + this._options['glyphHolyLightHits']) // beacon + original target + glpyh
+        this.initialiseManaCooldowns(options['manaCooldowns']);
 
-        this.initialiseManaCooldowns([{key: 'RUNIC_MANA_POTION', minimumManaDeficit: 18000, minimumTimeElapsed: 0}])
+        // filters out holyShock if cpm is set to 0
+        if (this._options['holyShockCPM'] === 0) {
+            this._spells = this._spells.filter((_spell) => _spell['key'] !== 'HOLY_SHOCK');
+        } else {
+            // otherwise change cooldown according to cpm
+            this._spells.find((_spell) => _spell['key'] === 'HOLY_SHOCK')['cooldown'] = 60 / this._options['holyShockCPM'];
+        }
     }
 
     // when eventHeap gets a spellcast event, it tries to cast it

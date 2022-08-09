@@ -8,6 +8,7 @@ const defaultOptions = {
     castTimes: {
         HOLY_LIGHT: 1.5,
     },
+    manaCooldowns: [{key: 'RUNIC_MANA_POTION', minimumManaDeficit: 18000, minimumTimeElapsed: 0}],
 };
 
 const dmcgOptions = {
@@ -18,6 +19,7 @@ const dmcgOptions = {
     castTimes: {
         HOLY_LIGHT: 1.5,
     },
+    manaCooldowns: [{key: 'RUNIC_MANA_POTION', minimumManaDeficit: 18000, minimumTimeElapsed: 0}],
 };
 
 
@@ -107,7 +109,9 @@ test('selectSpell overrideSpellSelection', () => {
 });
 
 test('selectSpell', () => {
-    let player = new Paladin(dmcgOptions);
+    let options = Object.assign({}, defaultOptions);
+    options['holyShockCPM'] = 1;
+    let player = new Paladin(options);
     let spell = player.selectSpell(1, 0);
     // if we don't override, then first spell should be holy shock
     expect(spell['key']).toBe('HOLY_SHOCK');
@@ -200,5 +204,9 @@ test('testing addManaFromIllumination', () => {
 });
 
 
-
+test('testing useManaCooldown', () => {
+    let player = new Paladin(defaultOptions);
+    expect(player._manaCooldowns.length).toBe(1);
+    player.useManaCooldown();
+});
 

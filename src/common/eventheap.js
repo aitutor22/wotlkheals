@@ -41,6 +41,14 @@ class EventHeap {
         return event;
     }
 
+    addIntervalEvents(timestamp, eventType, subEvent, numIntervals, secsBetweenInterval, startAtTimestamp=false) {
+        let currentTime;
+        for (let i = 0; i < numIntervals; i++) {
+            currentTime = timestamp + (i + (startAtTimestamp ? 0 : 1)) * secsBetweenInterval;
+            this.addEvent(currentTime, eventType, subEvent);
+        }
+    }
+
     hasElements() {
         return this.priorityQueue.length > 0;
     }

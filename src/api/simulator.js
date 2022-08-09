@@ -11,12 +11,18 @@ let playerOptions = {
     castTimes: {
         HOLY_LIGHT: 1.5,
     },
+    // for holy shock to proc sow, user is using a 1.6s weapon and/or pauses for a short while after.
+    // for simplicity sakes, assume that after a holy_shock, player always waits for full GCD (1.5s) to allow for melee hit to happen
+    holyShockCPM: 3,
     gcd: 1.5,
     firstSpell: 'HOLY_LIGHT', // fix which is the first spell we want to cast
     glyphHolyLightHits: 4, 
     manaPool: 29000,
     mp5FromGearAndRaidBuffs: 300,
-    critChance: 0.41 // 30% from gear and buffs, 11% from talents
+    critChance: 0.41, // 30% from gear and buffs, 11% from talents
+    manaCooldowns: [
+        {key: 'DIVINE_PLEA', minimumManaDeficit: 6000, minimumTimeElapsed: 0},
+        {key: 'RUNIC_MANA_POTION', minimumManaDeficit: 18000, minimumTimeElapsed: 0}],
 };
 
 
@@ -24,6 +30,7 @@ let experiment = new Experiment(playerOptions);
 // arguments: logsLevel, seed, maxMinsToOOM=10
 
 experiment.runSingleLoop(2);
+// experiment.runBatch(1);
 
 
 // OPTIONS = {

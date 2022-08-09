@@ -129,6 +129,7 @@ class BasePlayer {
             let entry = Object.assign({}, DATA['manaCooldowns'][cd['key']]);
             entry['minimumManaDeficit'] = cd['minimumManaDeficit'];
             entry['minimumTimeElapsed'] = cd['minimumTimeElapsed'];
+            entry['lastUsed'] = -9999;
             this._manaCooldowns.push(entry);
         }
     }
@@ -186,6 +187,139 @@ class BasePlayer {
         // in future return based on cast profile
         return spellsWithNoCooldown[0];
     }
+
+    // checks to see if a mana cooldown should be used
+    // note that manacooldowns are listed in order in importance
+    // only go to next item if current item is unavailable
+    // returns [status, eventToCreate]
+    // status: 0: no cooldown selected
+    // 1: cooldown selected but doesn't require gcd
+    // 2: cooldownselected, and requires gcd
+    useManaCooldown(timestamp, logger=null) {
+        let cooldownSelected = null,
+            // offset = 0,
+            requireGCD = false,
+            eventToCreate = {},
+            manaDeficit;
+
+        manaDeficit = this.maxMana - this._currentMana;
+        // updates and checks if any cds are now available for use
+        for (let cd of this._manaCooldowns) {
+            if (!cd['availableForUse'] && (timestamp - cd['lastUsed'] >= cd['cooldown'])) {
+                cd['availableForUse'] = true;
+            }
+
+            // if still not available, skip
+            if (!cd['availableForUse'] || manaDeficit < cd['minimumManaDeficit'] || timestamp < cd['minimumTimeElapsed']) {
+                continue;
+            }
+            cooldownSelected = cd;
+        }
+
+        // no cooldown is available
+        if (cooldownSelected === null) {
+            return [0, eventToCreate];
+        }
+
+        this.addManaHelper(cooldownSelected['value'], cooldownSelected['key'], logger);
+        cooldownSelected['lastUsed'] = timestamp;
+        cooldownSelected['availableForUse'] = false;
+
+        // certain spells like divine plea put the system on gcd
+        // though if it's from a different class (e.g. you are pally, and benefit from Mana tide)
+        // then u aren't affected
+        if (!cooldownSelected['offGcd'] && cooldownSelected['playerClass'] === this._playerClass) {
+            requireGCD = true;
+            // offset = this._options['gcd'];
+            eventToCreate = {
+                timestamp: timestamp, 
+                eventType: 'MANA_COOLDOWN_SPELL_CAST',
+                subEvent: cooldownSelected['key'],
+            }
+        }
+
+
+        return [requireGCD ? 2 : 1, eventToCreate];
+
+        // if cooldown_selected['key'] in ['MANA_POTION', 'DIVINE_PLEA', 'DIVINE_ILLUMINATION', 'MANA_TIDE_TOTEM', 'OWL']:
+        //     self.add_mana_helper(cooldown_selected['value'], cooldown_selected['key'])
+        //     set_cooldown_helper(cooldown_selected)
+        //     base_msg = f'{current_time}s: Used {cooldown_selected["name"]}'
+        //     if cooldown_selected['value'] > 0:
+        //         base_msg += f' for {cooldown_selected["value"]}'
+        //     if self._logs_level == 2:
+        //         print(base_msg)
+        //     if cooldown_selected['key'] == 'DIVINE_ILLUMINATION':
+        //         self._divine_illumination_ends = current_time + 15
+        //         if self._logs_level == 2:
+        //             print('🚨🚨🚨DIVINE ILLUMINATION STARTED🚨🚨🚨')
+        //     return cooldown_selected['key']
+
+
+    //     # inner helper function
+    //     def set_cooldown_helper(cd):
+    //         cd['last_used'] = current_time
+    //         cd['available_for_use'] = False
+
+    //     if cooldown_selected['key'] in ['MANA_POTION', 'DIVINE_PLEA', 'DIVINE_ILLUMINATION', 'MANA_TIDE_TOTEM', 'OWL']:
+    //         self.add_mana_helper(cooldown_selected['value'], cooldown_selected['key'])
+    //         set_cooldown_helper(cooldown_selected)
+    //         base_msg = f'{current_time}s: Used {cooldown_selected["name"]}'
+    //         if cooldown_selected['value'] > 0:
+    //             base_msg += f' for {cooldown_selected["value"]}'
+    //         if self._logs_level == 2:
+    //             print(base_msg)
+    //         if cooldown_selected['key'] == 'DIVINE_ILLUMINATION':
+    //             self._divine_illumination_ends = current_time + 15
+    //             if self._logs_level == 2:
+    //                 print('🚨🚨🚨DIVINE ILLUMINATION STARTED🚨🚨🚨')
+    //         return cooldown_selected['key']
+
+
+    }
+
+    
+    // # returns either None (if no cooldown use) or name of cd used
+    // def use_mana_cooldown(self, current_time):
+    //     mana_deficit = self._max_mana - self._current_mana
+    //     cooldown_selected = None
+    //     # finding the cd to use
+    //     for cd in self._mana_cooldowns:
+    //         # updates and checks if any cds are now available for use
+    //         if not cd['available_for_use'] and (current_time - cd['last_used'] >= cd['cooldown']):
+    //             cd['available_for_use'] = True
+
+    //         # if still not available, skip
+    //         try:
+    //             if not cd['available_for_use'] or mana_deficit < cd['minimum_mana_deficit'] or current_time < cd['minimum_time_elapsed']:
+    //                 continue
+    //         except Exception as e:
+    //             print(e)
+    //             print(cd)
+    //         cooldown_selected = cd
+
+    //     # all cds are used already, so skip
+    //     if cooldown_selected is None:
+    //         return None
+
+    //     # inner helper function
+    //     def set_cooldown_helper(cd):
+    //         cd['last_used'] = current_time
+    //         cd['available_for_use'] = False
+
+    //     if cooldown_selected['key'] in ['MANA_POTION', 'DIVINE_PLEA', 'DIVINE_ILLUMINATION', 'MANA_TIDE_TOTEM', 'OWL']:
+    //         self.add_mana_helper(cooldown_selected['value'], cooldown_selected['key'])
+    //         set_cooldown_helper(cooldown_selected)
+    //         base_msg = f'{current_time}s: Used {cooldown_selected["name"]}'
+    //         if cooldown_selected['value'] > 0:
+    //             base_msg += f' for {cooldown_selected["value"]}'
+    //         if self._logs_level == 2:
+    //             print(base_msg)
+    //         if cooldown_selected['key'] == 'DIVINE_ILLUMINATION':
+    //             self._divine_illumination_ends = current_time + 15
+    //             if self._logs_level == 2:
+    //                 print('🚨🚨🚨DIVINE ILLUMINATION STARTED🚨🚨🚨')
+    //         return cooldown_selected['key']
 
     checkProcHelper(key, spellIndex, numHits, procChance) {
         let arr = this._rngThresholds[key].slice(spellIndex * numHits, (spellIndex + 1) * numHits);
@@ -260,7 +394,7 @@ class BasePlayer {
         }
 
         this._statistics['manaGenerated'][category] += this._currentMana - oldMana;
-        if (logger) logger.log(`Gained ${this._currentMana - oldMana} from ${category}`, 2);
+        if (logger && amount > 0) logger.log(`Gained ${this._currentMana - oldMana} from ${category}`, 2);
         return this._currentMana - oldMana;
     }
 

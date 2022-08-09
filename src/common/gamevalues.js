@@ -76,13 +76,33 @@ const data = {
         }
     },
     manaCooldowns: {
+        // : {
+        //     key: 'DIVINE_PLEA',
+        //     name: 'Divine Plea',
+        //     'value': 0, # we calculate this separately,
+        //     'minimum_time_elapsed': 0,
+        //     'minimum_mana_deficit': 6000, # how much mana needs to be lost before using this
+        //     'available_for_use': True,
+        //     'last_used': -9999, #timestamp of last usage
+        //     'cooldown': 60, # the actual cooldown of spell
+        //     'off_gcd': False,
+        // },
+        DIVINE_PLEA: {
+            key: 'DIVINE_PLEA',
+            name: 'Divine Plea',
+            value: 0, // we calculate this separately
+            cooldown: 60,
+            offGcd: false,
+            playerClass: 'paladin',
+        },
         RUNIC_MANA_POTION: {
+            key: 'RUNIC_MANA_POTION',
             name: 'Runic Mana Potion',
             value: 4300,
             // 'minimum_time_elapsed': 0,
             // 'minimum_mana_deficit': 18000, # how much mana needs to be lost before using this
             cooldown: 9999, // mana pots can only be used once
-            off_gcd: true,
+            offGcd: true,
             playerClass: 'all',
         }
     }
