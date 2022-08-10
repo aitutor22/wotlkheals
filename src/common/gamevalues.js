@@ -90,9 +90,14 @@ const data = {
         DIVINE_PLEA: {
             key: 'DIVINE_PLEA',
             name: 'Divine Plea',
-            value: 0, // we calculate this separately
+            value: 0, // we calculate this separately - 0 mana returned initially
             cooldown: 60,
             offGcd: false,
+            category: 'interval',
+            numIntervals: 5,
+            secsBetweenInterval: 3,
+            startAtTimestamp: false,
+            percentageManaPool: 0.05,
             playerClass: 'paladin',
         },
         RUNIC_MANA_POTION: {

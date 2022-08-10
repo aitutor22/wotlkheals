@@ -13,7 +13,7 @@ let playerOptions = {
     },
     // for holy shock to proc sow, user is using a 1.6s weapon and/or pauses for a short while after.
     // for simplicity sakes, assume that after a holy_shock, player always waits for full GCD (1.5s) to allow for melee hit to happen
-    holyShockCPM: 3,
+    holyShockCPM: 0,
     gcd: 1.5,
     firstSpell: 'HOLY_LIGHT', // fix which is the first spell we want to cast
     glyphHolyLightHits: 4, 
@@ -30,7 +30,7 @@ let experiment = new Experiment(playerOptions);
 // arguments: logsLevel, seed, maxMinsToOOM=10
 
 experiment.runSingleLoop(2);
-// experiment.runBatch(1);
+// experiment.runBatch(200);
 
 
 // OPTIONS = {

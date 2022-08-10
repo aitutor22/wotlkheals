@@ -278,49 +278,6 @@ class BasePlayer {
 
     }
 
-    
-    // # returns either None (if no cooldown use) or name of cd used
-    // def use_mana_cooldown(self, current_time):
-    //     mana_deficit = self._max_mana - self._current_mana
-    //     cooldown_selected = None
-    //     # finding the cd to use
-    //     for cd in self._mana_cooldowns:
-    //         # updates and checks if any cds are now available for use
-    //         if not cd['available_for_use'] and (current_time - cd['last_used'] >= cd['cooldown']):
-    //             cd['available_for_use'] = True
-
-    //         # if still not available, skip
-    //         try:
-    //             if not cd['available_for_use'] or mana_deficit < cd['minimum_mana_deficit'] or current_time < cd['minimum_time_elapsed']:
-    //                 continue
-    //         except Exception as e:
-    //             print(e)
-    //             print(cd)
-    //         cooldown_selected = cd
-
-    //     # all cds are used already, so skip
-    //     if cooldown_selected is None:
-    //         return None
-
-    //     # inner helper function
-    //     def set_cooldown_helper(cd):
-    //         cd['last_used'] = current_time
-    //         cd['available_for_use'] = False
-
-    //     if cooldown_selected['key'] in ['MANA_POTION', 'DIVINE_PLEA', 'DIVINE_ILLUMINATION', 'MANA_TIDE_TOTEM', 'OWL']:
-    //         self.add_mana_helper(cooldown_selected['value'], cooldown_selected['key'])
-    //         set_cooldown_helper(cooldown_selected)
-    //         base_msg = f'{current_time}s: Used {cooldown_selected["name"]}'
-    //         if cooldown_selected['value'] > 0:
-    //             base_msg += f' for {cooldown_selected["value"]}'
-    //         if self._logs_level == 2:
-    //             print(base_msg)
-    //         if cooldown_selected['key'] == 'DIVINE_ILLUMINATION':
-    //             self._divine_illumination_ends = current_time + 15
-    //             if self._logs_level == 2:
-    //                 print('🚨🚨🚨DIVINE ILLUMINATION STARTED🚨🚨🚨')
-    //         return cooldown_selected['key']
-
     checkProcHelper(key, spellIndex, numHits, procChance) {
         let arr = this._rngThresholds[key].slice(spellIndex * numHits, (spellIndex + 1) * numHits);
         return Utility.anyValueBelowThreshold(arr, procChance);
@@ -353,7 +310,7 @@ class BasePlayer {
             }
             oldValue = value;
             value = value * (1 - baseCostMultiplicativeFactors[key]);
-            this._statistics['manaGenerated'][key] += Math.floor(value - oldValue);
+            this._statistics['manaGenerated'][key] += Math.abs(Math.floor(value - oldValue));
         }
 
         // examples are soup/eog and libram
@@ -365,7 +322,7 @@ class BasePlayer {
             // e.g. if soup proc (800) for a paladin with otherMultiplicativeFactor of 0.9, we should record soup savings as 800 x 0.9  under statistics
             // but the actual value, we subtract by 800 first, since we will be discounting by 0.9 in next step
             value = Math.max(value - baseCostAdditiveFactors[key], 0);
-            this._statistics['manaGenerated'][key] += Math.floor(otherMultiplicativeTotal * (value - oldValue));
+            this._statistics['manaGenerated'][key] += Math.abs(Math.floor(otherMultiplicativeTotal * (value - oldValue)));
         }
 
         value = Math.floor(value * otherMultiplicativeTotal);
@@ -380,7 +337,12 @@ class BasePlayer {
         }
     }
 
-    addManaHelper(amount, category, logger=null) {
+    addManaRegenPercentageOfManaPool(timestamp, percentage, category, logger=null) {
+        this.addManaHelper(Math.floor(percentage * this.maxMana), category, logger, timestamp);
+    }
+
+    // timestamp should be optional; if we don't pass anything here, then it just doesnt print out timestamp
+    addManaHelper(amount, category, logger=null, timestamp=-1) {
         let oldMana = this._currentMana;
         this._currentMana += amount
 
@@ -394,7 +356,13 @@ class BasePlayer {
         }
 
         this._statistics['manaGenerated'][category] += this._currentMana - oldMana;
-        if (logger && amount > 0) logger.log(`Gained ${this._currentMana - oldMana} from ${category}`, 2);
+        if (logger && amount > 0) {
+            let msg =  (timestamp !== -1 ? `${timestamp}s: ` : '') +
+                `Gained ${this._currentMana - oldMana} from ${category}`;
+
+            // console.log(msg);
+            logger.log(msg, 2);
+        }
         return this._currentMana - oldMana;
     }
 
@@ -413,6 +381,23 @@ class BasePlayer {
 
     critIncreaseFromInt(value) {
         return value * this._intModifier * DATA['constants']['critChanceFromOneInt'];
+    }
+
+    calculate_statistics_after_sim_ends(total_time, logger) {
+        // for spell in self._statistics['spells']:
+        //     this._statistics['spells'][spell]['hps'] = this._statistics['spells'][spell]['total_healing'] / total_time
+        //     total_casts = self._statistics['spells'][spell]['normal'] + this._statistics['spells'][spell]['crit']
+        //     this._statistics['spells'][spell]['cpm'] = total_casts / total_time * 60
+        //     this._statistics['spells'][spell]['crit_rate'] = 0 if total_casts == 0 else self._statistics['spells'][spell]['crit'] / total_casts
+        //     this._statistics['overall']['total_healing'] += this._statistics['spells'][spell]['total_healing']
+        // # self._statistics['spells'][key]['soup'] += 1
+
+        // this._statistics['overall']['mps'] = this._statistics['overall']['total_mana_used'] / total_time
+        // this._statistics['overall']['hps'] = this._statistics['overall']['total_healing'] / total_time
+        // console.log(this._spells);
+        if (logger) logger.log(this._statistics, 2);
+        return this._statistics
+
     }
 
     toString() {

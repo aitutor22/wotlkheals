@@ -74,7 +74,7 @@ class Experiment {
     }
 
     // seed === 0 means we don't use a seed
-    runSingleLoop(logsLevel=0, seed=0, maxMinsToOOM=1) {
+    runSingleLoop(logsLevel=0, seed=0, maxMinsToOOM=10) {
         let rng = this.setSeed(seed);
         this.logger = new Logger(logsLevel);
 
@@ -103,19 +103,17 @@ class Experiment {
         while (eventHeap.hasElements() && currentTime <= maxMinsToOOM * 60) {
             nextEvent = eventHeap.pop();
             currentTime = nextEvent._timestamp;
+            // handles stuff like divine plea, LoH
             if (nextEvent._eventType === 'MANA_COOLDOWN_SPELL_CAST') {
-                // console.log('here');
-                // console.log(currentTime)
                 // // UNSURE IF THIS IS THE BEST WAY, but WE JUST WRITE ALL THE COOLDOWNS HERE
                 // // in future, refactor and split out into different functions
-                if (nextEvent._subEvent === 'DIVINE_PLEA') {
-                    eventHeap.addIntervalEvents(currentTime, 'MANA_TICK', 'DIVINE_PLEA', 5, 3);
+                let cooldownInfo = DATA['manaCooldowns'][nextEvent._subEvent];
+                if (cooldownInfo['category'] === 'interval') {
+                    eventHeap.addIntervalEvents(currentTime, 'MANA_TICK', 'DIVINE_PLEA', cooldownInfo['numIntervals'], cooldownInfo['secsBetweenInterval'], cooldownInfo['startAtTimestamp']);
                 }
                 this.logger.log(`${currentTime}s: Used ${nextEvent._subEvent}`, 2);
+                // continues with next spell in simulation
                 this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime + this._playerOptions['gcd'], spellIndex, 0);
-                // console.log(a);
-                // eventHeap.printEvents();
-                // break;
                 spellIndex += 1
             } else if (nextEvent._eventType === 'SPELL_CAST') {
                 lastCastTimestamp = currentTime;
@@ -141,7 +139,7 @@ class Experiment {
                 let useManaCooldownStatus, useManaCooldownEvent;
                 [useManaCooldownStatus, useManaCooldownEvent] = player.useManaCooldown(currentTime + offset, this.logger);
 
-                // if we don't use up the gcd, then we just the spell/cooldown, and continue casting
+                // if we don't use up the gcd, then we just let player object handle the spell/cooldown, and continue casting
                 // KIV -> what if cross class mana cooldown like innervate/mana tide?
                 if (useManaCooldownStatus === 0 || useManaCooldownStatus === 1) {
                     this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, offset);
@@ -150,22 +148,6 @@ class Experiment {
                 else {
                     eventHeap.addEvent(useManaCooldownEvent['timestamp'], useManaCooldownEvent['eventType'], useManaCooldownEvent['subEvent']);
                 }
-
-                // if (useManaCooldownStatus > 0) console.log(useManaCooldownEvent);
-                // divine_plea_offset = 0
-                // # divine plea is on gcd, so we need to delay the next spell cast
-                // if cooldown_used == 'DIVINE_PLEA':
-                //     divine_plea_offset = self._options['GCD']
-                //     for i in range(1, 6):
-                //         heapq.heappush(event_heap, Event('Divine Plea', False, False, False, False, current_time + i * 3, 'DIVINE_PLEA_TICK'))
-                // # off gcd since shaman is the one using
-                // elif cooldown_used == 'MANA_TIDE_TOTEM':
-                //     for i in range(1, 5):
-                //         heapq.heappush(event_heap, Event('Mana Tide Totem', False, False, False, False, current_time + i * 3, 'MANA_TIDE_TOTEM_TICK'))
-                    
-                // adds next spell to simulation
-                
-                // self.select_and_add_spell_cast(event_heap, player, current_time + divine_plea_offset, spell_index, offset_timing)
                 spellIndex += 1
             } else if (nextEvent._eventType === 'BUFF_EXPIRE') {
                 // code here sets availableForUse to false; this is fine, as we have other code that checks for availability on next spellcast
@@ -176,14 +158,15 @@ class Experiment {
                     // assume replenishment ticks every 2s
                     eventHeap.addEvent(currentTime + 2, 'MANA_TICK', 'replenishment');
                 } else if (nextEvent._subEvent === 'DIVINE_PLEA') {
-                    //kiv 
-                    this.logger.log('divine plea tick', 2);
+                    player.addManaRegenPercentageOfManaPool(currentTime, DATA['manaCooldowns']['DIVINE_PLEA']['percentageManaPool'], 'DIVINE_PLEA', this.logger);
                 }
             }
 
             this.logger.log(`${player}\n----------`, 2);
         } //end while loop
 
+
+        player.calculate_statistics_after_sim_ends(lastCastTimestamp, this.logger);
         return lastCastTimestamp;
     }
 
