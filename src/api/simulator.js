@@ -9,11 +9,11 @@ let playerOptions = {
     // trinkets: [],
     // only for spells that are not instants
     castTimes: {
-        HOLY_LIGHT: 1.5,
+        HOLY_LIGHT: 1.8,
     },
     // for holy shock to proc sow, user is using a 1.6s weapon and/or pauses for a short while after.
     // for simplicity sakes, assume that after a holy_shock, player always waits for full GCD (1.5s) to allow for melee hit to happen
-    holyShockCPM: 0,
+    holyShockCPM: 3,
     gcd: 1.5,
     firstSpell: 'HOLY_LIGHT', // fix which is the first spell we want to cast
     glyphHolyLightHits: 4, 
@@ -22,6 +22,7 @@ let playerOptions = {
     critChance: 0.41, // 30% from gear and buffs, 11% from talents
     manaCooldowns: [
         {key: 'DIVINE_PLEA', minimumManaDeficit: 6000, minimumTimeElapsed: 0},
+        {key: 'DIVINE_ILLUMINATION', minimumManaDeficit: 9000, minimumTimeElapsed: 0},
         {key: 'RUNIC_MANA_POTION', minimumManaDeficit: 18000, minimumTimeElapsed: 0}],
 };
 
@@ -29,8 +30,8 @@ let playerOptions = {
 let experiment = new Experiment(playerOptions);
 // arguments: logsLevel, seed, maxMinsToOOM=10
 
-experiment.runSingleLoop(2);
-// experiment.runBatch(200);
+// experiment.runSingleLoop(2);
+experiment.runBatch(500);
 
 
 // OPTIONS = {

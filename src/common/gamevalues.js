@@ -104,12 +104,23 @@ const data = {
             key: 'RUNIC_MANA_POTION',
             name: 'Runic Mana Potion',
             value: 4300,
+            category: 'immediate',
             // 'minimum_time_elapsed': 0,
             // 'minimum_mana_deficit': 18000, # how much mana needs to be lost before using this
             cooldown: 9999, // mana pots can only be used once
             offGcd: true,
             playerClass: 'all',
-        }
+        },
+        DIVINE_ILLUMINATION: {
+            key: 'DIVINE_ILLUMINATION',
+            name: 'Divine Illumination',
+            value: 0, // we calculate this separately
+            cooldown: 60 * 3, // the actual cooldown of spell
+            offGcd: true,
+            playerClass: 'paladin',
+            category: 'buff',
+            duration: 15,
+        },
     }
 
 

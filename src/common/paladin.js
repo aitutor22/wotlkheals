@@ -130,6 +130,11 @@ class Paladin extends BasePlayer {
 
     // procs can be eog/soup
     subtractMana(spellKey, timestamp, procs) {
+        // if self._divine_illumination_ends >= current_time:
+        //     value = math.floor(value / 2)
+        //     self._statistics['mana_generated']['DIVINE_ILLUMINATION'] += value
+        let baseCostMultiplicativeFactors = this.isBuffActive('DIVINE_ILLUMINATION') ? {'divineIllumination': 0.5} : {};
+
         // Holy Light gets a further 5% discount on mana cost
         let otherMultiplicativeTotal = (spellKey === 'HOLY_LIGHT' && getKeyBoolean(this._options, '4pT7')) ?
             this._baseOtherMultiplicativeTotal - this.classInfo['manaCostModifiers']['4pT7'] : this._baseOtherMultiplicativeTotal;
@@ -146,7 +151,7 @@ class Paladin extends BasePlayer {
         } else if (Utility.getKeyBoolean(procs, 'eog')) {
             baseCostAdditiveFactors['eog'] = DATA['items']['eog']['proc']['manaReduction'];
         }
-        return this.subtractManaHelper(spellKey, timestamp, {}, baseCostAdditiveFactors, otherMultiplicativeTotal);
+        return this.subtractManaHelper(spellKey, timestamp, baseCostMultiplicativeFactors, baseCostAdditiveFactors, otherMultiplicativeTotal);
     }
 
     addManaFromIllumination(spellKey, logger=null) {

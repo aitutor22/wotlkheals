@@ -199,7 +199,7 @@ class BasePlayer {
         let cooldownSelected = null,
             // offset = 0,
             requireGCD = false,
-            eventToCreate = {},
+            eventsToCreate = [],
             manaDeficit;
 
         manaDeficit = this.maxMana - this._currentMana;
@@ -218,12 +218,21 @@ class BasePlayer {
 
         // no cooldown is available
         if (cooldownSelected === null) {
-            return [0, eventToCreate];
+            return [0, eventsToCreate];
         }
 
         this.addManaHelper(cooldownSelected['value'], cooldownSelected['key'], logger);
         cooldownSelected['lastUsed'] = timestamp;
         cooldownSelected['availableForUse'] = false;
+
+        // adds a buff
+        // assumes that manacooldowns are instant and not on gcd??
+        // if not, modify this code
+        if (cooldownSelected['category'] === 'buff') {
+            // sets buff active, and returns an event for buff to expire
+            this.setBuffActive(cooldownSelected['key'], true, timestamp, false, logger);
+            eventsToCreate.push({timestamp: timestamp + DATA['manaCooldowns'][cooldownSelected['key']]['duration'], eventType: 'BUFF_EXPIRE', subEvent: cooldownSelected['key']});
+        }
 
         // certain spells like divine plea put the system on gcd
         // though if it's from a different class (e.g. you are pally, and benefit from Mana tide)
@@ -231,15 +240,15 @@ class BasePlayer {
         if (!cooldownSelected['offGcd'] && cooldownSelected['playerClass'] === this._playerClass) {
             requireGCD = true;
             // offset = this._options['gcd'];
-            eventToCreate = {
+            eventsToCreate.push({
                 timestamp: timestamp, 
                 eventType: 'MANA_COOLDOWN_SPELL_CAST',
                 subEvent: cooldownSelected['key'],
-            }
+            });
         }
 
 
-        return [requireGCD ? 2 : 1, eventToCreate];
+        return [requireGCD ? 2 : 1, eventsToCreate];
 
         // if cooldown_selected['key'] in ['MANA_POTION', 'DIVINE_PLEA', 'DIVINE_ILLUMINATION', 'MANA_TIDE_TOTEM', 'OWL']:
         //     self.add_mana_helper(cooldown_selected['value'], cooldown_selected['key'])

@@ -26,41 +26,6 @@ class Experiment {
         this._playerOptions = playerOptions;
     }
 
-    // # if spellcast is an instant, it returns an offset timing that is equivalent to GCD
-
-    // handleSpellCastEvent(player, currentTime) {
-    //     console.log('handling spell cast');
-    //     player.castSpell()
-        // status, err_message, offset_timing = self.handle_spellcast(next_event, player)
-
-
-                // status, err_message, offset_timing = self.handle_spellcast(next_event, player)
-                // # checks that player is not oom
-                // if status == 0:
-                //     if self._logs_level == 2:
-                //         print(err_message)
-                //     break
-
-                // # not oom, so continue the simulation
-                // cooldown_used = player.use_mana_cooldown(current_time)
-                // divine_plea_offset = 0
-                // # divine plea is on gcd, so we need to delay the next spell cast
-                // if cooldown_used == 'DIVINE_PLEA':
-                //     divine_plea_offset = self._options['GCD']
-                //     for i in range(1, 6):
-                //         heapq.heappush(event_heap, Event('Divine Plea', False, False, False, False, current_time + i * 3, 'DIVINE_PLEA_TICK'))
-                // # off gcd since shaman is the one using
-                // elif cooldown_used == 'MANA_TIDE_TOTEM':
-                //     for i in range(1, 5):
-                //         heapq.heappush(event_heap, Event('Mana Tide Totem', False, False, False, False, current_time + i * 3, 'MANA_TIDE_TOTEM_TICK'))
-                    
-                // self.select_and_add_spell_cast(event_heap, player, current_time + divine_plea_offset, spell_index, offset_timing)
-                // spell_index += 1
-
-       
-
-    // }
-
     // seeding rng if a seed is passed in (default is 0, which means user didnt pass in)
     // otherwise just use random seed
     setSeed(seed) {
@@ -136,18 +101,20 @@ class Experiment {
                 // if useManaCooldownStatus is 0, implies no cooldown used
                 // 1 implies manacooldown used but not on gcd (so don't worry)
                 // 2 implies it slows down gcd
-                let useManaCooldownStatus, useManaCooldownEvent;
-                [useManaCooldownStatus, useManaCooldownEvent] = player.useManaCooldown(currentTime + offset, this.logger);
+                let useManaCooldownStatus, useManaCooldownEvents;
+                [useManaCooldownStatus, useManaCooldownEvents] = player.useManaCooldown(currentTime + offset, this.logger);
+
+                // useManaCooldownEvents include casting mana cooldowns that use gcd (divine plea), or setting up expire buff events (divine illumination)
+                for (let useManaCooldownEvent of useManaCooldownEvents) {
+                    eventHeap.addEvent(useManaCooldownEvent['timestamp'], useManaCooldownEvent['eventType'], useManaCooldownEvent['subEvent']);
+                }
 
                 // if we don't use up the gcd, then we just let player object handle the spell/cooldown, and continue casting
                 // KIV -> what if cross class mana cooldown like innervate/mana tide?
                 if (useManaCooldownStatus === 0 || useManaCooldownStatus === 1) {
                     this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, offset);
                 } 
-                // if we use a gcd, then we cast the mana cooldown spell instead
-                else {
-                    eventHeap.addEvent(useManaCooldownEvent['timestamp'], useManaCooldownEvent['eventType'], useManaCooldownEvent['subEvent']);
-                }
+
                 spellIndex += 1
             } else if (nextEvent._eventType === 'BUFF_EXPIRE') {
                 // code here sets availableForUse to false; this is fine, as we have other code that checks for availability on next spellcast
