@@ -299,13 +299,16 @@ class BasePlayer {
     // each dictionary is added together before mulitplied with the healingValue
     // lets say multiplicativeFactors = [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1, 'glpyh': 0.5}]
     // then we multiply x by (1 + 0.12) * (1 + 0.05) * (1 + 1 + 0.5)
-    calculateHealingHelper(spellKey, additiveFactors, multiplicativeFactors, isCrit) {
+    // additiveFactors not implemented yet; it's for when we add stuff to amount before multiplication
+    calculateHealingHelper(spellKey, additiveFactors=null, multiplicativeFactors=null, isCrit=false) {
         const spellData = this.classInfo['spells'].find((_spell) => _spell['key'] === spellKey);
         let amount = spellData['baseHeal'] + this.spellPower * spellData['coefficient'];
         let factorSum = 0;
-        for (let factor of multiplicativeFactors) {
-            factorSum = Utility.sum(Object.values(factor)) + 1;
-            amount *= factorSum;
+        if (multiplicativeFactors !== null) {
+            for (let factor of multiplicativeFactors) {
+                factorSum = Utility.sum(Object.values(factor)) + 1;
+                amount *= factorSum;
+            }
         }
         return Math.floor(amount);
     }

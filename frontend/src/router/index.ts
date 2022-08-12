@@ -40,7 +40,7 @@ const routes: Array<RouteConfig> = [
     component: PaladinCalculator,
   },
   {
-    path: '/ttoom/paladin',
+    path: '/paladin/ttoom/',
     name: 'paladin-ttoom',
     component: PaladinTTOOM,
   },

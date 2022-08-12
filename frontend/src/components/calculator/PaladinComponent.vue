@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    {{ spells }}
+    Under Construction
   </div>
 </template>
 
