@@ -18,6 +18,7 @@ class BasePlayer {
         // when there is dmc: greatness proc, we increase mana_pool, so need baseMaxMana as a reference
         this._baseMaxMana = maxMana;
         this._baseCritChance = critChance;
+        this._baseSpellPower = options['spellPower'];
 
         // loops through the trinkets selected, and adds base stat values - currently only supports int
         for (let key of this._options['trinkets']) {
@@ -50,6 +51,14 @@ class BasePlayer {
     }
 
     // start getters
+    get spellPower() {
+        if ((typeof this._buffs['dmcg'] !== 'undefined') && this._buffs['dmcg']['active']) {
+            return this._baseSpellPower + this.spellPowerIncreaseFromInt(DATA['items']['dmcg']['proc']['int']);
+        } else {
+            return this._baseSpellPower;
+        }
+    }
+
     // checks for whether dmcg buff is active; if so, then uses the increased mana pool
     get maxMana() {
         if ((typeof this._buffs['dmcg'] !== 'undefined') && this._buffs['dmcg']['active']) {
@@ -221,7 +230,9 @@ class BasePlayer {
             return [0, eventsToCreate];
         }
 
-        this.addManaHelper(cooldownSelected['value'], cooldownSelected['key'], logger);
+        if (cooldownSelected['category'] === 'immediate') {
+            this.addManaHelper(cooldownSelected['value'], cooldownSelected['key'], logger);
+        }
         cooldownSelected['lastUsed'] = timestamp;
         cooldownSelected['availableForUse'] = false;
 
@@ -239,7 +250,6 @@ class BasePlayer {
         // then u aren't affected
         if (!cooldownSelected['offGcd'] && cooldownSelected['playerClass'] === this._playerClass) {
             requireGCD = true;
-            // offset = this._options['gcd'];
             eventsToCreate.push({
                 timestamp: timestamp, 
                 eventType: 'MANA_COOLDOWN_SPELL_CAST',
@@ -283,8 +293,21 @@ class BasePlayer {
     //             if self._logs_level == 2:
     //                 print('🚨🚨🚨DIVINE ILLUMINATION STARTED🚨🚨🚨')
     //         return cooldown_selected['key']
+    }
 
-
+    // multplicative factors are passed as an array of dictionaries
+    // each dictionary is added together before mulitplied with the healingValue
+    // lets say multiplicativeFactors = [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1, 'glpyh': 0.5}]
+    // then we multiply x by (1 + 0.12) * (1 + 0.05) * (1 + 1 + 0.5)
+    calculateHealingHelper(spellKey, additiveFactors, multiplicativeFactors, isCrit) {
+        const spellData = this.classInfo['spells'].find((_spell) => _spell['key'] === spellKey);
+        let amount = spellData['baseHeal'] + this.spellPower * spellData['coefficient'];
+        let factorSum = 0;
+        for (let factor of multiplicativeFactors) {
+            factorSum = Utility.sum(Object.values(factor)) + 1;
+            amount *= factorSum;
+        }
+        return Math.floor(amount);
     }
 
     checkProcHelper(key, spellIndex, numHits, procChance) {
@@ -347,7 +370,11 @@ class BasePlayer {
     }
 
     addManaRegenPercentageOfManaPool(timestamp, percentage, category, logger=null) {
-        this.addManaHelper(Math.floor(percentage * this.maxMana), category, logger, timestamp);
+        let key = category;
+        if (key.indexOf('_') > -1) {
+            key = Utility.camalize(key);
+        }
+        this.addManaHelper(Math.floor(percentage * this.maxMana), key, logger, timestamp);
     }
 
     // timestamp should be optional; if we don't pass anything here, then it just doesnt print out timestamp
@@ -390,6 +417,10 @@ class BasePlayer {
 
     critIncreaseFromInt(value) {
         return value * this._intModifier * DATA['constants']['critChanceFromOneInt'];
+    }
+
+    spellPowerIncreaseFromInt(value) {
+        return Math.floor(value * this._intModifier * this.classInfo['spellPowerFromInt']);
     }
 
     calculate_statistics_after_sim_ends(total_time, logger) {

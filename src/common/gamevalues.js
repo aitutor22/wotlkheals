@@ -59,6 +59,8 @@ const data = {
                 'cooldown': 6, // the actual cooldown of spell
                 'instant': true,
                 'baseManaCost': 790.92,
+                baseHeal: 2500,
+                coefficient: 0.806, // https://wowwiki-archive.fandom.com/wiki/Spell_power_coefficient
             },
             {
                 'key': 'HOLY_LIGHT',
@@ -66,6 +68,8 @@ const data = {
                 'cooldown': 0,
                 'instant': false,
                 'baseManaCost': 1274.26,
+                baseHeal: 5166,
+                coefficient: 1.679, // tested by currelius, before talents
             }],
             manaCostModifiers: {
                 '4pT7': 0.05, // 5% mana discount on HL
@@ -73,20 +77,10 @@ const data = {
                 'libramOfRenewal': 113, // subtracts 113
             },
             maxSoupHits: 7, //up to 7 for HL
+            spellPowerFromInt: 0.2, // holy guidance
         }
     },
     manaCooldowns: {
-        // : {
-        //     key: 'DIVINE_PLEA',
-        //     name: 'Divine Plea',
-        //     'value': 0, # we calculate this separately,
-        //     'minimum_time_elapsed': 0,
-        //     'minimum_mana_deficit': 6000, # how much mana needs to be lost before using this
-        //     'available_for_use': True,
-        //     'last_used': -9999, #timestamp of last usage
-        //     'cooldown': 60, # the actual cooldown of spell
-        //     'off_gcd': False,
-        // },
         DIVINE_PLEA: {
             key: 'DIVINE_PLEA',
             name: 'Divine Plea',
@@ -121,70 +115,19 @@ const data = {
             category: 'buff',
             duration: 15,
         },
-    }
-
-
-        // self._mana_cooldowns = [{
-        //     'key': 'DIVINE_PLEA',
-        //     'name': 'Divine Plea',
-        //     'value': 0, # we calculate this separately,
-        //     'minimum_time_elapsed': 0,
-        //     'minimum_mana_deficit': 6000, # how much mana needs to be lost before using this
-        //     'available_for_use': True,
-        //     'last_used': -9999, #timestamp of last usage
-        //     'cooldown': 60, # the actual cooldown of spell
-        //     'off_gcd': False,
-        // },
-        // {
-        //     'key': 'DIVINE_ILLUMINATION',
-        //     'name': 'Divine Illumination',
-        //     'value': 0, # we calculate this separately,
-        //     'minimum_time_elapsed': 0,
-        //     'minimum_mana_deficit': 9000, # how much mana needs to be lost before using this
-        //     'available_for_use': True,
-        //     'last_used': -9999, #timestamp of last usage
-        //     'cooldown': 60 * 3, # the actual cooldown of spell
-        //     'off_gcd': True,
-        // },
-        // {
-        //     'key': 'MANA_TIDE_TOTEM',
-        //     'name': 'Mana Tide Totem',
-        //     'value': 0, # we calculate this separately,
-        //     # there's a weird interaction with dmcg because when it procs, the mana deficit will grow which caused the sim to
-        //     # use mana tide totem with dmcg. but we shouldnt always have this interaction
-        //     # hence we just code MTT to be used at a fixed time instead
-        //     'minimum_time_elapsed': 60,
-        //     'minimum_mana_deficit': 0,
-        //     'available_for_use': True,
-        //     'last_used': -9999, #timestamp of last usage
-        //     'cooldown': 60 * 5, # the actual cooldown of spell
-        //     'off_gcd': True,
-        // },
-        // {
-        //     'key': 'MANA_POTION',
-        //     'name': 'Runic Mana Potion',
-        //     'value': 4300,
-        //     'minimum_time_elapsed': 0,
-        //     'minimum_mana_deficit': 18000, # how much mana needs to be lost before using this
-        //     'available_for_use': True,
-        //     'last_used': -9999, #timestamp of last usage
-        //     'cooldown': 9999, # mana pots can only be used once
-        //     'off_gcd': True,
-        // },
-        // # build it in as an instant mana regen - doesn't make a difference
-        // {
-        //     'key': 'OWL',
-        //     'name': 'Sapphire Owl',
-        //     'value': 2340,
-        //     'minimum_time_elapsed': 0,
-        //     'minimum_mana_deficit': 20000, # how much mana needs to be lost before using this
-        //     'available_for_use': True,
-        //     'last_used': -9999, #timestamp of last usage
-        //     'cooldown': 9999, # mana pots can only be used once
-        //     'off_gcd': True,
-        // }]
-
-
+        // assumes you self LoH together with glyph
+        LAY_ON_HANDS: {
+            key: 'LAY_ON_HANDS',
+            name: 'Lay On Hands (Self)',
+            value: 7800, // we calculate this separately
+            cooldown: 11 * 60, // the actual cooldown of spell
+            offGcd: false,
+            playerClass: 'paladin',
+            category: 'buff',
+            duration: 15,
+            category: 'immediate',
+        },
+    },
 }
 
 module.exports = data;

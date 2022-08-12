@@ -82,6 +82,7 @@ class Paladin extends BasePlayer {
 
         // all pally spells have 1 chance to crit (beacon just mirrors the spell cast)
         isCrit = this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance);
+        this.calculateHealingHelper(spellKey);
         [status, manaUsed, currentMana, errorMessage] = this.subtractMana(spellKey, timestamp, procs);
 
         // player oom

@@ -20,6 +20,13 @@ const helperFunctions = {
         }
         return sorted[middle];
     },
+    sum(numbers) {
+        const reducer = (accumulator, curr) => accumulator + curr;
+        return numbers.reduce(reducer);
+    },
+    camalize(str) {
+        return str.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (m, chr) => chr.toUpperCase());
+    }
 }
 
 module.exports = helperFunctions;

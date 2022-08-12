@@ -3,6 +3,7 @@ const Paladin = require('./paladin');
 const defaultOptions = {
     manaPool: 28000,
     mp5FromGearAndRaidBuffs: 300,
+    spellPower: 2400,
     critChance: 0.3,
     trinkets: [],
     castTimes: {
@@ -14,6 +15,7 @@ const defaultOptions = {
 const dmcgOptions = {
     manaPool: 28000,
     mp5FromGearAndRaidBuffs: 300,
+    spellPower: 2400,
     critChance: 0.3,
     trinkets: ['dmcg'],
     castTimes: {
@@ -57,6 +59,22 @@ test('getCritIncreaseFromInt for a paladin should use 1.1 x 1.1 modifier', () =>
     let getCritIncreaseFromInt = player.critIncreaseFromInt(300);
     expect((Math.abs(getCritIncreaseFromInt - 0.021779956440087123))).toBeLessThan(1e-9);
 });
+
+test('spellPowerIncreaseFromInt for a paladin should use 1.1 x 1.1 modifier', () => {
+    let player = new Paladin(defaultOptions);
+    let amount = player.spellPowerIncreaseFromInt(300);
+    expect(amount).toBe(72);
+});
+
+// calculated 27035 from python calculator
+test('calculateHealingHelper for holy light', () => {
+    let player = new Paladin(defaultOptions);
+    let amount = player.calculateHealingHelper('HOLY_LIGHT', {}, [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1, 'glpyh': 0.5}]);
+    console.log(amount);
+    // expect(spellPowerGenerated).toBe(72);
+});
+
+
 
 test('system should add mana from 90 int if dmcg is selected', () => {
     let player = new Paladin(dmcgOptions);
