@@ -22,23 +22,23 @@
       <div class="col-4">
         <div class="input-group mb-2" style="width: 100%">
           <span class="input-group-text" id="basic-addon1">Mana Pool</span>
-          <input type="text" class="form-control" v-model="oomOptions['manaPool']">
+          <input type="text" class="form-control" v-model.number="oomOptions['manaPool']">
         </div>
         <div class="input-group mb-2" style="width: 100%">
           <span class="input-group-text" id="basic-addon1">HL Cast Time</span>
-          <input type="text" class="form-control" v-model="oomOptions['hlCastTime']">
+          <input type="text" class="form-control" v-model.number="oomOptions['castTimes']['HOLY_LIGHT']">
         </div>
         <div class="input-group mb-2" style="width: 100%">
           <span class="input-group-text" id="basic-addon1">HS CPM </span>
-          <input type="text" class="form-control" v-model="oomOptions['hsCPM']">
+          <input type="text" class="form-control" v-model.number="oomOptions['holyShockCPM']">
         </div>
         <div class="input-group mb-2" style="width: 100%">
           <span class="input-group-text" id="basic-addon1">Avg hit from glyph HL</span>
-          <input type="text" class="form-control" v-model="oomOptions['glyphHolyLightHits']">
+          <input type="text" class="form-control" v-model.number="oomOptions['glyphHolyLightHits']">
         </div>
         <div class="input-group mb-2" style="width: 100%">
-          <span class="input-group-text" id="basic-addon1">Other MP5</span>
-          <input type="text" class="form-control" v-model="oomOptions['otherMP5']">
+          <span class="input-group-text" id="basic-addon1">MP5 From Gear & Buffs</span>
+          <input type="text" class="form-control" v-model.number="oomOptions['mp5FromGearAndRaidBuffs']">
         </div>
         <div>
           <button class="btn btn-primary" @click="runSim">Run Simulation</button>
@@ -65,10 +65,12 @@ export default {
       showExplanation: true,
       oomOptions: {
         manaPool: 28000,
-        hlCastTime: 1.6,
-        hsCPM: 3,
+        castTimes: {
+          HOLY_LIGHT: 1.6,
+        },
+        holyShockCPM: 3,
         glyphHolyLightHits: 4,
-        otherMP5: 300,
+        mp5FromGearAndRaidBuffs: 300,
       },
     };
   },
