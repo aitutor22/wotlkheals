@@ -139,23 +139,4 @@ test('getSpell function should ignore spellKeyRequested if not in base cast prof
     element = spellQueue.getSpell('FLASH_OF_LIGHT');
     expect(spellQueue._queue.length).toBe(0);
     expect(element).toBe('HOLY_LIGHT');
-    // expect(spellQueue._queue).toEqual(['HOLY_LIGHT', 'HOLY_LIGHT', 'HOLY_LIGHT']);
-
-    // // when queue is missing the element, add the sequence to it
-    // element = spellQueue.getSpell('FLASH_OF_LIGHT');
-    // expect(spellQueue._queue.length).toBe(6);
-    // expect(element).toBe('FLASH_OF_LIGHT');
-    // expect(spellQueue._queue).toEqual(['HOLY_LIGHT', 'HOLY_LIGHT', 'HOLY_LIGHT', 'HOLY_LIGHT', 'HOLY_LIGHT', 'HOLY_LIGHT']);
-
-    // // if we are just pulling spells, should keep returning holy light
-    // for (let i = 0; i < 6; i++) {
-    //     element = spellQueue.getSpell();
-    //     expect(spellQueue._queue.length).toBe(6 - i - 1);
-    //     expect(element).toBe('HOLY_LIGHT');  
-    // }
-
-    // // restocks
-    // element = spellQueue.getSpell();
-    // expect(spellQueue._queue.length).toBe(3);
-    // expect(spellQueue._queue).toEqual(['HOLY_LIGHT', 'HOLY_LIGHT', 'FLASH_OF_LIGHT']);
 });

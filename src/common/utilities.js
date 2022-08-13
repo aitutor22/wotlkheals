@@ -33,6 +33,33 @@ const helperFunctions = {
         }
         return sorted[middle];
     },
+    // given an arr of dictionaries, determine the median values (key is source, value is MP5)
+    /*
+        [
+          [{ source: 'Libram', MP5: 299 }, { source: 'Illumination', MP5: 551 },],
+          [{ source: 'Libram', MP5: 298 }, { source: 'Illumination', MP5: 483 },],
+          [{ source: 'Libram', MP5: 300 },{ source: 'Illumination', MP5: 403 },]
+        ]
+    */
+    medianStatistics(arr, key, value) {
+        let totals = {}, toReturn = [];
+        for (let i = 0; i < arr.length; i++) {
+            for (let entry of arr[i]) {
+                if (!(entry[key] in totals)) totals[entry[key]] = [];
+                totals[entry[key]].push(entry[value]);
+            }
+        }
+        // entry would be values like Libram, or Illumination (aka the source feld)
+        for (let entry in totals) {
+            let _newRow = {};
+            _newRow[key] = entry;
+            _newRow[value] = Math.floor(this.median(totals[entry]));
+            toReturn.push(_newRow); 
+        }
+        // sorts in descending order
+        toReturn.sort((a, b) => b[value] - a[value]);
+        return toReturn;
+    },
     sum(numbers) {
         const reducer = (accumulator, curr) => accumulator + curr;
         return numbers.reduce(reducer);

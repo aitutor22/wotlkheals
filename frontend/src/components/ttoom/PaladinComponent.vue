@@ -49,7 +49,7 @@
         </div>
       </div>
       <div class="col-4">
-        <h8><b>Trinkets</b></h8>
+        <b>Trinkets</b>
         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="soup" v-model="oomOptions['trinkets']" value="soup">
           <label class="form-check-label" for="soup">Soul Preserver</label>
@@ -99,15 +99,15 @@
     <div class="row" v-if="results">
       <div class="pad-bottom">
         <i>
-          Note: While time to oom is a median value and thus stable, the following spell and mana breakdown and logs are are from a specific run, and proc effects like soup will vary greatly. These values are for error-checking purposes, and not meant to be a mathematical average of soup mp5, etc.
+          Note: The values for Cast Profile and Mana Generated are median values, and do not come from the same log. In contrast, the sample log on the right comes from a specific run and is provided for error-checking purposes.
         </i>
       </div>
       <br>
       <div class="col-6">
-        <h5>Spell Breakdown</h5>
+        <h5>Cast Profile</h5>
         <b-table striped hover :items="tableData"></b-table>
         <br>
-        <h5>Mana Regeneration Breakdown</h5>
+        <h5>Mana Generation Breakdown</h5>
         <b-table striped hover :items="mp5Data"></b-table>
       </div>
       <div class="col-5 offset-1">
@@ -166,11 +166,11 @@ export default {
       //   {source: 'Others', 'Total Mana': 20000, MPS: 20.5},
       //   {source: 'SoW', 'Total Mana': 20000, MPS: 20.5},
       // ];
-      if (!this.results || (typeof this.results['statistics'] === 'undefined')) return;
+      if (!this.results || (typeof this.results['manaStatistics'] === 'undefined')) return;
       let results = [];
-      for (let i = 0; i < this.results['statistics']['manaGenerated'].length; i++) {
-        let entry = this.results['statistics']['manaGenerated'][i];
-        entry['Total Mana'] = this.formatNumber(entry['Total Mana']);
+      for (let i = 0; i < this.results['manaStatistics'].length; i++) {
+        let entry = this.results['manaStatistics'][i];
+        entry['MP5'] = this.formatNumber(entry['MP5']);
         results.push(entry);
       }
 

@@ -35,14 +35,18 @@ test('setSeed function', () => {
     expect(Math.abs(rng3() - rng4())).toBeLessThan(1e-9);
 });
 
-    // // seeding rng if a seed is passed in (default is 0, which means user didnt pass in)
-    // // otherwise just use random seed
-    // setSeed(seed) {
-    //     let rng;
-    //     if (seed > 0) {
-    //         rng = seedrandom(seed);
-    //     } else {
-    //         rng = seedrandom(Math.random());
-    //     }
-    //     return rng;
-    // }
+test('medianStatistics function', () => {
+    let data = [
+          [{ source: 'Libram', MP5: 299 }, { source: 'Illumination', MP5: 551 },],
+          [{ source: 'Libram', MP5: 298 }, { source: 'Illumination', MP5: 483 },],
+          [{ source: 'Libram', MP5: 300 },{ source: 'Illumination', MP5: 403 },]
+        ];
+
+    let results = Utility.medianStatistics(data, 'source', 'MP5');
+    console.log(results);
+    expect(results[0]['source']).toBe('Illumination');
+    expect(results[1]['source']).toBe('Libram');
+    expect(results[0]['MP5']).toBe(483);
+    expect(results[1]['MP5']).toBe(299);
+});
+

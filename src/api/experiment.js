@@ -138,12 +138,6 @@ class Experiment {
         return {ttoom: lastCastTimestamp, statistics: statistics, logs: this.logger._resultArr};
     }
 
-    calculateMedianStatistics(arr) {
-        for (let i = 0; i < arr.length; i++) {
-
-        }
-    }
-
     runBatch(batchSize=10, seed=0, logsLevel=0) {
         let timings = [], manaGeneratedStatistics = [], medianEntry, resultSingleLoop;
         // if seed is 0, we get a random number from 1 to 9999 and used it to seed
@@ -161,17 +155,21 @@ class Experiment {
 
         medianEntry = Utility.medianArrDict(timings, 'ttoom');
         // console.log(manaGeneratedStatistics);
-        let a = timings.map((entry) => entry['ttoom']);
-        console.log(a.slice(0, 100))
-        console.log(a.slice(100, 200))
-        console.log(a.slice(200, 300))
-        console.log(a.slice(300, 400))
-        console.log(a.slice(400, 500))
+        // let a = timings.map((entry) => entry['ttoom']);
+        // console.log(a.slice(0, 100))
+        // console.log(a.slice(100, 200))
+        // console.log(a.slice(200, 300))
+        // console.log(a.slice(300, 400))
+        // console.log(a.slice(400, 500))
 
         // we run a single iteration of the median seed to get log info
         resultSingleLoop = this.runSingleLoop(2, medianEntry['seed']);
-        console.log(resultSingleLoop['logs'])
-        return {ttoom: medianEntry['ttoom'], logs: resultSingleLoop['logs'], statistics: resultSingleLoop['statistics']};
+        // console.log(resultSingleLoop['logs'])
+        return {
+            ttoom: medianEntry['ttoom'],
+            logs: resultSingleLoop['logs'],
+            manaStatistics: Utility.medianStatistics(manaGeneratedStatistics, 'source', 'MP5'),
+            statistics: resultSingleLoop['statistics'][0]};
     }
 
     selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, offset, overrideSpellSelection='') {

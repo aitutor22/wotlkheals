@@ -472,8 +472,6 @@ class BasePlayer {
                 'MP5': Math.floor(this._statistics['manaGenerated'][key] / total_time * 5),
             });
         }
-
-        // toReturn['manaGenerated'].sort((a, b) => b['Total Mana'] - a['Total Mana']);
         return toReturn;
     }
 

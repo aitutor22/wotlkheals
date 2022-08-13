@@ -40,11 +40,11 @@ router.post('/ttoom/paladin/', function(req, res) {
         defaultOptions[key] = req.body[key];
     }
     // console.log(req.body);
-    console.log(defaultOptions);
+    // console.log(defaultOptions);
     try {
         // second argument is where logs are sent - 0 for console.log, 1 to an arr that is returned to the client
         let experiment = new Experiment(defaultOptions, 1);
-        let result = experiment.runBatch(500);
+        let result = experiment.runBatch(200);
         res.send(result);
     } catch (error) {
         console.log(error);
