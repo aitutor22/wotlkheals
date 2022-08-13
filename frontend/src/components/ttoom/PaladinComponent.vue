@@ -48,6 +48,43 @@
       </div>
     </div>
 
+    <div class="row slight-offset-top" v-if="results">
+      <div class="col-4">
+        <ul>
+          <li>Time to OOM: <b>{{ results['ttoom'] }}s</b></li>
+<!--           <li>Time to next consume: <b> {{ results['timeToNextConsume'] }}s</b></li>
+          <li>Mana Pool: <b>{{ results['manaPool'] }}</b></li>
+          <li>Buffed Int: <b>{{ results['statsSummary']['buffedInt'] }}</b></li>
+          <li>Buffed Spirit: <b>{{ results['statsSummary']['buffedSpirit'] }}</b></li>
+          <li>Mana from Super Mana Pots: <b>{{ results['consumesManaSummary']['SUPER_MANA_POTION'] }}</b></li>
+          <li>Mana from Dark Runes: <b>{{ results['consumesManaSummary']['DARK_RUNE'] }}</b></li>
+          <li>Mana from Shadowfiend: <b>{{ results['consumesManaSummary']['SHADOWFIEND'] }}</b></li>
+          <li v-if="results['consumesManaSummary']['MANA_TIDE_TOTEM']">
+            Mana from Mana Tide Totem: <b>{{ results['consumesManaSummary']['MANA_TIDE_TOTEM'] }}</b> -->
+          <!-- </li> -->
+        </ul>
+      </div>
+<!--       <div class="col-4">
+        Total MP5: <b>{{ results['statsSummary']['totalOtherMP5'] }}</b>
+        <ol>
+          <li v-for="(item, index) in results['mp5Summary']" :key="index">
+            {{ item.name }}: <b>{{ item.value }}</b>
+          </li>
+        </ol>
+      </div> -->
+    </div>
+
+    <div class="row" v-if="results">
+      <div class="col-6">
+        <h2>Full Logs</h2>
+        <textarea class="log" readonly="" v-model="logs"></textarea>  
+      </div>
+<!--       <div class="col-6">
+        <h2>Highlighted Logs</h2>
+        <textarea class="log" readonly="" v-model="highlightedLogs"></textarea>
+      </div> -->
+    </div>
+
   </div>
 </template>
 
@@ -62,7 +99,9 @@ export default {
   },
   data() {
     return {
+      fetching: false,
       showExplanation: true,
+      results: null,
       oomOptions: {
         manaPool: 28000,
         castTimes: {
@@ -75,15 +114,21 @@ export default {
     };
   },
   computed: {
+    logs() {
+      if (!this.results || (typeof this.results['logs'] === 'undefined')) return;
+      return this.results['logs'].join('\n');
+    },
   },
   methods: {
     runSim() {
-      console.log('run sim');
+      if (this.fetching) return;
+      this.fetching = true;
       axios
           .post('ttoom/paladin', this.oomOptions)
           .then((response) => {
+            this.fetching = false;
             this.showExplanation = false;
-            console.log(response);
+            this.results = response.data;
           });
     }
   },
@@ -95,4 +140,8 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.log {
+  width: 100%;
+  height: 400px
+}
 </style>

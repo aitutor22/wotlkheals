@@ -6,24 +6,39 @@ const DATA = require('../common/gamevalues');
 const Utility = require('../common/utilities');
 
 class Logger {
-    constructor(logLevel) {
+    // output can be one of the following
+    // 0 - console,
+    // 1 - array object
+    constructor(logLevel, outputLocation=0) {
         this._logLevel = logLevel;
+        this._outputLocation = outputLocation;
+        this._resultArr = [];
+    }
+
+    saveToArray(message) {
+        this._resultArr.push(message);
     }
 
     // logs message if logger's level exceeds minLogLevel
     log(message, minLogLevel) {
         if (this._logLevel >= minLogLevel) {
-            console.log(message);
+            if (this._outputLocation === 0) {
+                console.log(message);
+            } else if (this._outputLocation === 1) {
+                this.saveToArray(message);
+            }
         }
     }
 }
 
 class Experiment {
-    constructor(playerOptions) {
+    // loggerOutputLocation of 0 means print to console
+    constructor(playerOptions, loggerOutputLocation=0) {
         if (playerOptions['trinkets'].length > 2) {
             throw new Error('Please select no more than two trinkets');
         }
         this._playerOptions = playerOptions;
+        this._loggerOutputLocation = loggerOutputLocation;
     }
 
     // seeding rng if a seed is passed in (default is 0, which means user didnt pass in)
@@ -41,7 +56,7 @@ class Experiment {
     // seed === 0 means we don't use a seed
     runSingleLoop(logsLevel=0, seed=0, maxMinsToOOM=10) {
         let rng = this.setSeed(seed);
-        this.logger = new Logger(logsLevel);
+        this.logger = new Logger(logsLevel, this._loggerOutputLocation);
 
         // rather than saving player/eventHeap to experiement, we recreate it each time we run a loop
         // this ensures that we are always starting anew when we run a loop
@@ -81,7 +96,6 @@ class Experiment {
                 this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime + this._playerOptions['gcd'], spellIndex, 0);
                 spellIndex += 1
             } else if (nextEvent._eventType === 'SPELL_CAST') {
-                lastCastTimestamp = currentTime;
                 // offset is when we cast an instant spell like holyshock, should put the next spell on gcd
                 [status, errorMessage, offset, eventsToCreate] = player.castSpell(nextEvent._subEvent, currentTime, spellIndex, this.logger);
                 // ends simulation if player is oom
@@ -90,6 +104,7 @@ class Experiment {
                     break;
                 }
 
+                lastCastTimestamp = currentTime;
                 // e.g. set a BUFF_EXPIRE event
                 for (let evt of eventsToCreate) {
                     eventHeap.addEvent(evt['timestamp'], evt['eventType'], evt['subEvent']);
@@ -139,17 +154,22 @@ class Experiment {
 
     runBatch(batchSize=10, seed=0, logsLevel=0) {
         let timings = [];
+        // if seed is 0, we get a random number from 1 to 9999 and used it to seed
+        if (seed === 0) {
+            seed = Math.floor(Math.random() * 10000 + 1)
+        }
+        // this is because we want a seed value that can be used to generate the exact log later
         for (let i = 0; i < batchSize; i++) {
             // passing seed == 0 into runSingleLoop will mean it's random
             // thus, we multiply seed by i + 1 instead
-            timings.push(this.runSingleLoop(logsLevel, seed * (i + 1)));
+            timings.push({ttoom: this.runSingleLoop(logsLevel, seed * (i + 1)), seed: seed * (i + 1)});
         }
-        console.log(Utility.median(timings));
-        // median_timing = np.median(timings)
-        // this.logger(, 1);
-        // if not silence:
-        //     print(f'Median TTOOM after {batch_size} runs: {median_timing:.1f}s')
-        // return median_timing
+
+        let result = Utility.medianArrDict(timings, 'ttoom');
+        console.log('testing run batch')
+        this.runSingleLoop(2, result['seed']);
+        // get the detailed log from the median run
+        return {ttoom: result['ttoom'], logs: this.logger._resultArr};
     }
 
     selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, offset, overrideSpellSelection='') {
@@ -163,115 +183,3 @@ class Experiment {
 }
 
 module.exports = Experiment;
-
-
-//         while len(event_heap) > 0 and current_time <= self._options['MAX_TIME_TO_OOM']:
-//             next_event = heapq.heappop(event_heap)
-//             current_time = next_event._time
-//             # used when we cast an instant spell
-//             gcd_locked = False
-
-//             # we want dmcg to expire exactly after 15s
-//             # if we do a check only when we have events, we might give dmcg a longer buff than 15s
-//             if next_event._event_type == 'DMCG_BUFF_INACTIVE':
-//                 player.check_dmcg_available_for_use(current_time)
-//                 continue
-
-//             # we should check at the start of every event loop if dmcg buff has available for use
-//             if self._options['dmcg']:
-//                 player.check_dmcg_available_for_use(current_time)
-
-//             # we handle cooldown and spell cast in same function
-//             # note that we need to handle the next_event spell first before considering mana cooldown
-//             # also note that we handle divine plea like a mana cooldown rather than spell
-//             # this is because next_event represents the end of the spell (so we can't use a cooldown)
-//             if next_event._event_type == 'SPELL_CAST':
-//                 last_cast_timestamp = current_time
-
-//                 # handles current spell cast
-//                 # if spellcast is an instant, it returns an offset timing that is equivalent to GCD
-//                 status, err_message, offset_timing = self.handle_spellcast(next_event, player)
-//                 # checks that player is not oom
-//                 if status == 0:
-//                     if self._logs_level == 2:
-//                         print(err_message)
-//                     break
-
-//                 # not oom, so continue the simulation
-//                 cooldown_used = player.use_mana_cooldown(current_time)
-//                 divine_plea_offset = 0
-//                 # divine plea is on gcd, so we need to delay the next spell cast
-//                 if cooldown_used == 'DIVINE_PLEA':
-//                     divine_plea_offset = self._options['GCD']
-//                     for i in range(1, 6):
-//                         heapq.heappush(event_heap, Event('Divine Plea', False, False, False, False, current_time + i * 3, 'DIVINE_PLEA_TICK'))
-//                 # off gcd since shaman is the one using
-//                 elif cooldown_used == 'MANA_TIDE_TOTEM':
-//                     for i in range(1, 5):
-//                         heapq.heappush(event_heap, Event('Mana Tide Totem', False, False, False, False, current_time + i * 3, 'MANA_TIDE_TOTEM_TICK'))
-                    
-//                 self.select_and_add_spell_cast(event_heap, player, current_time + divine_plea_offset, spell_index, offset_timing)
-//                 spell_index += 1
-
-//             # mana tick (assume 5s intervals for now as unsure as has this changed from classic)
-//             elif next_event._event_type == 'MANA_TICK':
-//                 mana_tick_amount = player.add_mana_regen_from_replenishment_and_other_mp5()
-//                 if self._logs_level == 2:
-//                     print(f'{current_time}s: Mana tick for {mana_tick_amount}')
-//                 self.add_mana_tick(event_heap, current_time + self._mana_tick_interval)
-
-//             elif next_event._event_type == 'DIVINE_PLEA_TICK':
-//                 divine_plea_tick_amount = player.add_mana_from_divine_plea()
-//                 if self._logs_level == 2:
-//                     print(f'{current_time}s: Divine Plea tick for {divine_plea_tick_amount}')
-
-//             elif next_event._event_type == 'MANA_TIDE_TOTEM_TICK':
-//                 mana_tide_totem_tick_amount = player.add_mana_from_mana_tide_totem()
-//                 if self._logs_level == 2:
-//                     print(f'{current_time}s: Mana tide totem tick for {mana_tide_totem_tick_amount}')
-            
-
-//             if self._logs_level == 2:
-//                 print(player)
-//                 print('-'*10)
-
-
-// // def select_and_add_spell_cast(self, event_heap, player, current_time, spell_index, offset, override_spell_selection=''):
-// //     # selects next spell
-// //     selected_spell = player.select_spell(current_time, override_spell_selection)
-
-// //     cast_time = self._options['CAST_TIMES'][selected_spell['key']]
-// //     # adding next spell cast
-// //     crit_chance = player._crit_chance
-// //     # 10% additional crit chance to holy shock
-// //     if selected_spell['key'] == 'HOLY_SHOCK' and self._options['2p_t7']:
-// //         crit_chance += 0.1
-// //     if selected_spell['key'] == 'HOLY_LIGHT' and player._buffs['INFUSION_OF_LIGHT']:
-// //         player._buffs['INFUSION_OF_LIGHT'] = False
-// //         crit_chance += 0.2
-
-// //     if self._logs_level == 3:
-// //         print('Crit chance of next spell: {}; {}'.format(selected_spell['key'], crit_chance))
-// //     is_crit = self.crit_rng_thresholds[spell_index] <= crit_chance
-
-// //     # holy shock crits triggers infusion of light, which adds 20% to next HL crit
-// //     if selected_spell['key'] == 'HOLY_SHOCK' and is_crit:
-// //         player._buffs['INFUSION_OF_LIGHT'] = True
-
-// //     # print('{}; crit_chance: {}'.format(selected_spell['key'], crit_chance))
-// //     # soup_proc of next spell based off the current spell
-// //     # holy shock only has 2 soup procs
-// //     # both eog and soup share same number of hits
-// //     num_chances_for_soup = self._num_hits_per_holy_light if selected_spell['key'] == 'HOLY_LIGHT' else 2
-// //     is_soup_proc = self.get_soup_eog_proc(self.soup_rng_thresholds[spell_index * num_chances_for_soup: (spell_index + 1) * num_chances_for_soup], 'soup')
-// //     is_eog_proc = self.get_soup_eog_proc(self.eog_rng_thresholds[spell_index * num_chances_for_soup: (spell_index + 1) * num_chances_for_soup], 'eog')
-// //     # checks and see if dmcg is proc
-// //     is_dmcg_proc = self.dmcg_rng_thresholds[spell_index] <= TRINKET_STATS['dmcg_proc_rate'] if self._options['dmcg'] else False
-// //     if is_dmcg_proc and player.check_dmcg_available(current_time):
-// //         player.set_dmcg_active(True, current_time)
-// //         heapq.heappush(event_heap, Event('DMCG Buff Inactive', False, False, False, False, current_time + 15, 'DMCG_BUFF_INACTIVE'))
-
-// //     is_sow_proc = self.sow_rng_thresholds[spell_index] <= SOW_PROC_RATE
-// //     if self._logs_level == 3 and selected_spell['key'] == 'HOLY_SHOCK' and is_sow_proc:
-// //         print('SOW PROC FOR UPCOMING HOLY SHOCK')
-// //     self.add_spell_cast_helper(event_heap, selected_spell['name'], is_crit, is_soup_proc, is_sow_proc, is_eog_proc, current_time, cast_time + offset)

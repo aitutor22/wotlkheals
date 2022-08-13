@@ -438,7 +438,7 @@ class BasePlayer {
         // this._statistics['overall']['mps'] = this._statistics['overall']['total_mana_used'] / total_time
         // this._statistics['overall']['hps'] = this._statistics['overall']['total_healing'] / total_time
         // console.log(this._spells);
-        if (logger) logger.log(this._statistics, 2);
+        // if (logger) logger.log(this._statistics, 2);
         return this._statistics
 
     }
