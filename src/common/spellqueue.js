@@ -12,6 +12,8 @@ class SpellQueue {
         this._baseCastProfile = castProfile;
         this._rng = rng;
         [this._simplifiedCastProfile, this._sequence] = this.createSimplifiedCastProfile(rng);
+        // copies sequence (note that this is shallow copy, but since sequence is an array of numbers, this is fine)
+        this._queue = [...this._sequence];
     }
 
     // https://codereview.stackexchange.com/questions/166358/finding-the-greatest-common-factor-of-a-list-of-numbers-in-javascript
@@ -48,6 +50,23 @@ class SpellQueue {
         // randomly shuffles sequence inplace using the rng function passed in
         Utility.shuffleArray(sequence, this._rng);
         return [simplifiedCastProfile, sequence];
+    }
+
+    // gets the first element
+    // takes an optional arugment that requires a spell key
+    // if spell is not within the array, then add sequence
+    getSpell(spellKeyRequested='') {
+        if (spellKeyRequested !== '' && !(spellKeyRequested in this._baseCastProfile)) {
+            spellKeyRequested = '';
+        }
+        // if queue is empty or we requested a spell and spell is not in, add to sequence
+        if (this._queue.length === 0 || (spellKeyRequested !== '' && this._queue.indexOf(spellKeyRequested) === -1)) {
+            this._queue.push(...this._sequence);
+        }
+
+        if (spellKeyRequested === '') return this._queue.shift();
+        const index = this._queue.indexOf(spellKeyRequested);
+        return this._queue.splice(index, 1)[0]; // 2nd parameter means remove one item only
     }
 
 }
