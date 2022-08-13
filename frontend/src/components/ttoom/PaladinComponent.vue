@@ -1,9 +1,11 @@
 <template>
   <div class="container">
     <div class="row" v-if="showExplanation">
-      <p>This is a general tool to visualise how long it takes for a Holy Paladin to go OOM, especially due to the high mana cost of Holy Light.</p>
+      <p>
+        This tool simulates how long it takes for a Holy Paladin to go OOM, especially due to the high mana cost of Holy Light. Given the high number of procs in the hpld toolkit, the tool simulates 200 runs and returns the median ttoom, and the specific statistics from that run.
+      </p>
       <p>The tool assumes the player incorporates slight pauses after every instant cast (e.g. HS) to allow for melee hits to proc Seal of Wisdom.</p>
-      <p>Please input raid-buffed values for spellpower, mana pool, as well as your cast time for HL. If you select DMCG, you do not need to change the spellpower and mana pool as the system will automatically calculate it.</p>
+      <p>Please input raid-buffed values for spellpower, mana pool and crit chance (do not add crit from talents). Note: do not change stats from trinkets to these values as the tool will automatically calculate it.</p>
       <p>
         Special thanks to Lovelace and Currelius for formula help, as well as the rest of the healer cabal for valuable feedback and beta testing.
       </p>
@@ -46,6 +48,25 @@
           <!-- <button class="btn btn-danger slight-offset-left" @click="reset">Reset</button> -->
         </div>
       </div>
+      <div class="col-4">
+        <h8><b>Trinkets</b></h8>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="soup" v-model="oomOptions['trinkets']" value="soup">
+          <label class="form-check-label" for="soup">Soul Preserver</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="eog" v-model="oomOptions['trinkets']" value="eog">
+          <label class="form-check-label" for="eog">Eye of Gruul</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="dmcg" v-model="oomOptions['trinkets']" value="dmcg">
+          <label class="form-check-label" for="dmcg">Darkmoon Card: Greatness</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="owl" v-model="oomOptions['trinkets']" value="owl">
+          <label class="form-check-label" for="owl">Figurine - Sapphire Owl</label>
+        </div>
+      </div>
     </div>
 
     <div class="row slight-offset-top" v-if="results">
@@ -73,10 +94,23 @@
         </ol>
       </div> -->
     </div>
+    <hr>
 
     <div class="row" v-if="results">
+      <div class="pad-bottom">
+        <i>
+          Note: While time to oom is a median value and thus stable, the following spell and mana breakdown and logs are are from a specific run, and proc effects like soup will vary greatly. These values are for error-checking purposes, and not meant to be a mathematical average of soup mp5, etc.
+        </i>
+      </div>
+      <br>
       <div class="col-6">
-        <h2>Full Logs</h2>
+        <h5>Spell Breakdown</h5>
+        <b-table striped hover :items="tableData"></b-table>
+        <br>
+        <h5>Mana Regeneration Breakdown</h5>
+        <b-table striped hover :items="mp5Data"></b-table>
+      </div>
+      <div class="col-5 offset-1">
         <textarea class="log" readonly="" v-model="logs"></textarea>  
       </div>
 <!--       <div class="col-6">
@@ -107,6 +141,7 @@ export default {
         castTimes: {
           HOLY_LIGHT: 1.6,
         },
+        trinkets: ['soup', 'eog'],
         holyShockCPM: 3,
         glyphHolyLightHits: 4,
         mp5FromGearAndRaidBuffs: 300,
@@ -118,9 +153,39 @@ export default {
       if (!this.results || (typeof this.results['logs'] === 'undefined')) return;
       return this.results['logs'].join('\n');
     },
+    tableData() {
+      let results = [
+        {spell: 'Holy Light', CPM: 20.5, HPS: 20000, 'Crit %': 42},
+      ];
+      return results;
+    },
+    mp5Data() {
+      // let results = [
+      //   {source: 'DMCG', 'Total Mana': 20000, MPS: 20.5},
+      //   {source: 'Soup', 'Total Mana': 20000, MPS: 20.5},
+      //   {source: 'Others', 'Total Mana': 20000, MPS: 20.5},
+      //   {source: 'SoW', 'Total Mana': 20000, MPS: 20.5},
+      // ];
+      if (!this.results || (typeof this.results['statistics'] === 'undefined')) return;
+      let results = [];
+      for (let i = 0; i < this.results['statistics']['manaGenerated'].length; i++) {
+        let entry = this.results['statistics']['manaGenerated'][i];
+        entry['Total Mana'] = this.formatNumber(entry['Total Mana']);
+        results.push(entry);
+      }
+
+      return results;
+    }
   },
   methods: {
+    formatNumber (num) {
+        return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+    },
     runSim() {
+      if (this.oomOptions['trinkets'].length > 2) {
+        alert('You can only select up to two trinkets.');
+        return;
+      }
       if (this.fetching) return;
       this.fetching = true;
       axios
@@ -128,7 +193,12 @@ export default {
           .then((response) => {
             this.fetching = false;
             this.showExplanation = false;
+            console.log(response.data);
             this.results = response.data;
+          })
+          .catch((error)  => {
+            console.log(error);
+            this.fetching = false;
           });
     }
   },
@@ -142,6 +212,10 @@ export default {
 <style scoped>
 .log {
   width: 100%;
-  height: 400px
+  height: 100%;
+}
+
+.pad-bottom {
+  padding: 0px 0px 20px;
 }
 </style>

@@ -70,7 +70,7 @@ test('spellPowerIncreaseFromInt for a paladin should use 1.1 x 1.1 modifier', ()
 test('calculateHealingHelper for holy light', () => {
     let player = new Paladin(defaultOptions);
     let amount = player.calculateHealingHelper('HOLY_LIGHT', {}, [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1, 'glpyh': 0.5}]);
-    console.log(amount);
+    // console.log(amount);
     // expect(spellPowerGenerated).toBe(72);
 });
 

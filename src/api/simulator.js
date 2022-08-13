@@ -20,9 +20,9 @@ let playerOptions = {
     manaPool: 29000,
     mp5FromGearAndRaidBuffs: 300,
     spellPower: 2400, // includes spellpower from holy guidance (though if dmcg procs, system will auto calculate)
-    critChance: 0.41, // 30% from gear and buffs, 11% from talents
+    critChance: 0.46, // 30% from gear and buffs, 11% from talents, 5% from boomkin
     manaCooldowns: [
-        {key: 'DIVINE_PLEA', minimumManaDeficit: 6000, minimumTimeElapsed: 0},
+        {key: 'DIVINE_PLEA', minimumManaDeficit: 600000, minimumTimeElapsed: 0},
         {key: 'DIVINE_ILLUMINATION', minimumManaDeficit: 9000, minimumTimeElapsed: 0},
         {key: 'RUNIC_MANA_POTION', minimumManaDeficit: 18000, minimumTimeElapsed: 0},
         // {key: 'LAY_ON_HANDS', minimumManaDeficit: 28000, minimumTimeElapsed: 0},

@@ -29,7 +29,7 @@ router.post('/ttoom/paladin/', function(req, res) {
         spellPower: 2400, // includes spellpower from holy guidance (though if dmcg procs, system will auto calculate)
         critChance: 0.41, // 30% from gear and buffs, 11% from talents
         manaCooldowns: [
-            {key: 'DIVINE_PLEA', minimumManaDeficit: 6000, minimumTimeElapsed: 0},
+            // {key: 'DIVINE_PLEA', minimumManaDeficit: 6000, minimumTimeElapsed: 0},
             {key: 'DIVINE_ILLUMINATION', minimumManaDeficit: 9000, minimumTimeElapsed: 0},
             {key: 'RUNIC_MANA_POTION', minimumManaDeficit: 18000, minimumTimeElapsed: 0},
             // {key: 'LAY_ON_HANDS', minimumManaDeficit: 28000, minimumTimeElapsed: 0},
@@ -40,11 +40,12 @@ router.post('/ttoom/paladin/', function(req, res) {
         defaultOptions[key] = req.body[key];
     }
     // console.log(req.body);
-    // console.log(defaultOptions);
+    console.log(defaultOptions);
     try {
-        let experiment = new Experiment(defaultOptions, 0);
-        let result = experiment.runBatch(1);
-        res.send({ttoom: result['ttoom'], logs: result['logs']});
+        // second argument is where logs are sent - 0 for console.log, 1 to an arr that is returned to the client
+        let experiment = new Experiment(defaultOptions, 1);
+        let result = experiment.runBatch(500);
+        res.send(result);
     } catch (error) {
         console.log(error);
         res.status(400).send(error.message)

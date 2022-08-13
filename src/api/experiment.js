@@ -1,5 +1,3 @@
-const seedrandom = require('seedrandom');
-
 const EventHeap = require('../common/eventheap');
 const Paladin = require('../common/paladin');
 const DATA = require('../common/gamevalues');
@@ -41,21 +39,9 @@ class Experiment {
         this._loggerOutputLocation = loggerOutputLocation;
     }
 
-    // seeding rng if a seed is passed in (default is 0, which means user didnt pass in)
-    // otherwise just use random seed
-    setSeed(seed) {
-        let rng;
-        if (seed > 0) {
-            rng = seedrandom(seed);
-        } else {
-            rng = seedrandom(Math.random());
-        }
-        return rng;
-    }
-
     // seed === 0 means we don't use a seed
     runSingleLoop(logsLevel=0, seed=0, maxMinsToOOM=10) {
-        let rng = this.setSeed(seed);
+        let rng = Utility.setSeed(seed);
         this.logger = new Logger(logsLevel, this._loggerOutputLocation);
 
         // rather than saving player/eventHeap to experiement, we recreate it each time we run a loop
@@ -148,12 +134,18 @@ class Experiment {
         } //end while loop
 
 
-        player.calculate_statistics_after_sim_ends(lastCastTimestamp, this.logger);
-        return lastCastTimestamp;
+        let statistics = player.calculate_statistics_after_sim_ends(lastCastTimestamp);
+        return {ttoom: lastCastTimestamp, statistics: statistics, logs: this.logger._resultArr};
+    }
+
+    calculateMedianStatistics(arr) {
+        for (let i = 0; i < arr.length; i++) {
+
+        }
     }
 
     runBatch(batchSize=10, seed=0, logsLevel=0) {
-        let timings = [];
+        let timings = [], manaGeneratedStatistics = [], medianEntry, resultSingleLoop;
         // if seed is 0, we get a random number from 1 to 9999 and used it to seed
         if (seed === 0) {
             seed = Math.floor(Math.random() * 10000 + 1)
@@ -162,14 +154,24 @@ class Experiment {
         for (let i = 0; i < batchSize; i++) {
             // passing seed == 0 into runSingleLoop will mean it's random
             // thus, we multiply seed by i + 1 instead
-            timings.push({ttoom: this.runSingleLoop(logsLevel, seed * (i + 1)), seed: seed * (i + 1)});
+            resultSingleLoop = this.runSingleLoop(logsLevel, seed * (i + 1));
+            manaGeneratedStatistics.push(resultSingleLoop['statistics']['manaGenerated']);
+            timings.push({ttoom: resultSingleLoop['ttoom'], seed: seed * (i + 1)});
         }
 
-        let result = Utility.medianArrDict(timings, 'ttoom');
-        console.log('testing run batch')
-        this.runSingleLoop(2, result['seed']);
-        // get the detailed log from the median run
-        return {ttoom: result['ttoom'], logs: this.logger._resultArr};
+        medianEntry = Utility.medianArrDict(timings, 'ttoom');
+        // console.log(manaGeneratedStatistics);
+        let a = timings.map((entry) => entry['ttoom']);
+        console.log(a.slice(0, 100))
+        console.log(a.slice(100, 200))
+        console.log(a.slice(200, 300))
+        console.log(a.slice(300, 400))
+        console.log(a.slice(400, 500))
+
+        // we run a single iteration of the median seed to get log info
+        resultSingleLoop = this.runSingleLoop(2, medianEntry['seed']);
+        console.log(resultSingleLoop['logs'])
+        return {ttoom: medianEntry['ttoom'], logs: resultSingleLoop['logs'], statistics: resultSingleLoop['statistics']};
     }
 
     selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, offset, overrideSpellSelection='') {

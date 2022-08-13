@@ -1,6 +1,7 @@
 const DATA = require('./gamevalues');
 const Utility = require('./utilities');
 
+
 class BasePlayer {
     // procs include isCrit, isEoG, etc
     constructor(maxMana, playerClass, otherMP5, critChance, options) {
@@ -426,7 +427,7 @@ class BasePlayer {
         return Math.floor(value * this._intModifier * this.classInfo['spellPowerFromInt']);
     }
 
-    calculate_statistics_after_sim_ends(total_time, logger) {
+    calculate_statistics_after_sim_ends(total_time) {
         // for spell in self._statistics['spells']:
         //     this._statistics['spells'][spell]['hps'] = this._statistics['spells'][spell]['total_healing'] / total_time
         //     total_casts = self._statistics['spells'][spell]['normal'] + this._statistics['spells'][spell]['crit']
@@ -439,8 +440,41 @@ class BasePlayer {
         // this._statistics['overall']['hps'] = this._statistics['overall']['total_healing'] / total_time
         // console.log(this._spells);
         // if (logger) logger.log(this._statistics, 2);
-        return this._statistics
+        // console.log(this._statistics);
 
+        // libramOfRenewal: 11118,
+        // otherMP5: 22932,
+        // illumination: 15280,
+        // soup: 11496,
+        // eog: 4860,
+        // divinePlea: 21000,
+        // divineIllumination: 6380,
+        // RUNIC_MANA_POTION: 4300
+
+        // poor code: manually converts certain keys to what is shown on client's table
+        const manaRegenMap = {
+            'libramOfRenewal': 'Libram',
+            'otherMP5': 'Replenishment + Others',
+            'divinePlea': 'Divine Plea',
+            'divineIllumination': 'Divine Illumination',
+            'RUNIC_MANA_POTION': 'Mana Potion',
+            'sow': 'Holy Shock SoW',
+            'eog': 'EoG',
+        }
+
+        let toReturn = {'manaGenerated': []};
+        for (let key in this._statistics['manaGenerated']) {
+            // converts terms like libramOfRenewal to Libram
+            let newKey = key in manaRegenMap ? manaRegenMap[key] : Utility.capitalizeFirstLetter(key);
+            // the keys here are what is shown on the client table, hence the weird notation
+            toReturn['manaGenerated'].push({
+                'source': newKey,
+                'MP5': Math.floor(this._statistics['manaGenerated'][key] / total_time * 5),
+            });
+        }
+
+        // toReturn['manaGenerated'].sort((a, b) => b['Total Mana'] - a['Total Mana']);
+        return toReturn;
     }
 
     toString() {

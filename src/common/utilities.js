@@ -1,10 +1,10 @@
+const seedrandom = require('seedrandom');
+
 const helperFunctions = {
+    // number functions
     roundDp(num, dp) {
         let x = 10 ** dp;
         return Math.round((num + Number.EPSILON) * x) / x;
-    },
-    getKeyBoolean(obj, key) {
-        return (obj && typeof obj[key] !== 'undefined') && obj[key];
     },
     anyValueBelowThreshold(arr, thresholdValue) {
         for (let i = 0; i < arr.length; i++) {
@@ -37,9 +37,43 @@ const helperFunctions = {
         const reducer = (accumulator, curr) => accumulator + curr;
         return numbers.reduce(reducer);
     },
+    // adds thousand separator to a number
+    formatNumber (num) {
+        return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")
+    },
+
+    // string functions
     camalize(str) {
         return str.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (m, chr) => chr.toUpperCase());
-    }
+    },
+    capitalizeFirstLetter(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    },
+
+    // random functions
+    // seeding rng if a seed is passed in (default is 0, which means user didnt pass in)
+    // otherwise just use random seed
+    setSeed(seed=0) {
+        let rng;
+        if (seed > 0) {
+            rng = seedrandom(seed);
+        } else {
+            rng = seedrandom(Math.random());
+        }
+        return rng;
+    },
+    // Randomize array in-place using Durstenfeld shuffle algorithm 
+    shuffleArray(array, rng) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(rng() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    },
+
+    // other functions
+    getKeyBoolean(obj, key) {
+        return (obj && typeof obj[key] !== 'undefined') && obj[key];
+    },
 }
 
 module.exports = helperFunctions;
