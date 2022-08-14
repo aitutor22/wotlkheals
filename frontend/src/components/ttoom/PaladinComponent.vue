@@ -43,7 +43,9 @@
           <input type="text" class="form-control" v-model.number="oomOptions['mp5FromGearAndRaidBuffs']">
         </div>
         <div>
-          <button class="btn btn-primary" @click="runSim">Run Simulation</button>
+          <button class="btn btn-primary" @click="runSim">
+            {{ fetching ? 'Loading...' : 'Run Simulation' }}
+          </button>
 <!--           <button class="btn btn-success slight-offset-left" @click="getManaDetails">Details from logs</button> -->
           <!-- <button class="btn btn-danger slight-offset-left" @click="reset">Reset</button> -->
         </div>
@@ -62,10 +64,10 @@
           <input class="form-check-input" type="checkbox" id="dmcg" v-model="oomOptions['trinkets']" value="dmcg">
           <label class="form-check-label" for="dmcg">Darkmoon Card: Greatness</label>
         </div>
-        <div class="form-check">
+<!--         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="owl" v-model="oomOptions['trinkets']" value="owl">
           <label class="form-check-label" for="owl">Figurine - Sapphire Owl</label>
-        </div>
+        </div> -->
       </div>
     </div>
 
@@ -78,9 +80,17 @@
         </p>
         <p>
           The bimodal distribution means a simple median/mean ttoom misses important context - you could have a high median ttoom but also be mana-screwed 30-40% of the time. The histogram (median in red) provides more contex, and you can click on bars to see the log on the right.</p>
+        <div>
+          <input type="text" name="" v-model="minXAxis">
+          <input type="text" name="" v-model="maxXAxis">
+          <button @click="isFixedAxis = !isFixedAxis">
+            {{ !isFixedAxis ? "Fix Axis?" : "Unfix Axis?" }}
+          </button>
+        </div>
     
           <BarChart
             :chart-data="chartData"
+            :chart-options="chartOptions"
             @on-receive="getLogOfClickedBar"
             />
         </div>
@@ -136,6 +146,9 @@ export default {
         glyphHolyLightHits: 4,
         mp5FromGearAndRaidBuffs: 300,
       },
+      minXAxis: 0,
+      maxXAxis: 0,
+      isFixedAxis: false,
     };
   },
   components: {
@@ -196,7 +209,30 @@ export default {
           categoryPercentage: 1,
         }]
       }
-    }
+    },
+    chartOptions() {
+      if (!this.results || (typeof this.results['chartDetails'] === 'undefined')) return;
+      return {
+        responsive: true,
+        onClick: this.handle,
+        scales: {
+          x: {
+            min: Number(this.minXAxis),
+            max: Number(this.maxXAxis),
+            type: 'linear',
+            title: {
+              display: true,
+              text: 'Time to OOM (s)',
+            },
+            ticks: {
+              maxRotation: 0,
+              minRotation: 0,
+              stepSize: 10,
+            }
+          }
+        },
+      };
+    }, // end chartOptions
   },
   methods: {
     formatNumber (num) {
@@ -217,6 +253,10 @@ export default {
             console.log(response.data);
             this.results = response.data;
             this.selectedLog = response.data['logs'];
+            if (!this.isFixedAxis) {
+              this.minXAxis = Number(this.results['chartDetails']['minXAxis']);
+              this.maxXAxis = Number(this.results['chartDetails']['maxXAxis']);
+            }
           })
           .catch((error)  => {
             console.log(error);
@@ -228,7 +268,6 @@ export default {
         entry = this.results['chartDetails']['exampleEntries'][index];
 
       if (this.fetching) return;
-      console.log(entry);
       this.fetching = true;
 
       axios
@@ -236,9 +275,6 @@ export default {
           .then((response) => {
             this.fetching = false;
             this.selectedLog = response.data;
-            // this.showExplanation = false;
-            // console.log(response.data);
-            // this.results = response.data;
           })
           .catch((error)  => {
             console.log(error);

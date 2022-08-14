@@ -169,6 +169,7 @@ class Experiment {
             if (binResults[i].maxNum >= medianEntry['ttoom']) break;
             medianIndex++;
         }
+        let minXAxis = binResults[0].minNum, maxXAxis = binResults[binResults.length - 1].maxNum;
 
         // console.log(medianIndex, binResults[medianIndex],medianEntry['ttoom']);
 
@@ -179,12 +180,14 @@ class Experiment {
             ttoom: medianEntry['ttoom'],
             logs: resultSingleLoop['logs'],
             manaStatistics: Utility.medianStatistics(manaGeneratedStatistics, 'source', 'MP5'),
-            statistics: resultSingleLoop['statistics'][0],
+            // statistics: resultSingleLoop['statistics'][0],
             chartDetails: {
                 labels: labels,
                 values: values,
                 medianIndex: medianIndex,
                 exampleEntries: exampleEntries,
+                minXAxis: minXAxis,
+                maxXAxis: maxXAxis,
             }
         };
     }

@@ -36,6 +36,10 @@ export default {
       type: Object,
       default: () => {}
     },
+    chartOptions: {
+      type: Object,
+      default: () => {}
+    },
     chartValues: {
       type: Array,
       default: () => []
@@ -68,27 +72,6 @@ export default {
   },
   data() {
     return {
-      chartOptions: {
-        responsive: true,
-        onClick: this.handle,
-        scales: {
-          x: {
-            type: 'linear',
-            title: {
-              display: true,
-              text: 'Time to OOM (s)',
-            },
-            ticks: {
-              maxRotation: 0,
-              minRotation: 0,
-              stepSize: 10,
-            }
-          }
-        },
-        // legend: {
-        //   display: false,
-        // },
-      }
     }
   },
   methods: {
