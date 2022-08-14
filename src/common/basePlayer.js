@@ -112,6 +112,14 @@ class BasePlayer {
         return (typeof this._buffs[buffKey] !== 'undefined') && this._buffs[buffKey]['active'];
     }
 
+    // checks to see if currentMana has exceeded max mana at end of turn
+    // e.g. when dmcg expires
+    checkOverflowMana(timestamp) {
+        if (this._currentMana > this.maxMana) {
+            this._currentMana = this.maxMana;
+        }
+    }
+
     // start functions that are used for initialisation
     initialiseSpells() {
         let results = [];
@@ -409,10 +417,15 @@ class BasePlayer {
     // converts mp5 to a mp2 tick value
     addManaRegenFromReplenishmentAndOtherMP5(logger=null, timestamp=null) {
         // we could use a cached value, but DMCG increases max mana pool, so for time being, we recalculate each time we call this
-        const tickAmount = Math.floor((this.maxMana * DATA['constants']['replenishment'] + this._otherMP5) / 5 * 2);
+        const replenishmentTick = (this.maxMana * DATA['constants']['replenishment'] / 5 * 2);
+        const otherMP5Tick = (this._otherMP5 / 5 * 2);
+        const tickAmount = Math.floor(replenishmentTick + otherMP5Tick);
         // since replenishment might tick outside spellcast, we print timestamp
         if (logger) logger.log(`${timestamp}s: Gained ${tickAmount} from mana tick`, 2);
-        return this.addManaHelper(tickAmount, 'otherMP5');
+
+        // we record the ticks from replenishment and othermp5 separately; need to ensure we don't lose values due to floor function
+        this.addManaHelper(Math.floor(replenishmentTick), 'Replenishment');
+        this.addManaHelper(tickAmount - Math.floor(replenishmentTick), 'otherMP5');
     }
 
     manaIncreaseFromInt(value) {
@@ -442,30 +455,11 @@ class BasePlayer {
         // if (logger) logger.log(this._statistics, 2);
         // console.log(this._statistics);
 
-        // libramOfRenewal: 11118,
-        // otherMP5: 22932,
-        // illumination: 15280,
-        // soup: 11496,
-        // eog: 4860,
-        // divinePlea: 21000,
-        // divineIllumination: 6380,
-        // RUNIC_MANA_POTION: 4300
-
-        // poor code: manually converts certain keys to what is shown on client's table
-        const manaRegenMap = {
-            'libramOfRenewal': 'Libram',
-            'otherMP5': 'Replenishment + Others',
-            'divinePlea': 'Divine Plea',
-            'divineIllumination': 'Divine Illumination',
-            'RUNIC_MANA_POTION': 'Mana Potion',
-            'sow': 'Holy Shock SoW',
-            'eog': 'EoG',
-        }
 
         let toReturn = {'manaGenerated': []};
         for (let key in this._statistics['manaGenerated']) {
-            // converts terms like libramOfRenewal to Libram
-            let newKey = key in manaRegenMap ? manaRegenMap[key] : Utility.capitalizeFirstLetter(key);
+            // poor code: manually converts certain keys to what is shown on client's table
+            let newKey = key in DATA['manaCooldownNamesMap'] ? DATA['manaCooldownNamesMap'][key] : Utility.capitalizeFirstLetter(key);
             // the keys here are what is shown on the client table, hence the weird notation
             toReturn['manaGenerated'].push({
                 'source': newKey,

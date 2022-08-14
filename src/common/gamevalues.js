@@ -128,6 +128,15 @@ const data = {
             category: 'immediate',
         },
     },
+    manaCooldownNamesMap: {
+        'libramOfRenewal': 'Libram of Renewal',
+        'otherMP5': 'Others',
+        'divinePlea': 'Divine Plea',
+        'divineIllumination': 'Divine Illumination',
+        'RUNIC_MANA_POTION': 'Mana Potion',
+        'sow': 'Holy Shock SoW',
+        'eog': 'EoG',
+    },
 }
 
 module.exports = data;

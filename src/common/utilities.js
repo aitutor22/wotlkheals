@@ -68,6 +68,38 @@ const helperFunctions = {
     formatNumber (num) {
         return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")
     },
+    // given a list of objects, bins them using the inputted value field
+    // also keeps a record of the objects (useful when we want to know which seeds led to which results)
+    createBins(arr, numBins, valueFieldName) {
+        let values = arr.map(entry => entry[valueFieldName]),
+            minValue = Math.floor(Math.min(...values)), maxValue = Math.ceil(Math.max(...values)),
+            binSize = (maxValue - minValue) / numBins, bins = [];
+
+        for (let i = 0; i < numBins; i++) {
+            bins.push({
+                minNum: this.roundDp(minValue + binSize * i, 1),
+                maxNum: this.roundDp(minValue + binSize * (i + 1), 1),
+                count: 0,
+                entries: [],
+            });
+        }
+
+        // unoptimised - should probably sort to optimise - todo
+        //Loop through data and add to bin's count
+        for (let i = 0; i < arr.length; i++) {
+          let item = arr[i];
+          for (let j = 0; j < bins.length; j++) {
+            let bin = bins[j];
+            if(item[valueFieldName] >= bin.minNum && item[valueFieldName] <= bin.maxNum) {
+              bin.count++;
+              bin.entries.push(item);
+              break;  // An item can only be in one bin.
+            }
+          }  
+        }
+        return bins;
+    },
+
 
     // string functions
     camalize(str) {
@@ -82,6 +114,8 @@ const helperFunctions = {
     // otherwise just use random seed
     setSeed(seed=0) {
         let rng;
+        // very important step '123' and 123 give different values
+        seed = Number(seed);
         if (seed > 0) {
             rng = seedrandom(seed);
         } else {

@@ -2,7 +2,7 @@
   <div class="container">
     <div class="row" v-if="showExplanation">
       <p>
-        This tool simulates how long it takes for a Holy Paladin to go OOM, especially due to the high mana cost of Holy Light. Given the high number of procs in the hpld toolkit, the tool simulates 200 runs and returns the median ttoom, and the specific statistics from that run.
+        This tool simulates how long it takes for a Holy Paladin to go OOM (ttoom), especially due to the high mana cost of Holy Light. Given the high number of procs in the hpld toolkit, the tool simulates 300 runs and returns the median ttoom, and the specific statistics from that run.
       </p>
       <p>The tool assumes the player incorporates slight pauses after every instant cast (e.g. HS) to allow for melee hits to proc Seal of Wisdom.</p>
       <p>Please input raid-buffed values for spellpower, mana pool and crit chance (do not add crit from talents). Note: do not change stats from trinkets to these values as the tool will automatically calculate it.</p>
@@ -69,54 +69,42 @@
       </div>
     </div>
 
-    <div class="row slight-offset-top" v-if="results">
-      <div class="col-4">
-        <ul>
-          <li>Time to OOM: <b>{{ results['ttoom'] }}s</b></li>
-<!--           <li>Time to next consume: <b> {{ results['timeToNextConsume'] }}s</b></li>
-          <li>Mana Pool: <b>{{ results['manaPool'] }}</b></li>
-          <li>Buffed Int: <b>{{ results['statsSummary']['buffedInt'] }}</b></li>
-          <li>Buffed Spirit: <b>{{ results['statsSummary']['buffedSpirit'] }}</b></li>
-          <li>Mana from Super Mana Pots: <b>{{ results['consumesManaSummary']['SUPER_MANA_POTION'] }}</b></li>
-          <li>Mana from Dark Runes: <b>{{ results['consumesManaSummary']['DARK_RUNE'] }}</b></li>
-          <li>Mana from Shadowfiend: <b>{{ results['consumesManaSummary']['SHADOWFIEND'] }}</b></li>
-          <li v-if="results['consumesManaSummary']['MANA_TIDE_TOTEM']">
-            Mana from Mana Tide Totem: <b>{{ results['consumesManaSummary']['MANA_TIDE_TOTEM'] }}</b> -->
-          <!-- </li> -->
-        </ul>
-      </div>
-<!--       <div class="col-4">
-        Total MP5: <b>{{ results['statsSummary']['totalOtherMP5'] }}</b>
-        <ol>
-          <li v-for="(item, index) in results['mp5Summary']" :key="index">
-            {{ item.name }}: <b>{{ item.value }}</b>
-          </li>
-        </ol>
-      </div> -->
-    </div>
     <hr>
-
     <div class="row" v-if="results">
-      <div class="pad-bottom">
-        <i>
-          Note: The values for Cast Profile and Mana Generated are median values, and do not come from the same log. In contrast, the sample log on the right comes from a specific run and is provided for error-checking purposes.
-        </i>
-      </div>
+      <div class="col-7">
+        <p>Median Time to OOM: <b>{{ results['ttoom'] }}s</b></p>
+        <p>
+          HPLD's ttoom has higher variance vs other healers due to Divine Plea breakpoints (amplified by using Darkmoon Card: Greatness).
+        </p>
+        <p>
+          The bimodal distribution means a simple median/mean ttoom misses important context - you could have a high median ttoom but also be mana-screwed 30-40% of the time. The histogram (median in red) provides more contex, and you can click on bars to see the log on the right.</p>
+    
+          <BarChart
+            :chart-data="chartData"
+            @on-receive="getLogOfClickedBar"
+            />
+        </div>
+        <div class="col-5">
+          <textarea class="log" readonly="" v-model="logs"></textarea>  
+        </div>
+    </div>
+
+    <div class="row gap-top" v-if="results">
       <br>
-      <div class="col-6">
-        <h5>Cast Profile</h5>
-        <b-table striped hover :items="tableData"></b-table>
-        <br>
+      <div class="col-5">
         <h5>Mana Generation Breakdown</h5>
         <b-table striped hover :items="mp5Data"></b-table>
       </div>
-      <div class="col-5 offset-1">
-        <textarea class="log" readonly="" v-model="logs"></textarea>  
+
+      <div class="col-5 offset-2">
+        <h5>Cast Profile</h5>
+        <b-table striped hover :items="tableData"></b-table>
       </div>
-<!--       <div class="col-6">
-        <h2>Highlighted Logs</h2>
-        <textarea class="log" readonly="" v-model="highlightedLogs"></textarea>
-      </div> -->
+      <div class="pad-bottom">
+        <i>
+          The above values for Cast Profile and Mana Generated are median values over 300 runs, and do not come from the same log.
+        </i>
+      </div>
     </div>
 
   </div>
@@ -125,6 +113,7 @@
 <script>
 
 import axios from 'axios';
+import BarChart from '../BarChart'
 
 // https://stackoverflow.com/questions/38085352/how-to-use-two-y-axes-in-chart-js-v2
 export default {
@@ -136,6 +125,7 @@ export default {
       fetching: false,
       showExplanation: true,
       results: null,
+      selectedLog: null,
       oomOptions: {
         manaPool: 28000,
         castTimes: {
@@ -148,14 +138,17 @@ export default {
       },
     };
   },
+  components: {
+    BarChart,
+  },
   computed: {
     logs() {
-      if (!this.results || (typeof this.results['logs'] === 'undefined')) return;
-      return this.results['logs'].join('\n');
+      if (!this.selectedLog) return;
+      return this.selectedLog.join('\n');
     },
     tableData() {
       let results = [
-        {spell: 'Holy Light', CPM: 20.5, HPS: 20000, 'Crit %': 42},
+        // {spell: 'Holy Light', CPM: 20.5, HPS: 20000, 'Crit %': 42},
       ];
       return results;
     },
@@ -175,6 +168,34 @@ export default {
       }
 
       return results;
+    },
+    chartData() {
+      if (!this.results || (typeof this.results['chartDetails'] === 'undefined')) return;
+
+      function createBackgroundColors(numBars, medianIndex) {
+        let toReturn = [];
+        for (let i = 0; i < numBars; i++) {
+          // default color
+          toReturn.push('#439af8');
+        }
+        // color of median
+        toReturn[medianIndex] = '#f87979';
+        return toReturn;
+      }
+
+      return {
+        labels: this.results['chartDetails']['labels'],
+        datasets: [{
+          label: 'Counts',
+          backgroundColor: createBackgroundColors(this.results['chartDetails']['labels'].length,
+            this.results['chartDetails']['medianIndex']),
+          data: this.results['chartDetails']['values'],
+          // https://www.chartjs.org/docs/3.2.0/charts/bar.html
+          // following two lines make it a histogram
+          barPercentage: 1,
+          categoryPercentage: 1,
+        }]
+      }
     }
   },
   methods: {
@@ -195,11 +216,34 @@ export default {
             this.showExplanation = false;
             console.log(response.data);
             this.results = response.data;
+            this.selectedLog = response.data['logs'];
           })
           .catch((error)  => {
             console.log(error);
             this.fetching = false;
           });
+    },
+    getLogOfClickedBar(data) {
+      let index = data['index'],
+        entry = this.results['chartDetails']['exampleEntries'][index];
+
+      if (this.fetching) return;
+      console.log(entry);
+      this.fetching = true;
+
+      axios
+          .post(`ttoom/paladin/${entry.seed}`, this.oomOptions)
+          .then((response) => {
+            this.fetching = false;
+            this.selectedLog = response.data;
+            // this.showExplanation = false;
+            // console.log(response.data);
+            // this.results = response.data;
+          })
+          .catch((error)  => {
+            console.log(error);
+            this.fetching = false;
+          }); 
     }
   },
   mounted() {
@@ -217,5 +261,9 @@ export default {
 
 .pad-bottom {
   padding: 0px 0px 20px;
+}
+
+.gap-top {
+  margin-top: 40px;
 }
 </style>

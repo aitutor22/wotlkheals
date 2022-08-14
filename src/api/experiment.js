@@ -42,6 +42,7 @@ class Experiment {
     // seed === 0 means we don't use a seed
     runSingleLoop(logsLevel=0, seed=0, maxMinsToOOM=10) {
         let rng = Utility.setSeed(seed);
+        // console.log('using seed: ' + seed);
         this.logger = new Logger(logsLevel, this._loggerOutputLocation);
 
         // rather than saving player/eventHeap to experiement, we recreate it each time we run a loop
@@ -130,6 +131,7 @@ class Experiment {
                 }
             }
 
+            player.checkOverflowMana();
             this.logger.log(`${player}\n----------`, 2);
         } //end while loop
 
@@ -138,8 +140,8 @@ class Experiment {
         return {ttoom: lastCastTimestamp, statistics: statistics, logs: this.logger._resultArr};
     }
 
-    runBatch(batchSize=10, seed=0, logsLevel=0) {
-        let timings = [], manaGeneratedStatistics = [], medianEntry, resultSingleLoop;
+    runBatch(batchSize=10, seed=0, logsLevel=0, numBins=30) {
+        let timings = [], manaGeneratedStatistics = [], medianEntry, resultSingleLoop, binResults;
         // if seed is 0, we get a random number from 1 to 9999 and used it to seed
         if (seed === 0) {
             seed = Math.floor(Math.random() * 10000 + 1)
@@ -154,13 +156,21 @@ class Experiment {
         }
 
         medianEntry = Utility.medianArrDict(timings, 'ttoom');
-        // console.log(manaGeneratedStatistics);
-        // let a = timings.map((entry) => entry['ttoom']);
-        // console.log(a.slice(0, 100))
-        // console.log(a.slice(100, 200))
-        // console.log(a.slice(200, 300))
-        // console.log(a.slice(300, 400))
-        // console.log(a.slice(400, 500))
+
+        // should probably be split out in future
+        binResults = Utility.createBins(timings, numBins, 'ttoom');
+        let labels = binResults.map(bin => (bin.minNum + bin.maxNum) / 2);
+        let values = binResults.map(bin => bin.count);
+        // for each bin, we provide one example seed that user can click on
+        let exampleEntries = binResults.map(bin => bin.entries.length > 0 ? bin.entries[0] : null);
+        // we return median index as well, so frontend can color chart separately
+        let medianIndex = 0;
+        for (let i = 0; i < binResults.length; i++) {
+            if (binResults[i].maxNum >= medianEntry['ttoom']) break;
+            medianIndex++;
+        }
+
+        // console.log(medianIndex, binResults[medianIndex],medianEntry['ttoom']);
 
         // we run a single iteration of the median seed to get log info
         resultSingleLoop = this.runSingleLoop(2, medianEntry['seed']);
@@ -169,7 +179,14 @@ class Experiment {
             ttoom: medianEntry['ttoom'],
             logs: resultSingleLoop['logs'],
             manaStatistics: Utility.medianStatistics(manaGeneratedStatistics, 'source', 'MP5'),
-            statistics: resultSingleLoop['statistics'][0]};
+            statistics: resultSingleLoop['statistics'][0],
+            chartDetails: {
+                labels: labels,
+                values: values,
+                medianIndex: medianIndex,
+                exampleEntries: exampleEntries,
+            }
+        };
     }
 
     selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, offset, overrideSpellSelection='') {
