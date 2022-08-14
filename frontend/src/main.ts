@@ -17,8 +17,7 @@ Vue.use(IconsPlugin)
 Vue.config.productionTip = false;
 
 // to update
-// axios.defaults.baseURL = 'http://localhost:3000/api/';
-axios.defaults.baseURL = '/api/';
+axios.defaults.baseURL = 'http://localhost:3000/api/';
 // axios.defaults.baseURL = '/api/';
 
 

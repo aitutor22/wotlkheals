@@ -1,3 +1,7 @@
+const GEM_VALUES = {
+    int: 16, // 2 gem slots, assume we insert 2x 16 int gems
+}
+
 const data = {
     items: {
         // increase int by 300 for 15s
@@ -36,6 +40,13 @@ const data = {
                 icd: 0,
                 chance: 0.02,
                 manaReduction: 450,
+            },
+        },
+        owl: {
+            name: 'Figurine - Sapphire Owl',
+            itemType: 'trinket',
+            base: {
+                int: 42 + 2 * GEM_VALUES['int'],
             },
         },
     },
@@ -123,9 +134,17 @@ const data = {
             cooldown: 11 * 60, // the actual cooldown of spell
             offGcd: false,
             playerClass: 'paladin',
-            category: 'buff',
-            duration: 15,
             category: 'immediate',
+        },
+        // technically a 12s 2340 mana regen; but just assume you get it all at one shot for simplicity
+        OWL: {
+            key: 'OWL',
+            name: 'Figurine - Sapphire Owl',
+            value: 2340,
+            cooldown: 60 * 5,
+            offGcd: true,
+            category: 'immediate',
+            playerClass: 'all',
         },
     },
     manaCooldownNamesMap: {
@@ -136,6 +155,7 @@ const data = {
         'RUNIC_MANA_POTION': 'Mana Potion',
         'sow': 'Holy Shock SoW',
         'eog': 'EoG',
+        'OWL': 'Sapphire Owl'
     },
 }
 

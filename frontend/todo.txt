@@ -1,0 +1,2 @@
+1. Fix bug of not emitting click event when chart is clicked (need to set up vuex properly)
+2. Add mana effect to sapphire owl

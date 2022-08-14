@@ -4,7 +4,7 @@
       <p>
         This tool simulates how long it takes for a Holy Paladin to go OOM (ttoom), especially due to the high mana cost of Holy Light. Given the high number of procs in the hpld toolkit, the tool simulates 300 runs and returns the median ttoom, and the specific statistics from that run.
       </p>
-      <p>The tool assumes the player incorporates slight pauses after every instant cast (e.g. HS) to allow for melee hits to proc Seal of Wisdom.</p>
+      <p>The tool assumes the player incorporates slight pauses after every instant cast (e.g. HS) to allow for melee hits to proc Seal of Wisdom. Maintenance spells like Sacred Shield and Beacon are not currently considered in the sim, though we assume an extra 100mp5 from SoW under "Others" for meleeing during these spells.</p>
       <p>Please input raid-buffed values for spellpower, mana pool and crit chance (do not add crit from talents). Note: do not change stats from trinkets to these values as the tool will automatically calculate it.</p>
       <p>
         Special thanks to Lovelace and Currelius for formula help, as well as the rest of the healer cabal for valuable feedback and beta testing.
@@ -64,10 +64,10 @@
           <input class="form-check-input" type="checkbox" id="dmcg" v-model="oomOptions['trinkets']" value="dmcg">
           <label class="form-check-label" for="dmcg">Darkmoon Card: Greatness</label>
         </div>
-<!--         <div class="form-check">
+        <div class="form-check">
           <input class="form-check-input" type="checkbox" id="owl" v-model="oomOptions['trinkets']" value="owl">
           <label class="form-check-label" for="owl">Figurine - Sapphire Owl</label>
-        </div> -->
+        </div>
       </div>
     </div>
 
@@ -214,7 +214,9 @@ export default {
       if (!this.results || (typeof this.results['chartDetails'] === 'undefined')) return;
       return {
         responsive: true,
-        onClick: this.handle,
+        onClick: () => {
+          console.log('clicking')
+        },
         scales: {
           x: {
             min: Number(this.minXAxis),
@@ -266,7 +268,7 @@ export default {
     getLogOfClickedBar(data) {
       let index = data['index'],
         entry = this.results['chartDetails']['exampleEntries'][index];
-
+      console.log(entry);
       if (this.fetching) return;
       this.fetching = true;
 

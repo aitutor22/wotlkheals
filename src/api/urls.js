@@ -28,19 +28,31 @@ const defaultOptions = {
     spellPower: 2400, // includes spellpower from holy guidance (though if dmcg procs, system will auto calculate)
     critChance: 0.46, // 30% from gear and buffs, 11% from talents
     manaCooldowns: [
-        {key: 'DIVINE_PLEA', minimumManaDeficit: 6000, minimumTimeElapsed: 0},
+        {key: 'DIVINE_PLEA', minimumManaDeficit: 8000, minimumTimeElapsed: 0},
         {key: 'DIVINE_ILLUMINATION', minimumManaDeficit: 9000, minimumTimeElapsed: 0},
         {key: 'RUNIC_MANA_POTION', minimumManaDeficit: 18000, minimumTimeElapsed: 0},
         // {key: 'LAY_ON_HANDS', minimumManaDeficit: 28000, minimumTimeElapsed: 0},
     ],
 };
 
-router.post('/ttoom/paladin/:seed', function(req, res) {
+// helper function that combines playerOptions passed from client to create
+// a set of options that is passed to experiment
+function createOptions(playerOptions) {
     let options = Object.assign({}, defaultOptions);
     // console.log(req.body);
-    for (let key in req.body) {
-        options[key] = req.body[key];
+    for (let key in playerOptions) {
+        options[key] = playerOptions[key];
     }
+
+    // adds owl to manaCooldowns if player has equipped it
+    if (playerOptions['trinkets'].indexOf('owl') > -1) {
+        options['manaCooldowns'].push({key: 'OWL', minimumManaDeficit: 10000, minimumTimeElapsed: 0});
+    }
+    return options;
+}
+
+router.post('/ttoom/paladin/:seed', function(req, res) {
+    let options = createOptions(req.body);
 
     try {
         // second argument is where logs are sent - 0 for console.log, 1 to an arr that is returned to the client
@@ -55,10 +67,7 @@ router.post('/ttoom/paladin/:seed', function(req, res) {
 });
 
 router.post('/ttoom/paladin/', function(req, res) {
-    let options = Object.assign({}, defaultOptions);
-    for (let key in req.body) {
-        options[key] = req.body[key];
-    }
+    let options = createOptions(req.body);
 
     try {
         // second argument is where logs are sent - 0 for console.log, 1 to an arr that is returned to the client
