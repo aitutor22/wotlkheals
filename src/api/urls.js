@@ -32,6 +32,7 @@ const defaultOptions = {
         {key: 'DIVINE_ILLUMINATION', minimumManaDeficit: 9000, minimumTimeElapsed: 0},
         {key: 'RUNIC_MANA_POTION', minimumManaDeficit: 18000, minimumTimeElapsed: 0},
     ],
+    manaOptions: {},
 };
 
 // helper function that combines playerOptions passed from client to create
@@ -44,10 +45,7 @@ function createOptions(playerOptions) {
     // and modifiying options['manaCooldowns'] affected source as well
     // use the following method instead (not that this doesnt work if there are functions in the source object)
     let options = JSON.parse(JSON.stringify(defaultOptions));
-    // we handle mana options separately
     for (let key in playerOptions) {
-        if (key === 'manaOptions') continue;
-
         if (key === 'critChance') {
             options[key] = playerOptions[key] / 100;    
         } else {

@@ -91,6 +91,10 @@
           <input class="form-check-input" type="checkbox" id="selfLoh" v-model="oomOptions['manaOptions']['selfLoh']">
           <label class="form-check-label" for="selfLoh">Self LoH (Divinity)</label>
         </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="injector" v-model="oomOptions['manaOptions']['injector']">
+          <label class="form-check-label" for="injector">Mana Injector</label>
+        </div>
       </div>
     </div>
 
@@ -165,6 +169,7 @@ export default {
         },
         manaOptions: {
           'selfLoh': false,
+          'injector': false,
         },
         trinkets: ['soup', 'eog'],
         holyShockCPM: 3,

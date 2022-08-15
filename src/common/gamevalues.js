@@ -117,6 +117,7 @@ const data = {
             cooldown: 9999, // mana pots can only be used once
             offGcd: true,
             playerClass: 'all',
+            injectorBonus: 0.25, // gains extra 25% from injector
         },
         DIVINE_ILLUMINATION: {
             key: 'DIVINE_ILLUMINATION',

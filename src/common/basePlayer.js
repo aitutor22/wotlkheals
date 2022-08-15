@@ -241,7 +241,13 @@ class BasePlayer {
         }
 
         if (cooldownSelected['category'] === 'immediate') {
-            this.addManaHelper(cooldownSelected['value'], cooldownSelected['key'], logger);
+            let value = cooldownSelected['value'];
+            // checks for injector bonus if runic mana potion
+            if (cooldownSelected['key'] === 'RUNIC_MANA_POTION' && this._options['manaOptions']['injector']) {
+                value *= (1 + DATA['manaCooldowns']['RUNIC_MANA_POTION']['injectorBonus']);
+            }
+
+            this.addManaHelper(value, cooldownSelected['key'], logger);
         }
         cooldownSelected['lastUsed'] = timestamp;
         cooldownSelected['availableForUse'] = false;
