@@ -26,7 +26,7 @@ const defaultOptions = {
     manaPool: 29000,
     mp5FromGearAndRaidBuffs: 300,
     spellPower: 2400, // includes spellpower from holy guidance (though if dmcg procs, system will auto calculate)
-    critChance: 0.46, // 30% from gear and buffs, 11% from talents
+    critChance: 0.3, // from gear and raid buffs; does not include talents
     manaCooldowns: [
         {key: 'DIVINE_PLEA', minimumManaDeficit: 8000, minimumTimeElapsed: 0},
         {key: 'DIVINE_ILLUMINATION', minimumManaDeficit: 9000, minimumTimeElapsed: 0},
@@ -37,12 +37,17 @@ const defaultOptions = {
 
 // helper function that combines playerOptions passed from client to create
 // a set of options that is passed to experiment
+// ONE KEY DIFFERENCE - use critChance is in % (e.g 30), so we need to convert it to probability (0.3) by dividing by 100
 function createOptions(playerOptions) {
     let options = Object.assign({}, defaultOptions);
-    // console.log(req.body);
     for (let key in playerOptions) {
-        options[key] = playerOptions[key];
+        if (key === 'critChance') {
+            options[key] = playerOptions[key] / 100;    
+        } else {
+            options[key] = playerOptions[key];
+        }
     }
+    // console.log(playerOptions)
 
     // adds owl to manaCooldowns if player has equipped it
     if (playerOptions['trinkets'].indexOf('owl') > -1) {
@@ -58,7 +63,8 @@ router.post('/ttoom/paladin/:seed', function(req, res) {
         // second argument is where logs are sent - 0 for console.log, 1 to an arr that is returned to the client
         let experiment = new Experiment(options, 1);
         // console.log(options);
-        let result = experiment.runSingleLoop(2, req.params.seed);
+        // first argument is logLevel - 2 shows most details but ommits crti details
+        let result = experiment.runSingleLoop(3, req.params.seed);
         res.send(result['logs']);
     } catch (error) {
         console.log(error);

@@ -156,7 +156,6 @@ class Experiment {
         }
 
         medianEntry = Utility.medianArrDict(timings, 'ttoom');
-
         // should probably be split out in future
         binResults = Utility.createBins(timings, numBins, 'ttoom');
         let labels = binResults.map(bin => (bin.minNum + bin.maxNum) / 2);
@@ -174,7 +173,8 @@ class Experiment {
         // console.log(medianIndex, binResults[medianIndex],medianEntry['ttoom']);
 
         // we run a single iteration of the median seed to get log info
-        resultSingleLoop = this.runSingleLoop(2, medianEntry['seed']);
+        // first argument is logLevel - 2 shows most details but ommits crti details
+        resultSingleLoop = this.runSingleLoop(3, medianEntry['seed']);
         // console.log(resultSingleLoop['logs'])
         return {
             ttoom: medianEntry['ttoom'],

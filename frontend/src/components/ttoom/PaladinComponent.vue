@@ -50,7 +50,25 @@
           <!-- <button class="btn btn-danger slight-offset-left" @click="reset">Reset</button> -->
         </div>
       </div>
+
+<!--       <div class="col-4">
+
+      </div> -->
       <div class="col-4">
+        <div class="input-group mb-2" style="width: 100%">
+          <span class="input-group-text" id="basic-addon1">Crit Chance %</span>
+          <input type="text" class="form-control" v-model.number="oomOptions['critChance']">
+        </div>
+
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="2pT7" v-model="oomOptions['2pT7']">
+          <label class="form-check-label" for="2pT7">2pT7</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="4pT7" v-model="oomOptions['4pT7']">
+          <label class="form-check-label" for="4pT7">4pT7</label>
+        </div>
+
         <b>Trinkets</b>
         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="soup" v-model="oomOptions['trinkets']" value="soup">
@@ -83,7 +101,7 @@
         <div>
           <input type="text" name="" v-model="minXAxis">
           <input type="text" name="" v-model="maxXAxis">
-          <button @click="isFixedAxis = !isFixedAxis">
+          <button class="btn btn-success btn-sm" @click="isFixedAxis = !isFixedAxis">
             {{ !isFixedAxis ? "Fix Axis?" : "Unfix Axis?" }}
           </button>
         </div>
@@ -145,6 +163,9 @@ export default {
         holyShockCPM: 3,
         glyphHolyLightHits: 4,
         mp5FromGearAndRaidBuffs: 300,
+        '2pT7': true,
+        '4pT7': true,
+        critChance: 30,
       },
       minXAxis: 0,
       maxXAxis: 0,
@@ -166,12 +187,6 @@ export default {
       return results;
     },
     mp5Data() {
-      // let results = [
-      //   {source: 'DMCG', 'Total Mana': 20000, MPS: 20.5},
-      //   {source: 'Soup', 'Total Mana': 20000, MPS: 20.5},
-      //   {source: 'Others', 'Total Mana': 20000, MPS: 20.5},
-      //   {source: 'SoW', 'Total Mana': 20000, MPS: 20.5},
-      // ];
       if (!this.results || (typeof this.results['manaStatistics'] === 'undefined')) return;
       let results = [];
       for (let i = 0; i < this.results['manaStatistics'].length; i++) {
@@ -241,11 +256,18 @@ export default {
         return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
     },
     runSim() {
+      if (this.fetching) return;
+
+      // validation
       if (this.oomOptions['trinkets'].length > 2) {
         alert('You can only select up to two trinkets.');
         return;
       }
-      if (this.fetching) return;
+      if (!this.oomOptions['2pT7'] && this.oomOptions['4pT7']) {
+        alert('4PT7 was selected but not 2PT7');
+        return;
+      }
+
       this.fetching = true;
       axios
           .post('ttoom/paladin', this.oomOptions)

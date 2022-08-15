@@ -59,6 +59,8 @@ const data = {
     classes: {
         paladin: {
             intModifier: 1.1 * 1.1, //blessing of kings and divine intellect
+            baseCritChanceModifier: 0.05, // 5% additional crit chance from holy power
+            sanctifiedLightCritChanceModifier: 0.06, // 6% additional crit chance for holy shock and holy light
             sow: {
                 chance: 0.45 * (1 - 0.05 - 0.065), // 45% chance to proc on hit, include a 5% miss chance and 6.5% chance to be blocked,
                 value: 0.04, // 4% of max mana

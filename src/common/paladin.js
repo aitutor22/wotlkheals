@@ -57,7 +57,7 @@ class Paladin extends BasePlayer {
         // player.add_spellcast_to_statistics(event._name, event._is_crit, event._is_soup_proc, event._is_eog_proc)
         let procs = {},
             eventsToCreate = [];
-        let status, manaUsed, currentMana, errorMessage, offset, isCrit, msg, modifiedCritChance;
+        let status, manaUsed, currentMana, errorMessage, offset, isCrit, msg, modifiedCritChance, sanctifiedLightCritChance;
 
         // checks for soup, and eog procs
         // holy light has more hits; all other spells have 2 hits (due to beacon)
@@ -67,7 +67,9 @@ class Paladin extends BasePlayer {
             };
         }
 
-        modifiedCritChance = this.critChance;
+        // 6% crit bonus from sanctified light for HL and HS only
+        sanctifiedLightCritChance = ['HOLY_LIGHT', 'HOLY_SHOCK'].indexOf(spellKey) > -1 ? this.classInfo['sanctifiedLightCritChanceModifier'] : 0;
+        modifiedCritChance = this.critChance + sanctifiedLightCritChance;
         // 10% additional crit chance to holy shock from 2pT7
         if (spellKey === 'HOLY_SHOCK' && this._options['2pT7']) {
             modifiedCritChance += 0.1
@@ -78,7 +80,7 @@ class Paladin extends BasePlayer {
             modifiedCritChance += 0.2
         }
 
-        logger.log(`Crit Chance: ${modifiedCritChance}`, 3);
+        logger.log(`Crit Chance: ${Utility.roundDp(modifiedCritChance * 100, 1)}%`, 3);
 
         // all pally spells have 1 chance to crit (beacon just mirrors the spell cast)
         isCrit = this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance);

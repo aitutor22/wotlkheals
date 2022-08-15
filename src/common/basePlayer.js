@@ -18,7 +18,7 @@ class BasePlayer {
 
         // when there is dmc: greatness proc, we increase mana_pool, so need baseMaxMana as a reference
         this._baseMaxMana = maxMana;
-        this._baseCritChance = critChance;
+        this._baseCritChance = critChance + this.classInfo['baseCritChanceModifier'];
         this._baseSpellPower = options['spellPower'];
 
         // loops through the trinkets selected, and adds base stat values - currently only supports int
