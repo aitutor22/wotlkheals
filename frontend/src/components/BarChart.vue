@@ -75,13 +75,6 @@ export default {
     }
   },
   methods: {
-    handle(event, bars) {
-      console.log('handling');
-      if (bars.length === 0) return;
-      this.$emit('on-receive', {
-        index: bars[0].index,
-      });
-    }
   }
 }
 </script>

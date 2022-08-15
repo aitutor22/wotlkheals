@@ -271,44 +271,23 @@ class BasePlayer {
                 eventType: 'MANA_COOLDOWN_SPELL_CAST',
                 subEvent: cooldownSelected['key'],
             });
+        } 
+
+        // first condition: we see if there are spells that are casted by other classes
+        // these are always considered offGCD even if they actually require a spell cast since they are casted by another player
+        // e.g. if player is pally, mana tide totem falls under this category
+        // second condition -> any sort of cooldown that is off gcd and interval (e.g owl)
+        if ((cooldownSelected['playerClass'] !== this._playerClass && cooldownSelected['playerClass'] !== 'all') ||
+                (cooldownSelected['offGcd'] && cooldownSelected['category'] === 'interval')) {
+            requireGCD = false;
+            eventsToCreate.push({
+                timestamp: timestamp, 
+                eventType: 'MANA_COOLDOWN_OFF_GCD',
+                subEvent: cooldownSelected['key'],
+            });
         }
 
-
         return [requireGCD ? 2 : 1, eventsToCreate];
-
-        // if cooldown_selected['key'] in ['MANA_POTION', 'DIVINE_PLEA', 'DIVINE_ILLUMINATION', 'MANA_TIDE_TOTEM', 'OWL']:
-        //     self.add_mana_helper(cooldown_selected['value'], cooldown_selected['key'])
-        //     set_cooldown_helper(cooldown_selected)
-        //     base_msg = f'{current_time}s: Used {cooldown_selected["name"]}'
-        //     if cooldown_selected['value'] > 0:
-        //         base_msg += f' for {cooldown_selected["value"]}'
-        //     if self._logs_level == 2:
-        //         print(base_msg)
-        //     if cooldown_selected['key'] == 'DIVINE_ILLUMINATION':
-        //         self._divine_illumination_ends = current_time + 15
-        //         if self._logs_level == 2:
-        //             print('🚨🚨🚨DIVINE ILLUMINATION STARTED🚨🚨🚨')
-        //     return cooldown_selected['key']
-
-
-    //     # inner helper function
-    //     def set_cooldown_helper(cd):
-    //         cd['last_used'] = current_time
-    //         cd['available_for_use'] = False
-
-    //     if cooldown_selected['key'] in ['MANA_POTION', 'DIVINE_PLEA', 'DIVINE_ILLUMINATION', 'MANA_TIDE_TOTEM', 'OWL']:
-    //         self.add_mana_helper(cooldown_selected['value'], cooldown_selected['key'])
-    //         set_cooldown_helper(cooldown_selected)
-    //         base_msg = f'{current_time}s: Used {cooldown_selected["name"]}'
-    //         if cooldown_selected['value'] > 0:
-    //             base_msg += f' for {cooldown_selected["value"]}'
-    //         if self._logs_level == 2:
-    //             print(base_msg)
-    //         if cooldown_selected['key'] == 'DIVINE_ILLUMINATION':
-    //             self._divine_illumination_ends = current_time + 15
-    //             if self._logs_level == 2:
-    //                 print('🚨🚨🚨DIVINE ILLUMINATION STARTED🚨🚨🚨')
-    //         return cooldown_selected['key']
     }
 
     // multplicative factors are passed as an array of dictionaries

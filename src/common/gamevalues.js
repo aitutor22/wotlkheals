@@ -101,11 +101,26 @@ const data = {
             cooldown: 60,
             offGcd: false,
             category: 'interval',
+            subCategory: 'percentageManaPool',
             numIntervals: 5,
             secsBetweenInterval: 3,
             startAtTimestamp: false,
             percentageManaPool: 0.05,
             playerClass: 'paladin',
+        },
+        MANA_TIDE_TOTEM: {
+            key: 'MANA_TIDE_TOTEM',
+            name: 'Mana Tide Totem',
+            value: 0, // we calculate this separately - 0 mana returned initially
+            cooldown: 60 * 5,
+            offGcd: false,
+            category: 'interval',
+            subCategory: 'percentageManaPool',
+            numIntervals: 4,
+            secsBetweenInterval: 3,
+            startAtTimestamp: false,
+            percentageManaPool: 0.06,
+            playerClass: 'shaman',
         },
         RUNIC_MANA_POTION: {
             key: 'RUNIC_MANA_POTION',
@@ -143,11 +158,30 @@ const data = {
         OWL: {
             key: 'OWL',
             name: 'Figurine - Sapphire Owl',
-            value: 2340,
+            value: 0,
             cooldown: 60 * 5,
             offGcd: true,
-            category: 'immediate',
+            category: 'interval',
+            subCategory: 'fixed',
+            tickAmount: 390, // total of 2340 over 12s
+            numIntervals: 6,
+            secsBetweenInterval: 2,
             playerClass: 'all',
+        },
+        INNERVATE: {
+            key: 'INNERVATE',
+            name: 'Innervate',
+            value: 0, // initial value is 0
+            // value: 7865,
+            cooldown: 60 * 3,
+            offGcd: true,
+            category: 'interval',
+            subCategory: 'fixed',
+            tickAmount: 1573, // total of 7865 over 10s
+            numIntervals: 5,
+            secsBetweenInterval: 2,
+            startAtTimestamp: false,
+            playerClass: 'druid',
         },
     },
     manaCooldownNamesMap: {
@@ -160,6 +194,7 @@ const data = {
         'eog': 'EoG',
         'OWL': 'Sapphire Owl',
         'LAY_ON_HANDS': 'Lay on Hands',
+        'INNERVATE': 'Innervate',
     },
 }
 

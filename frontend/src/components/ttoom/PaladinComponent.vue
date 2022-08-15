@@ -95,6 +95,14 @@
           <input class="form-check-input" type="checkbox" id="injector" v-model="oomOptions['manaOptions']['injector']">
           <label class="form-check-label" for="injector">Mana Injector</label>
         </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="innervate" v-model="oomOptions['manaOptions']['innervate']">
+          <label class="form-check-label" for="innervate">Innervate</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="manaTideTotem" v-model="oomOptions['manaOptions']['manaTideTotem']">
+          <label class="form-check-label" for="manaTideTotem">Mana Tide Totem</label>
+        </div>
       </div>
     </div>
 
@@ -118,7 +126,6 @@
           <BarChart
             :chart-data="chartData"
             :chart-options="chartOptions"
-            @on-receive="getLogOfClickedBar"
             />
         </div>
         <div class="col-5">
@@ -168,8 +175,10 @@ export default {
           HOLY_LIGHT: 1.6,
         },
         manaOptions: {
-          'selfLoh': false,
-          'injector': false,
+          selfLoh: false,
+          injector: false,
+          innervate: false,
+          manaTideTotem: false,
         },
         trinkets: ['soup', 'eog'],
         holyShockCPM: 3,
@@ -241,8 +250,9 @@ export default {
       if (!this.results || (typeof this.results['chartDetails'] === 'undefined')) return;
       return {
         responsive: true,
-        onClick: () => {
-          console.log('clicking')
+        onClick: (evt, bars) => {
+          if (bars.length === 0) return;
+          this.getLogOfClickedBar(bars[0]);
         },
         scales: {
           x: {

@@ -70,19 +70,31 @@ class Experiment {
         while (eventHeap.hasElements() && currentTime <= maxMinsToOOM * 60) {
             nextEvent = eventHeap.pop();
             currentTime = nextEvent._timestamp;
-            // handles stuff like divine plea, LoH
+            // handles stuff like divine plea, LoH that consume gcd
             if (nextEvent._eventType === 'MANA_COOLDOWN_SPELL_CAST') {
                 // // UNSURE IF THIS IS THE BEST WAY, but WE JUST WRITE ALL THE COOLDOWNS HERE
                 // // in future, refactor and split out into different functions
+                // nextEvent._subEvent is DIVINE_PLEA, etc
                 let cooldownInfo = DATA['manaCooldowns'][nextEvent._subEvent];
+
                 if (cooldownInfo['category'] === 'interval') {
-                    eventHeap.addIntervalEvents(currentTime, 'MANA_TICK', 'DIVINE_PLEA', cooldownInfo['numIntervals'], cooldownInfo['secsBetweenInterval'], cooldownInfo['startAtTimestamp']);
+                    eventHeap.addIntervalEvents(currentTime, 'MANA_TICK', nextEvent._subEvent, cooldownInfo['numIntervals'], cooldownInfo['secsBetweenInterval'], cooldownInfo['startAtTimestamp']);
                 }
                 this.logger.log(`${currentTime}s: Used ${nextEvent._subEvent}`, 2);
                 // continues with next spell in simulation
                 this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime + this._playerOptions['gcd'], spellIndex, 0);
                 spellIndex += 1
-            } else if (nextEvent._eventType === 'SPELL_CAST') {
+            }
+            // for mana cooldowns that don't use gcd (e.g. if u are pally, and benefit from mana tide)
+            else if (nextEvent._eventType === 'MANA_COOLDOWN_OFF_GCD') {
+                let cooldownInfo = DATA['manaCooldowns'][nextEvent._subEvent];
+                if (cooldownInfo['category'] === 'interval') {
+                    // nextEvent._subEvent refers to MANA_TIDE_TOTEM, etc
+                    eventHeap.addIntervalEvents(currentTime, 'MANA_TICK', nextEvent._subEvent, cooldownInfo['numIntervals'], cooldownInfo['secsBetweenInterval'], cooldownInfo['startAtTimestamp']);
+                }
+                this.logger.log(`${currentTime}s: Used ${nextEvent._subEvent}`, 2);
+            }
+            else if (nextEvent._eventType === 'SPELL_CAST') {
                 // offset is when we cast an instant spell like holyshock, should put the next spell on gcd
                 [status, errorMessage, offset, eventsToCreate] = player.castSpell(nextEvent._subEvent, currentTime, spellIndex, this.logger);
                 // ends simulation if player is oom
@@ -126,8 +138,16 @@ class Experiment {
                     player.addManaRegenFromReplenishmentAndOtherMP5(this.logger, currentTime);
                     // assume replenishment ticks every 2s
                     eventHeap.addEvent(currentTime + 2, 'MANA_TICK', 'replenishment');
-                } else if (nextEvent._subEvent === 'DIVINE_PLEA') {
-                    player.addManaRegenPercentageOfManaPool(currentTime, DATA['manaCooldowns']['DIVINE_PLEA']['percentageManaPool'], 'DIVINE_PLEA', this.logger);
+                } 
+                // divine plea/mana_tide or innervate
+                else {
+                    // nextEvent._subEvent is INNERVATE, DIVINE_PLEA, etc
+                    let cooldownInfo = DATA['manaCooldowns'][nextEvent._subEvent];
+                    if (cooldownInfo['subCategory'] === 'percentageManaPool') {
+                        player.addManaRegenPercentageOfManaPool(currentTime, DATA['manaCooldowns'][nextEvent._subEvent]['percentageManaPool'], nextEvent._subEvent, this.logger);
+                    } if (cooldownInfo['subCategory'] === 'fixed') {
+                        player.addManaHelper(DATA['manaCooldowns'][nextEvent._subEvent]['tickAmount'], nextEvent._subEvent, this.logger, currentTime);
+                    }
                 }
             }
 

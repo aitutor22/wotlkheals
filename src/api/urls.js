@@ -32,7 +32,12 @@ const defaultOptions = {
         {key: 'DIVINE_ILLUMINATION', minimumManaDeficit: 9000, minimumTimeElapsed: 0},
         {key: 'RUNIC_MANA_POTION', minimumManaDeficit: 18000, minimumTimeElapsed: 0},
     ],
-    manaOptions: {},
+    manaOptions: {
+      selfLoh: false,
+      injector: false,
+      innervate: false,
+      manaTideTotem: false,
+    },
 };
 
 // helper function that combines playerOptions passed from client to create
@@ -60,6 +65,15 @@ function createOptions(playerOptions) {
         // use LoH when left 3k mana as it's last resort
         let manaDeficit = playerOptions['manaPool'] - 3000;
         options['manaCooldowns'].push({key: 'LAY_ON_HANDS', minimumManaDeficit: manaDeficit, minimumTimeElapsed: 0});
+    }
+
+    if (playerOptions['manaOptions']['innervate']) {
+        options['manaCooldowns'].push({key: 'INNERVATE', minimumManaDeficit: 18000, minimumTimeElapsed: 0});
+    }
+
+    // to avoid a situation where mana tide totem is always trigged by dmcg, we set both a minimum mana and minimum time requirement for MTT
+    if (playerOptions['manaOptions']['manaTideTotem']) {
+        options['manaCooldowns'].push({key: 'MANA_TIDE_TOTEM', minimumManaDeficit: 12000, minimumTimeElapsed: 40});
     }
 
     // adds owl to manaCooldowns if player has equipped it
