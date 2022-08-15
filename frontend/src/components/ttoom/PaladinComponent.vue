@@ -51,9 +51,6 @@
         </div>
       </div>
 
-<!--       <div class="col-4">
-
-      </div> -->
       <div class="col-4">
         <div class="input-group mb-2" style="width: 100%">
           <span class="input-group-text" id="basic-addon1">Crit Chance %</span>
@@ -85,6 +82,14 @@
         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="owl" v-model="oomOptions['trinkets']" value="owl">
           <label class="form-check-label" for="owl">Figurine - Sapphire Owl</label>
+        </div>
+      </div>
+
+      <div class="col-4">
+        <b>Mana Options</b>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="selfLoh" v-model="oomOptions['manaOptions']['selfLoh']">
+          <label class="form-check-label" for="selfLoh">Self LoH (Divinity)</label>
         </div>
       </div>
     </div>
@@ -134,7 +139,6 @@
         </i>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -158,6 +162,9 @@ export default {
         manaPool: 28000,
         castTimes: {
           HOLY_LIGHT: 1.6,
+        },
+        manaOptions: {
+          'selfLoh': false,
         },
         trinkets: ['soup', 'eog'],
         holyShockCPM: 3,

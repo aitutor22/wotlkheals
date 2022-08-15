@@ -124,6 +124,7 @@ class BasePlayer {
     initialiseSpells() {
         let results = [];
         for (let _spell of this.classInfo['spells']) {
+            // object.assign is fine here as no nested stuff
             let entry = Object.assign({}, _spell);
 
             // setting cast time for each spell based on user options
@@ -144,7 +145,7 @@ class BasePlayer {
     // takes an array of cooldowns, in order of cooldowns to be used first, together with relevant metrics
     initialiseManaCooldowns(manaArr) {
         for (let cd of manaArr) {
-            let entry = Object.assign({}, DATA['manaCooldowns'][cd['key']]);
+            let entry = JSON.parse(JSON.stringify(DATA['manaCooldowns'][cd['key']]));
             entry['minimumManaDeficit'] = cd['minimumManaDeficit'];
             entry['minimumTimeElapsed'] = cd['minimumTimeElapsed'];
             entry['lastUsed'] = -9999;

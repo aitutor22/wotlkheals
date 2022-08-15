@@ -31,7 +31,6 @@ const defaultOptions = {
         {key: 'DIVINE_PLEA', minimumManaDeficit: 8000, minimumTimeElapsed: 0},
         {key: 'DIVINE_ILLUMINATION', minimumManaDeficit: 9000, minimumTimeElapsed: 0},
         {key: 'RUNIC_MANA_POTION', minimumManaDeficit: 18000, minimumTimeElapsed: 0},
-        // {key: 'LAY_ON_HANDS', minimumManaDeficit: 28000, minimumTimeElapsed: 0},
     ],
 };
 
@@ -39,20 +38,37 @@ const defaultOptions = {
 // a set of options that is passed to experiment
 // ONE KEY DIFFERENCE - use critChance is in % (e.g 30), so we need to convert it to probability (0.3) by dividing by 100
 function createOptions(playerOptions) {
-    let options = Object.assign({}, defaultOptions);
+    // https://code.tutsplus.com/articles/the-best-way-to-deep-copy-an-object-in-javascript--cms-39655
+    // WARNING: Object.assign doesn't do a full deep copy - this was the cause of some bugs originally
+    // doing let options = Object.assign({}, defaultOptions);
+    // and modifiying options['manaCooldowns'] affected source as well
+    // use the following method instead (not that this doesnt work if there are functions in the source object)
+    let options = JSON.parse(JSON.stringify(defaultOptions));
+    // we handle mana options separately
     for (let key in playerOptions) {
+        if (key === 'manaOptions') continue;
+
         if (key === 'critChance') {
             options[key] = playerOptions[key] / 100;    
         } else {
             options[key] = playerOptions[key];
         }
     }
-    // console.log(playerOptions)
+
+    // console.log(playerOptions);
+
+    // start handling of mana options
+    if (playerOptions['manaOptions']['selfLoh']) {
+        // use LoH when left 3k mana as it's last resort
+        let manaDeficit = playerOptions['manaPool'] - 3000;
+        options['manaCooldowns'].push({key: 'LAY_ON_HANDS', minimumManaDeficit: manaDeficit, minimumTimeElapsed: 0});
+    }
 
     // adds owl to manaCooldowns if player has equipped it
     if (playerOptions['trinkets'].indexOf('owl') > -1) {
         options['manaCooldowns'].push({key: 'OWL', minimumManaDeficit: 10000, minimumTimeElapsed: 0});
     }
+
     return options;
 }
 

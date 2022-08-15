@@ -157,7 +157,8 @@ const data = {
         'RUNIC_MANA_POTION': 'Mana Potion',
         'sow': 'Holy Shock SoW',
         'eog': 'EoG',
-        'OWL': 'Sapphire Owl'
+        'OWL': 'Sapphire Owl',
+        'LAY_ON_HANDS': 'Lay on Hands',
     },
 }
 
