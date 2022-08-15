@@ -20,7 +20,7 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+// app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.use('/api', apiRouter);
@@ -34,6 +34,10 @@ app.use(express.static('public'));
 app.use('*', function(req, res, next) {
   res.sendFile(path.resolve(__dirname, '../public/index.html'));
 });
+
+
+// app.use('/', express.static(path.join(__dirname, '../public')));
+
 
 // this helps with SPA - but should come after all the server routes to avoid messing them up
 // https://forum.vuejs.org/t/how-to-handle-vue-routes-with-express-ones/23522
