@@ -83,7 +83,7 @@ test('system should add mana from 90 int if dmcg is selected', () => {
 
 test('system should add crit from 90 int if dmcg is selected', () => {
     let player = new Paladin(dmcgOptions);
-    expect((Math.abs(player.critChance - 0.306533869322614))).toBeLessThan(1e-5);
+    expect((Math.abs(player.critChance - 0.3565339869320261))).toBeLessThan(1e-5);
 });
 
 test('testing setting dmcg to true', () => {
@@ -117,7 +117,7 @@ test('maxMana and critChance when dmcg active', () => {
     let player = new Paladin(dmcgOptions);
     player.setBuffActive('dmcg', true, 2);
     expect(player.maxMana).toBe(35078);
-    expect((Math.abs(player.critChance - 0.328308338))).toBeLessThan(1e-5);
+    expect((Math.abs(player.critChance - 0.3783139433721132))).toBeLessThan(1e-5);
 });
 
 test('selectSpell overrideSpellSelection', () => {
@@ -226,5 +226,49 @@ test('testing useManaCooldown', () => {
     let player = new Paladin(defaultOptions);
     expect(player._manaCooldowns.length).toBe(1);
     player.useManaCooldown();
+});
+
+test('testing addSpellCastToStatistics', () => {
+    let player = new Paladin(defaultOptions);
+    expect(player._statistics['spellsCasted']).toEqual({});
+    player.addSpellCastToStatistics('HOLY_LIGHT', false);
+    expect(player._statistics['spellsCasted']['HOLY_LIGHT']).toEqual({'normal': 1, 'crit': 0, 'total': 1});
+    player.addSpellCastToStatistics('HOLY_LIGHT', false);
+    expect(player._statistics['spellsCasted']['HOLY_LIGHT']).toEqual({'normal': 2, 'crit': 0, 'total': 2});
+    player.addSpellCastToStatistics('HOLY_LIGHT', true);
+    expect(player._statistics['spellsCasted']['HOLY_LIGHT']).toEqual({'normal': 2, 'crit': 1, 'total': 3});
+});
+
+test('testing calculate_statistics_after_sim_ends', () => {
+    let player = new Paladin(defaultOptions);
+    player._statistics = {
+      manaGenerated: {
+        libramOfRenewal: 10914,
+        illumination: 18757,
+        Replenishment: 10528,
+        otherMP5: 15134,
+        soup: 6736,
+        eog: 6885,
+        divinePlea: 21000,
+        divineIllumination: 5500,
+        RUNIC_MANA_POTION: 4300,
+        sow: 2240
+      },
+      spellsCasted: {
+        HOLY_LIGHT: { normal: 61, crit: 46, total: 107 },
+        HOLY_SHOCK: { normal: 4, crit: 5, total: 9 }
+      }
+    }
+
+    let results = player.calculate_statistics_after_sim_ends(240);
+
+    // cpm is rounded to 1 dp
+    expect(results['spellsCasted'].length).toBe(2);
+    expect((Math.abs(results['spellsCasted'][0]['cpm'] - 26.8))).toBeLessThan(1e-2);
+    expect((Math.abs(results['spellsCasted'][1]['cpm'] - 2.3))).toBeLessThan(1e-2);
+    // MP5 is floored
+    expect(results['manaGenerated'].length).toBe(10);
+    expect((Math.abs(results['manaGenerated'][0]['MP5'] - 227))).toBeLessThan(1e-1);
+
 });
 

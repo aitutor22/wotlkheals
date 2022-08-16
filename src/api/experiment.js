@@ -161,7 +161,7 @@ class Experiment {
     }
 
     runBatch(batchSize=10, seed=0, logsLevel=0, numBins=30) {
-        let timings = [], manaGeneratedStatistics = [], medianEntry, resultSingleLoop, binResults;
+        let timings = [], manaGeneratedStatistics = [], spellsCastedStatistics = [], medianEntry, resultSingleLoop, binResults;
         // if seed is 0, we get a random number from 1 to 9999 and used it to seed
         if (seed === 0) {
             seed = Math.floor(Math.random() * 10000 + 1)
@@ -172,6 +172,7 @@ class Experiment {
             // thus, we multiply seed by i + 1 instead
             resultSingleLoop = this.runSingleLoop(logsLevel, seed * (i + 1));
             manaGeneratedStatistics.push(resultSingleLoop['statistics']['manaGenerated']);
+            spellsCastedStatistics.push(resultSingleLoop['statistics']['spellsCasted']);
             timings.push({ttoom: resultSingleLoop['ttoom'], seed: seed * (i + 1)});
         }
 
@@ -190,7 +191,7 @@ class Experiment {
         }
         let minXAxis = binResults[0].minNum, maxXAxis = binResults[binResults.length - 1].maxNum;
 
-        // console.log(medianIndex, binResults[medianIndex],medianEntry['ttoom']);
+
 
         // we run a single iteration of the median seed to get log info
         // first argument is logLevel - 2 shows most details but ommits crti details
@@ -199,7 +200,8 @@ class Experiment {
         return {
             ttoom: medianEntry['ttoom'],
             logs: resultSingleLoop['logs'],
-            manaStatistics: Utility.medianStatistics(manaGeneratedStatistics, 'source', 'MP5'),
+            manaStatistics: Utility.medianStatistics(manaGeneratedStatistics, 'source', 'MP5', 'floor'),
+            spellsCastedStatistics: Utility.medianStatistics(spellsCastedStatistics, 'spell', 'cpm', '1dp'),
             // statistics: resultSingleLoop['statistics'][0],
             chartDetails: {
                 labels: labels,

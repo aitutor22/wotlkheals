@@ -48,6 +48,7 @@ class BasePlayer {
         this._instantSpells = this._spells.filter((_spell) => _spell['instant']).map((_spell) => _spell['key']);
         this._statistics = {
             'manaGenerated': {},
+            'spellsCasted': {},
         }
     }
 
@@ -426,6 +427,19 @@ class BasePlayer {
         return Math.floor(value * this._intModifier * this.classInfo['spellPowerFromInt']);
     }
 
+    addSpellCastToStatistics(spellKey, isCrit) {
+        // actual casting
+        if (!(spellKey in this._statistics['spellsCasted'])) {
+            this._statistics['spellsCasted'][spellKey] = {
+                'normal': 0,
+                'crit': 0,
+                'total': 0,
+            }
+        }
+        this._statistics['spellsCasted'][spellKey][isCrit ? 'crit' : 'normal']++;
+        this._statistics['spellsCasted'][spellKey]['total']++;
+    }
+
     calculate_statistics_after_sim_ends(total_time) {
         // for spell in self._statistics['spells']:
         //     this._statistics['spells'][spell]['hps'] = this._statistics['spells'][spell]['total_healing'] / total_time
@@ -441,8 +455,8 @@ class BasePlayer {
         // if (logger) logger.log(this._statistics, 2);
         // console.log(this._statistics);
 
-
-        let toReturn = {'manaGenerated': []};
+        // console.log()
+        let toReturn = {manaGenerated: [], spellsCasted: []};
         for (let key in this._statistics['manaGenerated']) {
             // poor code: manually converts certain keys to what is shown on client's table
             let newKey = key in DATA['manaCooldownNamesMap'] ? DATA['manaCooldownNamesMap'][key] : Utility.capitalizeFirstLetter(key);
@@ -450,6 +464,17 @@ class BasePlayer {
             toReturn['manaGenerated'].push({
                 'source': newKey,
                 'MP5': Math.floor(this._statistics['manaGenerated'][key] / total_time * 5),
+            });
+        }
+
+        for (let key in this._statistics['spellsCasted']) {
+            // // poor code: manually converts certain keys to what is shown on client's table
+            // let newKey = key in DATA['manaCooldownNamesMap'] ? DATA['manaCooldownNamesMap'][key] : Utility.capitalizeFirstLetter(key);
+            // // the keys here are what is shown on the client table, hence the weird notation
+
+            toReturn['spellsCasted'].push({
+                'spell': key,
+                'cpm': Utility.roundDp(this._statistics['spellsCasted'][key]['total'] / total_time * 60, 1),
             });
         }
         return toReturn;

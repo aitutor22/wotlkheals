@@ -84,6 +84,8 @@ class Paladin extends BasePlayer {
 
         // all pally spells have 1 chance to crit (beacon just mirrors the spell cast)
         isCrit = this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance);
+
+        this.addSpellCastToStatistics(spellKey, isCrit);
         this.calculateHealingHelper(spellKey);
         [status, manaUsed, currentMana, errorMessage] = this.subtractMana(spellKey, timestamp, procs);
 
@@ -133,9 +135,7 @@ class Paladin extends BasePlayer {
 
     // procs can be eog/soup
     subtractMana(spellKey, timestamp, procs) {
-        // if self._divine_illumination_ends >= current_time:
-        //     value = math.floor(value / 2)
-        //     self._statistics['mana_generated']['DIVINE_ILLUMINATION'] += value
+        // 50% mana reduction when divine illuminatin is active
         let baseCostMultiplicativeFactors = this.isBuffActive('DIVINE_ILLUMINATION') ? {'divineIllumination': 0.5} : {};
 
         // Holy Light gets a further 5% discount on mana cost

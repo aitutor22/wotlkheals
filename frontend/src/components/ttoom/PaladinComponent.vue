@@ -142,7 +142,7 @@
 
       <div class="col-5 offset-2">
         <h5>Cast Profile</h5>
-        <b-table striped hover :items="tableData"></b-table>
+        <b-table striped hover :items="this.results['spellsCastedStatistics']"></b-table>
       </div>
       <div class="pad-bottom">
         <i>
@@ -200,12 +200,6 @@ export default {
     logs() {
       if (!this.selectedLog) return;
       return this.selectedLog.join('\n');
-    },
-    tableData() {
-      let results = [
-        // {spell: 'Holy Light', CPM: 20.5, HPS: 20000, 'Crit %': 42},
-      ];
-      return results;
     },
     mp5Data() {
       if (!this.results || (typeof this.results['manaStatistics'] === 'undefined')) return;

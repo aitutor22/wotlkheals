@@ -195,6 +195,7 @@ const data = {
         'OWL': 'Sapphire Owl',
         'LAY_ON_HANDS': 'Lay on Hands',
         'INNERVATE': 'Innervate',
+        'ManaTideTotem': 'Mana Tide Totem',
     },
 }
 

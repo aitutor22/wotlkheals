@@ -41,8 +41,22 @@ const helperFunctions = {
           [{ source: 'Libram', MP5: 300 },{ source: 'Illumination', MP5: 403 },]
         ]
     */
-    medianStatistics(arr, key, value) {
-        let totals = {}, toReturn = [];
+    medianStatistics(arr, key, value, roundingMethod='floor') {
+        let totals = {}, toReturn = []
+            roundingFunc = null,
+            app = this;
+
+        if (roundingMethod === 'floor') {
+            roundingFunc = Math.floor
+        } 
+        else if (roundingMethod === '1dp') {
+            roundingFunc = ((dp) => {
+                return (num) => {
+                    return app.roundDp(num, dp);
+                }
+            })(1);
+        }
+
         for (let i = 0; i < arr.length; i++) {
             for (let entry of arr[i]) {
                 if (!(entry[key] in totals)) totals[entry[key]] = [];
@@ -53,7 +67,7 @@ const helperFunctions = {
         for (let entry in totals) {
             let _newRow = {};
             _newRow[key] = entry;
-            _newRow[value] = Math.floor(this.median(totals[entry]));
+            _newRow[value] = roundingFunc(this.median(totals[entry]));
             toReturn.push(_newRow); 
         }
         // sorts in descending order
