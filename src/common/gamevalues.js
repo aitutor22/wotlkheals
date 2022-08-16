@@ -80,10 +80,22 @@ const data = {
                 'name': 'Holy Light',
                 'cooldown': 0,
                 'instant': false,
+                'baseCastTime': 2, // assumed light's grace
                 'baseManaCost': 1274.26,
                 baseHeal: 5166,
                 coefficient: 1.679, // tested by currelius, before talents
-            }],
+            },
+            {
+                'key': 'FLASH_OF_LIGHT',
+                'name': 'Flash of Light',
+                'cooldown': 0,
+                'instant': false,
+                'baseCastTime': 1.5,
+                'baseManaCost': 307.58,
+                baseHeal: 832,
+                coefficient: 1, // untested, from wowhead
+            }
+            ],
             manaCostModifiers: {
                 '4pT7': 0.05, // 5% mana discount on HL
                 'glyphSOW': 0.05, // 5% mana discount on all spells

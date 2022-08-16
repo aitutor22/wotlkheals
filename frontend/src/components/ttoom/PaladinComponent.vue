@@ -173,10 +173,12 @@ export default {
         manaPool: 28000,
         castTimes: {
           HOLY_LIGHT: 1.6,
+          FLASH_OF_LIGHT: 1.4,
         },
         cpm: {
           HOLY_LIGHT: 30,
           HOLY_SHOCK: 3,
+          FLASH_OF_LIGHT: 5,
         },
         manaOptions: {
           selfLoh: false,
