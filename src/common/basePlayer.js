@@ -473,7 +473,8 @@ class BasePlayer {
             // // the keys here are what is shown on the client table, hence the weird notation
 
             toReturn['spellsCasted'].push({
-                'spell': key,
+                // converts HOLY_LIGHT to Holy Light
+                'spell': key.split('_').map(k => Utility.capitalizeFirstLetter(k.toLowerCase())).join(' '),
                 'cpm': Utility.roundDp(this._statistics['spellsCasted'][key]['total'] / total_time * 60, 1),
             });
         }

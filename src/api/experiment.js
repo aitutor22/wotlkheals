@@ -40,6 +40,18 @@ class Experiment {
     }
 
     // we split out the various handler event functions to make it easier to do unit testing
+    handleOffGcdManaCooldown(nextEvent, eventHeap) {
+        let currentTime = nextEvent._timestamp,
+            manaSource = nextEvent._subEvent,
+            cooldownInfo = DATA['manaCooldowns'][manaSource];
+
+        if (cooldownInfo['category'] === 'interval') {
+            // nextEvent._subEvent refers to MANA_TIDE_TOTEM, etc
+            eventHeap.addIntervalEvents(currentTime, 'MANA_TICK', manaSource, cooldownInfo['numIntervals'], cooldownInfo['secsBetweenInterval'], cooldownInfo['startAtTimestamp']);
+        }
+        if (this.logger) this.logger.log(`${currentTime}s: Used ${manaSource}`, 2);
+    }
+
     handleManaTick(nextEvent, player, eventHeap) {
         let currentTime = nextEvent._timestamp,
             manaSource = nextEvent._subEvent;
@@ -87,15 +99,12 @@ class Experiment {
         // assume first mana tick in 2s
         eventHeap.addEvent(2, 'MANA_TICK', 'replenishment');
 
-
         while (eventHeap.hasElements() && currentTime <= maxMinsToOOM * 60) {
             nextEvent = eventHeap.pop();
             currentTime = nextEvent._timestamp;
+
             // handles stuff like divine plea, LoH that consume gcd
             if (nextEvent._eventType === 'MANA_COOLDOWN_SPELL_CAST') {
-                // // UNSURE IF THIS IS THE BEST WAY, but WE JUST WRITE ALL THE COOLDOWNS HERE
-                // // in future, refactor and split out into different functions
-                // nextEvent._subEvent is DIVINE_PLEA, etc
                 let cooldownInfo = DATA['manaCooldowns'][nextEvent._subEvent];
 
                 if (cooldownInfo['category'] === 'interval') {
@@ -108,12 +117,7 @@ class Experiment {
             }
             // for mana cooldowns that don't use gcd (e.g. if u are pally, and benefit from mana tide)
             else if (nextEvent._eventType === 'MANA_COOLDOWN_OFF_GCD') {
-                let cooldownInfo = DATA['manaCooldowns'][nextEvent._subEvent];
-                if (cooldownInfo['category'] === 'interval') {
-                    // nextEvent._subEvent refers to MANA_TIDE_TOTEM, etc
-                    eventHeap.addIntervalEvents(currentTime, 'MANA_TICK', nextEvent._subEvent, cooldownInfo['numIntervals'], cooldownInfo['secsBetweenInterval'], cooldownInfo['startAtTimestamp']);
-                }
-                this.logger.log(`${currentTime}s: Used ${nextEvent._subEvent}`, 2);
+                this.handleOffGcdManaCooldown(nextEvent, eventHeap);
             }
             else if (nextEvent._eventType === 'SPELL_CAST') {
                 // offset is when we cast an instant spell like holyshock, should put the next spell on gcd

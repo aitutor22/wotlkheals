@@ -76,3 +76,21 @@ test('test owl subevent on handleManaTick', () => {
     // should expect no events added
     expect(eventHeap.priorityQueue.length).toBe(0);
 });
+
+test('test MANA_TIDE_TOTEM subevent on handleOffGcdManaCooldown', () => {
+    let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
+    let experiment = new Experiment(options, 1);
+    let eventHeap = new EventHeap();
+    let player = new Player(options);
+    player._currentMana = 10000;
+    eventHeap.addEvent(10, 'MANA_COOLDOWN_OFF_GCD', 'MANA_TIDE_TOTEM');
+    let manaTideTotemEvent = eventHeap.pop();
+
+    experiment.handleOffGcdManaCooldown(manaTideTotemEvent, eventHeap);
+    expect(eventHeap.priorityQueue.length).toBe(4);
+    let evt = eventHeap.pop();
+    expect(evt._timestamp).toBe(13);
+    expect(evt._eventType).toBe('MANA_TICK');
+    expect(evt._subEvent).toBe('MANA_TIDE_TOTEM');
+});
+
