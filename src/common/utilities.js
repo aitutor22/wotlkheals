@@ -49,6 +49,7 @@ const helperFunctions = {
         if (roundingMethod === 'floor') {
             roundingFunc = Math.floor
         } 
+        // uses closure to create a function that rounds numbers to 1 dp
         else if (roundingMethod === '1dp') {
             roundingFunc = ((dp) => {
                 return (num) => {

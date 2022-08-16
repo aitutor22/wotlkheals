@@ -1,0 +1,78 @@
+const Experiment = require('./experiment');
+const Player = require('../common/paladin');
+const EventHeap = require('../common/eventheap');
+
+const DATA = require('../common/gamevalues');
+
+test('test replenishment subevent on handleManaTick', () => {
+    let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
+    let experiment = new Experiment(options, 1);
+    let eventHeap = new EventHeap();
+    let player = new Player(options);
+    player._currentMana = 10000;
+    eventHeap.addEvent(2, 'MANA_TICK', 'replenishment');
+    let replenishmentEvent = eventHeap.pop()
+    // haven't added event to eventHeap
+    expect(eventHeap.hasElements()).toBe(false);
+
+    experiment.handleManaTick(replenishmentEvent, player, eventHeap);
+    // checks that player has added some mana
+    expect(player._currentMana).toBeGreaterThanOrEqual(10000 + player.maxMana * 0.01 / 5);
+
+
+    // should add a new replenishment event 2s later
+    expect(eventHeap.priorityQueue.length).toBe(1);
+    let nextEvent = eventHeap.pop();
+    expect(nextEvent._timestamp).toBe(4);
+});
+
+// singular innervate tick
+test('test innervate subevent on handleManaTick', () => {
+    let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
+    let experiment = new Experiment(options, 1);
+    let eventHeap = new EventHeap();
+    let player = new Player(options);
+    player._currentMana = 10000;
+    eventHeap.addEvent(2, 'MANA_TICK', 'INNERVATE');
+    let innervateEvent = eventHeap.pop();
+
+    experiment.handleManaTick(innervateEvent, player, eventHeap);
+    // we code innervate to be 5 ticks of 1573
+    expect(player._currentMana).toBe(10000 + 1573);
+    // should expect no events added
+    expect(eventHeap.priorityQueue.length).toBe(0);
+});
+
+// singular divine plea tick
+test('test divine plea subevent on handleManaTick', () => {
+    let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
+    let experiment = new Experiment(options, 1);
+    let eventHeap = new EventHeap();
+    let player = new Player(options);
+    player._currentMana = 10000;
+    eventHeap.addEvent(2, 'MANA_TICK', 'DIVINE_PLEA');
+    let divinePleaEvent = eventHeap.pop();
+
+    experiment.handleManaTick(divinePleaEvent, player, eventHeap);
+    // we code innervate to be 5 ticks of 5% mana
+    expect(player._currentMana).toBe(10000 + player.maxMana * 0.05);
+    // should expect no events added
+    expect(eventHeap.priorityQueue.length).toBe(0);
+});
+
+// singular divine plea tick
+test('test owl subevent on handleManaTick', () => {
+    let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
+    let experiment = new Experiment(options, 1);
+    let eventHeap = new EventHeap();
+    let player = new Player(options);
+    player._currentMana = 10000;
+    eventHeap.addEvent(2, 'MANA_TICK', 'OWL');
+    let owlEvent = eventHeap.pop();
+
+    experiment.handleManaTick(owlEvent, player, eventHeap);
+    // we code innervate to be 5 ticks of 5% mana
+    expect(player._currentMana).toBe(10000 + 390);
+    // should expect no events added
+    expect(eventHeap.priorityQueue.length).toBe(0);
+});

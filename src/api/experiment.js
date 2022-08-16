@@ -39,6 +39,27 @@ class Experiment {
         this._loggerOutputLocation = loggerOutputLocation;
     }
 
+    // we split out the various handler event functions to make it easier to do unit testing
+    handleManaTick(nextEvent, player, eventHeap) {
+        let currentTime = nextEvent._timestamp,
+            manaSource = nextEvent._subEvent;
+        if (manaSource === 'replenishment') {
+            player.addManaRegenFromReplenishmentAndOtherMP5(this.logger, currentTime);
+            // assume replenishment ticks every 2s
+            eventHeap.addEvent(currentTime + 2, 'MANA_TICK', 'replenishment');
+        } 
+        // divine plea/mana_tide or innervate
+        else {
+            // nextEvent._subEvent is INNERVATE, DIVINE_PLEA, etc
+            let cooldownInfo = DATA['manaCooldowns'][nextEvent._subEvent];
+            if (cooldownInfo['subCategory'] === 'percentageManaPool') {
+                player.addManaRegenPercentageOfManaPool(currentTime, DATA['manaCooldowns'][manaSource]['percentageManaPool'], manaSource, this.logger);
+            } if (cooldownInfo['subCategory'] === 'fixed') {
+                player.addManaHelper(DATA['manaCooldowns'][manaSource]['tickAmount'], manaSource, this.logger, currentTime);
+            }
+        }
+    }
+
     // seed === 0 means we don't use a seed
     runSingleLoop(logsLevel=0, seed=0, maxMinsToOOM=10) {
         let rng = Utility.setSeed(seed);
@@ -134,21 +155,7 @@ class Experiment {
                 // code here sets availableForUse to false; this is fine, as we have other code that checks for availability on next spellcast
                 player.setBuffActive(nextEvent._subEvent, false, currentTime, false, this.logger);
             } else if (nextEvent._eventType === 'MANA_TICK') {
-                if (nextEvent._subEvent === 'replenishment') {
-                    player.addManaRegenFromReplenishmentAndOtherMP5(this.logger, currentTime);
-                    // assume replenishment ticks every 2s
-                    eventHeap.addEvent(currentTime + 2, 'MANA_TICK', 'replenishment');
-                } 
-                // divine plea/mana_tide or innervate
-                else {
-                    // nextEvent._subEvent is INNERVATE, DIVINE_PLEA, etc
-                    let cooldownInfo = DATA['manaCooldowns'][nextEvent._subEvent];
-                    if (cooldownInfo['subCategory'] === 'percentageManaPool') {
-                        player.addManaRegenPercentageOfManaPool(currentTime, DATA['manaCooldowns'][nextEvent._subEvent]['percentageManaPool'], nextEvent._subEvent, this.logger);
-                    } if (cooldownInfo['subCategory'] === 'fixed') {
-                        player.addManaHelper(DATA['manaCooldowns'][nextEvent._subEvent]['tickAmount'], nextEvent._subEvent, this.logger, currentTime);
-                    }
-                }
+                this.handleManaTick(nextEvent, player, eventHeap);
             }
 
             player.checkOverflowMana();
