@@ -31,11 +31,11 @@ class Paladin extends BasePlayer {
         this.initialiseManaCooldowns(options['manaCooldowns']);
 
         // filters out holyShock if cpm is set to 0
-        if (this._options['holyShockCPM'] === 0) {
+        if (this._options['cpm']['HOLY_SHOCK'] === 0) {
             this._spells = this._spells.filter((_spell) => _spell['key'] !== 'HOLY_SHOCK');
         } else {
             // otherwise change cooldown according to cpm
-            this._spells.find((_spell) => _spell['key'] === 'HOLY_SHOCK')['cooldown'] = 60 / this._options['holyShockCPM'];
+            this._spells.find((_spell) => _spell['key'] === 'HOLY_SHOCK')['cooldown'] = 60 / this._options['cpm']['HOLY_SHOCK'];
         }
     }
 

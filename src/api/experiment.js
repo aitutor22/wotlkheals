@@ -84,6 +84,7 @@ class Experiment {
         let player = new Paladin(JSON.parse(JSON.stringify(this._playerOptions)));
         // KIV -> think about if this is extendable for other classes. sow (seal of wisdom is a pally only thing for instance)
         player.createRngThresholds(rng, ['crit', 'soup', 'eog', 'sow', 'dmcg'], maxMinsToOOM);
+        player.createSpellQueue(rng);
         let eventHeap = new EventHeap();
         let currentTime = 0,
             lastCastTimestamp = 0,
@@ -201,8 +202,6 @@ class Experiment {
             medianIndex++;
         }
         let minXAxis = binResults[0].minNum, maxXAxis = binResults[binResults.length - 1].maxNum;
-
-
 
         // we run a single iteration of the median seed to get log info
         // first argument is logLevel - 2 shows most details but ommits crti details

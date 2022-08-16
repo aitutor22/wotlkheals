@@ -32,7 +32,7 @@
         </div>
         <div class="input-group mb-2" style="width: 100%">
           <span class="input-group-text" id="basic-addon1">HS CPM </span>
-          <input type="text" class="form-control" v-model.number="oomOptions['holyShockCPM']">
+          <input type="text" class="form-control" v-model.number="oomOptions['cpm']['HOLY_SHOCK']">
         </div>
         <div class="input-group mb-2" style="width: 100%">
           <span class="input-group-text" id="basic-addon1">Avg hit from glyph HL</span>
@@ -174,6 +174,10 @@ export default {
         castTimes: {
           HOLY_LIGHT: 1.6,
         },
+        cpm: {
+          HOLY_LIGHT: 30,
+          HOLY_SHOCK: 3,
+        },
         manaOptions: {
           selfLoh: false,
           injector: false,
@@ -181,7 +185,6 @@ export default {
           manaTideTotem: false,
         },
         trinkets: ['soup', 'eog'],
-        holyShockCPM: 3,
         glyphHolyLightHits: 4,
         mp5FromGearAndRaidBuffs: 300,
         '2pT7': true,

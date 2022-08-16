@@ -1,5 +1,6 @@
 const DATA = require('./gamevalues');
 const Utility = require('./utilities');
+const SpellQueue = require('./spellqueue');
 
 
 class BasePlayer {
@@ -50,6 +51,18 @@ class BasePlayer {
             'manaGenerated': {},
             'spellsCasted': {},
         }
+    }
+
+    createSpellQueue(rng) {
+        let castProfile = {};
+        // we only want want to include spells with non-cd in spellqueue
+        // cooldown spells are automatically casted on cooldown
+        for (let key in this._options['cpm']) {
+            if (this.classInfo['spells'].find(_spell => _spell['key'] === key)['cooldown'] === 0) {
+                castProfile[key] = this._options['cpm'][key];
+            }
+        }
+        this._spellQueue = new SpellQueue(castProfile, rng);
     }
 
     // start getters
@@ -176,7 +189,7 @@ class BasePlayer {
 
 
     selectSpell(timestamp, spellIndex, overrideSpellSelection='') {
-        let spellSelected = null;
+        let spellSelected = null, selectedSpellKey;
 
         // # we first look among spells with cd (e.g. holy shock, sacred shield), and update their availability
         let spellsWithCooldown = this._spells.filter((_spell) => _spell['cooldown'] > 0);
@@ -204,8 +217,9 @@ class BasePlayer {
         }
 
         // if all cd spells are not available, then cast a non-cd spell
-        // in future return based on cast profile
-        return spellsWithNoCooldown[0];
+        // we use the spellQueue to decide what spell to select (to try to adhere to user's input cast profile)
+        selectedSpellKey = this._spellQueue.getSpell();
+        return spellsWithNoCooldown.find((_spell) => _spell['key'] === selectedSpellKey);
     }
 
     // checks to see if a mana cooldown should be used
