@@ -81,10 +81,9 @@ class Experiment {
         // rather than saving player/eventHeap to experiement, we recreate it each time we run a loop
         // this ensures that we are always starting anew when we run a loop
         // makes a copy of playerOptions to avoid bugs where we override the original options
-        let player = new Paladin(JSON.parse(JSON.stringify(this._playerOptions)));
+        let copiedOptions = JSON.parse(JSON.stringify(this._playerOptions));
         // KIV -> think about if this is extendable for other classes. sow (seal of wisdom is a pally only thing for instance)
-        player.createRngThresholds(rng, ['crit', 'soup', 'eog', 'sow', 'dmcg'], maxMinsToOOM);
-        player.createSpellQueue(rng);
+        let player = new Paladin(copiedOptions, rng, ['crit', 'soup', 'eog', 'sow', 'dmcg'], maxMinsToOOM);
         let eventHeap = new EventHeap();
         let currentTime = 0,
             lastCastTimestamp = 0,

@@ -14,8 +14,8 @@ function getKeyBoolean(obj, key) {
 
 class Paladin extends BasePlayer {
     // note that maxMana doesn't include mana pool from dmcg
-    constructor(options) {
-        super(options['manaPool'], 'paladin', options['mp5FromGearAndRaidBuffs'], options['critChance'], options);
+    constructor(options, rng, thresholdItemsToCreate, maxMinsToOOM) {
+        super(options['manaPool'], 'paladin', options['mp5FromGearAndRaidBuffs'], options['critChance'], options, rng, thresholdItemsToCreate, maxMinsToOOM);
 
         if (!this._options['2pT7'] && this._options['4pT7']) {
             throw new Error('4PT7 was selected but not 2PT7');
@@ -39,16 +39,11 @@ class Paladin extends BasePlayer {
         }
     }
 
-    // when eventHeap gets a spellcast event, it tries to cast it
-
-    // # returns (status, error_message, offset_timing, eventsToCreate)
-
     // selectSpell and castSpell work differently
     // selectSpell (in basePlayer) selects a spell given spellIndex, and returns the spell
     // castSpell is run when the event loop receves the spellcast event, and we determine if the spell is a crit, or has other procs
     // one might wonder might we don't just cast the spell directly after selecting it. 
     // this is because there could be events in between like mana ticks and/or buffs expiring (like dmcg)
-
     castSpell(spellKey, timestamp, spellIndex, logger) {
         if (this._validSpells.indexOf(spellKey) === -1) throw new Error('other spells not handled yet');
 

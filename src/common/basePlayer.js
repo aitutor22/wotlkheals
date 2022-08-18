@@ -11,7 +11,7 @@ const SpellQueue = require('./spellqueue');
  */
 class BasePlayer {
     // procs include isCrit, isEoG, etc
-    constructor(maxMana, playerClass, otherMP5, critChance, options) {
+    constructor(maxMana, playerClass, otherMP5, critChance, options, rng, thresholdItemsToCreate, maxMinsToOOM) {
         /** 
          * The description begins here.
          * More description continues here.
@@ -24,14 +24,12 @@ class BasePlayer {
         if (typeof this._options['trinkets'] === 'undefined') {
             this._options['trinkets'] = [];
         }
+        this._rng = rng;
 
         this._playerClass = playerClass;
         this._gcd = options['gcd'];
         this._intModifier = this.classInfo['intModifier']; // different classes have different int modifiers
         
-        this._hasteFactor = 0;
-        this._spellQueue = null;
-
         // when there is dmc: greatness proc, we increase mana_pool, so need baseMaxMana as a reference
         this._baseMaxMana = maxMana;
         this._baseCritChance = critChance + this.classInfo['baseCritChanceModifier'];
@@ -59,6 +57,8 @@ class BasePlayer {
 
         this._manaCooldowns = [];
         this._rngThresholds = {};
+        this.createRngThresholds(rng, thresholdItemsToCreate, maxMinsToOOM);
+
         this._spells = this.initialiseSpells();
         this._validSpells = this._spells.map((_spell) => _spell['key']);
         this._instantSpells = this._spells.filter((_spell) => _spell['instant']).map((_spell) => _spell['key']);
@@ -67,6 +67,9 @@ class BasePlayer {
             'spellsCasted': {},
             'overall': {spellsCasted: 0, nonHealingSpellsWithGcd: 0},
         }
+
+        this._hasteFactor = 0;
+        this._spellQueue = this.createSpellQueue(rng);
     }
 
     // in this function, we 1. create spell queue for non-cd spells
@@ -96,7 +99,7 @@ class BasePlayer {
         for (let i in this._spells) {
             this._spells[i]['castTime'] = this._spells[i]['baseCastTime'] / this._hasteFactor;
         }
-        this._spellQueue = new SpellQueue(castProfile, rng);
+        return new SpellQueue(castProfile, rng);
     }
 
     // start getters
