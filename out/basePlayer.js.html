@@ -1,13 +1,41 @@
-const DATA = require('./gamevalues');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: basePlayer.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: basePlayer.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const DATA = require('./gamevalues');
 const Utility = require('./utilities');
 const SpellQueue = require('./spellqueue');
 
-
+//{@link Shoe#setSize}
 /**
- *  - Base class that will be extended by a specific healing class (e.g. Paladin)
- *  - Contains common methods that are used by all healers such as initialization of spellQueues, mana updating helper functions, etc
- *  - Class-specific logic should be implemented in the respective child classes, such as castSpell and subtractMana
- *  - After creating a player object, run createRngThresholds and createSpellQueue to complete the initialization.
+ * Base class that will be extended by a specific healing class (e.g. Paladin)
+ * Contains common methods that are used by all healers such as initialization of spellQueues, mana updating helper functions, etc
+ * Class-specific logic should be implemented in the respective child classes, such as castSpell and subtractMana
+ * After create a player object, run createRngThresholds and createSpellQueue to complete the initialization.
  */
 class BasePlayer {
     // procs include isCrit, isEoG, etc
@@ -29,6 +57,9 @@ class BasePlayer {
         this._gcd = options['gcd'];
         this._intModifier = this.classInfo['intModifier']; // different classes have different int modifiers
         
+        // following two lines are only used to introduce pauses when sim is casting too much
+        this._targetTotalCpm = Utility.sum(Object.values(options['cpm']));
+        this._blendedCastTime = 60 / this._targetTotalCpm;
         this._hasteFactor = 0;
         this._spellQueue = null;
 
@@ -90,6 +121,8 @@ class BasePlayer {
         }
         // we need to also consider cooldowns like divine plea - which appear in the simulation but are not under the spells portion
         hasteNumerator += this.classInfo['numGcdsPerMinNotCountedUnderSpells'] * DATA['constants']['baseGCD'];
+        // console.log(this._options['cpm'])
+        // console.log(hasteNumerator)
         this._hasteFactor = hasteNumerator / 60;
         // gcd is also reduced by haste factor
         this._gcd /= this._hasteFactor;
@@ -101,7 +134,7 @@ class BasePlayer {
 
     // start getters
     get spellPower() {
-        if ((typeof this._buffs['dmcg'] !== 'undefined') && this._buffs['dmcg']['active']) {
+        if ((typeof this._buffs['dmcg'] !== 'undefined') &amp;&amp; this._buffs['dmcg']['active']) {
             return this._baseSpellPower + this.spellPowerIncreaseFromInt(DATA['items']['dmcg']['proc']['int']);
         } else {
             return this._baseSpellPower;
@@ -110,7 +143,7 @@ class BasePlayer {
 
     // checks for whether dmcg buff is active; if so, then uses the increased mana pool
     get maxMana() {
-        if ((typeof this._buffs['dmcg'] !== 'undefined') && this._buffs['dmcg']['active']) {
+        if ((typeof this._buffs['dmcg'] !== 'undefined') &amp;&amp; this._buffs['dmcg']['active']) {
             return this._baseMaxMana + this.manaIncreaseFromInt(DATA['items']['dmcg']['proc']['int']);
         } else {
             return this._baseMaxMana;
@@ -118,7 +151,7 @@ class BasePlayer {
     }
 
     get critChance() {
-        if ((typeof this._buffs['dmcg'] !== 'undefined') && this._buffs['dmcg']['active']) {
+        if ((typeof this._buffs['dmcg'] !== 'undefined') &amp;&amp; this._buffs['dmcg']['active']) {
             return this._baseCritChance + this.critIncreaseFromInt(DATA['items']['dmcg']['proc']['int']);
         } else {
             return this._baseCritChance;
@@ -129,6 +162,13 @@ class BasePlayer {
         return DATA['classes'][this._playerClass];
     }
 
+    get cpmDetails() {
+        return {
+            totalCasts: this._statistics['overall']['spellsCasted'] + this._statistics['overall']['nonHealingSpellsWithGcd'],
+            targetCpm: this._targetTotalCpm,
+            hasteFactor: this._hasteFactor
+        }
+    }
     // end getters
 
     // start setters
@@ -158,7 +198,7 @@ class BasePlayer {
     // end setters
 
     isBuffActive(buffKey) {
-        return (typeof this._buffs[buffKey] !== 'undefined') && this._buffs[buffKey]['active'];
+        return (typeof this._buffs[buffKey] !== 'undefined') &amp;&amp; this._buffs[buffKey]['active'];
     }
 
     // checks to see if currentMana has exceeded max mana at end of turn
@@ -208,7 +248,7 @@ class BasePlayer {
     createRngThresholds(rng, items, maxMinsToOOM) {
         function createHelper(numItems) {
             let results = [];
-            for (let i = 0; i < numItems; i++) {
+            for (let i = 0; i &lt; numItems; i++) {
                 results.push(rng());
             }
             return results;
@@ -232,14 +272,14 @@ class BasePlayer {
         let spellsWithNoCooldown = this._spells.filter((_spell) => _spell['cooldown'] === 0);
 
         for (let _spell of spellsWithCooldown) {
-            if (!_spell['availableForUse'] && (timestamp - _spell['lastUsed'] >= _spell['cooldown'])) {
+            if (!_spell['availableForUse'] &amp;&amp; (timestamp - _spell['lastUsed'] >= _spell['cooldown'])) {
                 _spell['availableForUse'] = true;
             }
         }
 
         // if there is an overrideSpellSelection, cast it if its not on cd
         if (overrideSpellSelection !== '') {
-            spellSelected = this._spells.find((_spell) => (_spell['key'] === overrideSpellSelection && _spell['availableForUse']));
+            spellSelected = this._spells.find((_spell) => (_spell['key'] === overrideSpellSelection &amp;&amp; _spell['availableForUse']));
             if (spellSelected) return spellSelected;
         }
 
@@ -275,12 +315,12 @@ class BasePlayer {
         manaDeficit = this.maxMana - this._currentMana;
         // updates and checks if any cds are now available for use
         for (let cd of this._manaCooldowns) {
-            if (!cd['availableForUse'] && (timestamp - cd['lastUsed'] >= cd['cooldown'])) {
+            if (!cd['availableForUse'] &amp;&amp; (timestamp - cd['lastUsed'] >= cd['cooldown'])) {
                 cd['availableForUse'] = true;
             }
 
             // if still not available, skip
-            if (!cd['availableForUse'] || manaDeficit < cd['minimumManaDeficit'] || timestamp < cd['minimumTimeElapsed']) {
+            if (!cd['availableForUse'] || manaDeficit &lt; cd['minimumManaDeficit'] || timestamp &lt; cd['minimumTimeElapsed']) {
                 continue;
             }
             cooldownSelected = cd;
@@ -294,7 +334,7 @@ class BasePlayer {
         if (cooldownSelected['category'] === 'immediate') {
             let value = cooldownSelected['value'];
             // checks for injector bonus if runic mana potion
-            if (cooldownSelected['key'] === 'RUNIC_MANA_POTION' && this._options['manaOptions']['injector']) {
+            if (cooldownSelected['key'] === 'RUNIC_MANA_POTION' &amp;&amp; this._options['manaOptions']['injector']) {
                 value *= (1 + DATA['manaCooldowns']['RUNIC_MANA_POTION']['injectorBonus']);
             }
 
@@ -315,7 +355,7 @@ class BasePlayer {
         // certain spells like divine plea put the system on gcd
         // though if it's from a different class (e.g. you are pally, and benefit from Mana tide)
         // then u aren't affected
-        if (!cooldownSelected['offGcd'] && cooldownSelected['playerClass'] === this._playerClass) {
+        if (!cooldownSelected['offGcd'] &amp;&amp; cooldownSelected['playerClass'] === this._playerClass) {
             requireGCD = true;
             eventsToCreate.push({
                 timestamp: timestamp, 
@@ -328,8 +368,8 @@ class BasePlayer {
         // these are always considered offGCD even if they actually require a spell cast since they are casted by another player
         // e.g. if player is pally, mana tide totem falls under this category
         // second condition -> any sort of cooldown that is off gcd and interval (e.g owl)
-        if ((cooldownSelected['playerClass'] !== this._playerClass && cooldownSelected['playerClass'] !== 'all') ||
-                (cooldownSelected['offGcd'] && cooldownSelected['category'] === 'interval')) {
+        if ((cooldownSelected['playerClass'] !== this._playerClass &amp;&amp; cooldownSelected['playerClass'] !== 'all') ||
+                (cooldownSelected['offGcd'] &amp;&amp; cooldownSelected['category'] === 'interval')) {
             requireGCD = false;
             eventsToCreate.push({
                 timestamp: timestamp, 
@@ -441,10 +481,11 @@ class BasePlayer {
         }
 
         this._statistics['manaGenerated'][category] += this._currentMana - oldMana;
-        if (logger && amount > 0) {
+        if (logger &amp;&amp; amount > 0) {
             let msg =  (timestamp !== -1 ? `${timestamp}s: ` : '') +
                 `Gained ${this._currentMana - oldMana} from ${category}`;
 
+            // console.log(msg);
             logger.log(msg, 2);
         }
         return this._currentMana - oldMana;
@@ -521,6 +562,7 @@ class BasePlayer {
             });
         }
 
+        console.log(this._statistics['spellsCasted'], total_time)
         for (let key in this._statistics['spellsCasted']) {
             // // poor code: manually converts certain keys to what is shown on client's table
             // let newKey = key in DATA['manaCooldownNamesMap'] ? DATA['manaCooldownNamesMap'][key] : Utility.capitalizeFirstLetter(key);
@@ -541,4 +583,26 @@ class BasePlayer {
         // return `${this._timestamp}s: ${this._eventType}`;
     }
 }
-module.exports = BasePlayer;
+module.exports = BasePlayer;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BasePlayer.html">BasePlayer</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.11</a> on Thu Aug 18 2022 13:27:11 GMT+0800 (Singapore Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

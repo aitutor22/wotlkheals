@@ -8,6 +8,7 @@ const Utility = require('./utilities');
 
 */
 class SpellQueue {
+    // e.g. new SpellQueue({'HOLY_LIGHT': 30, 'FLASH_OF_LIGHT': 10}, rng);
     constructor(castProfile, rng) {
         this._baseCastProfile = castProfile;
         this._rng = rng;

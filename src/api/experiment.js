@@ -96,7 +96,8 @@ class Experiment {
             status, errorMessage, offset;
 
         // assume first cast is always holy light
-        spellSelected = this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, 0, this._playerOptions['firstSpell']);
+        // spellSelected = this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, 0, this._playerOptions['firstSpell']);
+        spellSelected = this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, 0);
         // assume first mana tick in 2s
         eventHeap.addEvent(2, 'MANA_TICK', 'replenishment');
 
@@ -111,9 +112,11 @@ class Experiment {
                 if (cooldownInfo['category'] === 'interval') {
                     eventHeap.addIntervalEvents(currentTime, 'MANA_TICK', nextEvent._subEvent, cooldownInfo['numIntervals'], cooldownInfo['secsBetweenInterval'], cooldownInfo['startAtTimestamp']);
                 }
+                player.addNonHealingSpellsWithGcdToStatistics()
                 this.logger.log(`${currentTime}s: Used ${nextEvent._subEvent}`, 2);
                 // continues with next spell in simulation
-                this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime + this._playerOptions['gcd'], spellIndex, 0);
+                // NOTE: we use player._gcd as this is reduced by hastefactor
+                this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime + player._gcd, spellIndex, 0);
                 spellIndex += 1
             }
             // for mana cooldowns that don't use gcd (e.g. if u are pally, and benefit from mana tide)
@@ -154,6 +157,9 @@ class Experiment {
                 if (useManaCooldownStatus === 0 || useManaCooldownStatus === 1) {
                     this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, offset);
                 } 
+
+                // this.logger.log(`${player._statistics['overall']['spellsCasted'] / currentTime * 60}`, 3)
+                // this.logger.log(`${player._statistics['overall']['spellsCasted']}`, 3)
 
                 spellIndex += 1
             } else if (nextEvent._eventType === 'BUFF_EXPIRE') {

@@ -85,7 +85,6 @@ class Paladin extends BasePlayer {
         // all pally spells have 1 chance to crit (beacon just mirrors the spell cast)
         isCrit = this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance);
 
-        this.addSpellCastToStatistics(spellKey, isCrit);
         this.calculateHealingHelper(spellKey);
         [status, manaUsed, currentMana, errorMessage] = this.subtractMana(spellKey, timestamp, procs);
 
@@ -94,6 +93,8 @@ class Paladin extends BasePlayer {
             return [status, errorMessage, 0, eventsToCreate];
         }
 
+        // BE CAREFUL WHERE THIS CODE GOES - if you put it before the oom check, will add 1 to final tally
+        this.addSpellCastToStatistics(spellKey, isCrit);
         if (procs['soup']) {
             logger.log('🥣🥣🥣 SOUP 🥣🥣🥣', 2);
         } else if (procs['eog']) {
@@ -104,8 +105,9 @@ class Paladin extends BasePlayer {
             `${timestamp}s: Casted ${spellKey} (spent ${originalMana - currentMana} mana)`;
         logger.log(msg, 2);
 
-        // if we cast an instant spell, we need to account for it using the gcd
-        offset = this._instantSpells.indexOf(spellKey) > -1 ? this._options['gcd'] : 0;
+        // if we cast an instant spell, we need to account for it using the gcd (modified by haste factor)
+        offset = this._instantSpells.indexOf(spellKey) > -1 ? this._gcd : 0;
+        // console.log(offset)
 
         // after spell is casted, add effects
         if (isCrit) {

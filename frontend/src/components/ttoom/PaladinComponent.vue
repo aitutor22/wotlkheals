@@ -4,7 +4,7 @@
       <p>
         This tool simulates how long it takes for a Holy Paladin to go OOM (ttoom), especially due to the high mana cost of Holy Light. Given the high number of procs in the hpld toolkit, the tool simulates 300 runs and returns the median ttoom, and the specific statistics from that run.
       </p>
-      <p>The tool assumes the player incorporates slight pauses after every instant cast (e.g. HS) to allow for melee hits to proc Seal of Wisdom. Maintenance spells like Sacred Shield and Beacon are not currently considered in the sim, though we assume an extra 100mp5 from SoW under "Others" for meleeing during these spells.</p>
+
       <p>Please input raid-buffed values for spellpower, mana pool and crit chance (do not add crit from talents). Note: do not change stats from trinkets to these values as the tool will automatically calculate it.</p>
       <p>
         Special thanks to Lovelace and Currelius for formula help, as well as the rest of the healer cabal for valuable feedback and beta testing.
@@ -27,8 +27,12 @@
           <input type="text" class="form-control" v-model.number="oomOptions['manaPool']">
         </div>
         <div class="input-group mb-2" style="width: 100%">
-          <span class="input-group-text" id="basic-addon1">HL Cast Time</span>
-          <input type="text" class="form-control" v-model.number="oomOptions['castTimes']['HOLY_LIGHT']">
+          <span class="input-group-text" id="basic-addon1">HL CPM</span>
+          <input type="text" class="form-control" v-model.number="oomOptions['cpm']['HOLY_LIGHT']">
+        </div>
+        <div class="input-group mb-2" style="width: 100%">
+          <span class="input-group-text" id="basic-addon1">FoL CPM</span>
+          <input type="text" class="form-control" v-model.number="oomOptions['cpm']['FLASH_OF_LIGHT']">
         </div>
         <div class="input-group mb-2" style="width: 100%">
           <span class="input-group-text" id="basic-addon1">HS CPM </span>
@@ -37,10 +41,6 @@
         <div class="input-group mb-2" style="width: 100%">
           <span class="input-group-text" id="basic-addon1">Avg hit from glyph HL</span>
           <input type="text" class="form-control" v-model.number="oomOptions['glyphHolyLightHits']">
-        </div>
-        <div class="input-group mb-2" style="width: 100%">
-          <span class="input-group-text" id="basic-addon1">MP5 From Gear & Buffs</span>
-          <input type="text" class="form-control" v-model.number="oomOptions['mp5FromGearAndRaidBuffs']">
         </div>
         <div>
           <button class="btn btn-primary" @click="runSim">
@@ -52,6 +52,10 @@
       </div>
 
       <div class="col-4">
+        <div class="input-group mb-2" style="width: 100%">
+          <span class="input-group-text" id="basic-addon1">MP5 From Gear & Buffs</span>
+          <input type="text" class="form-control" v-model.number="oomOptions['mp5FromGearAndRaidBuffs']">
+        </div>
         <div class="input-group mb-2" style="width: 100%">
           <span class="input-group-text" id="basic-addon1">Crit Chance %</span>
           <input type="text" class="form-control" v-model.number="oomOptions['critChance']">
@@ -87,6 +91,10 @@
 
       <div class="col-4">
         <b>Mana Options</b>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="canSoW" v-model="oomOptions['manaOptions']['canSoW']">
+          <label class="form-check-label" for="canSoW">Can SoW?</label>
+        </div>
         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="selfLoh" v-model="oomOptions['manaOptions']['selfLoh']">
           <label class="form-check-label" for="selfLoh">Self LoH (Divinity)</label>
@@ -135,20 +143,39 @@
 
     <div class="row gap-top" v-if="results">
       <br>
+      <div class="col-7">
+        <h5>Cast Profile</h5>
+        <b-table striped hover :items="this.results['spellsCastedStatistics']"></b-table>
+      </div>
+
       <div class="col-5">
         <h5>Mana Generation Breakdown</h5>
         <b-table striped hover :items="mp5Data"></b-table>
       </div>
 
-      <div class="col-5 offset-2">
-        <h5>Cast Profile</h5>
-        <b-table striped hover :items="this.results['spellsCastedStatistics']"></b-table>
-      </div>
       <div class="pad-bottom">
         <i>
           The above values for Cast Profile and Mana Generated are median values over 300 runs, and do not come from the same log.
         </i>
       </div>
+    </div>
+
+    <div v-if="results" class="row gap-top">
+      <h5>Implementation Assumptions & Known Issues</h5>
+      <ol>
+        <li>
+          Sacred Shield, Beacon of Light and Judgement are not casted in the sim, but an expected value for SoW procs is automatically calculated based on 4 hits a min (Judgement counts as 2 hits) and added to MP5.
+        </li>
+        <li>
+          Soup and EoG procs are directly subtracted from the spell that procced it rather than the following spell. This is both for implemention simplicity and also to reflect that spells with multiple chances to proc soup will have lower blended mana cost.
+        </li>
+        <li>
+          For instants to proc SoW, the player might to pause for a very short while to allow the hit to go off when using a 1.8 speed weapon. Currently, the system does not implement this delay as more work needs to be done to determine how long, if any, a pause is required.
+        </li>
+        <li>
+          There are minor rounding issues which can slightly increase the CPM shown.
+        </li>
+      </ol>
     </div>
   </div>
 </template>
@@ -177,10 +204,11 @@ export default {
         },
         cpm: {
           HOLY_LIGHT: 30,
-          HOLY_SHOCK: 3,
-          FLASH_OF_LIGHT: 5,
+          HOLY_SHOCK: 0,
+          FLASH_OF_LIGHT: 6,
         },
         manaOptions: {
+          canSoW: true,
           selfLoh: false,
           injector: false,
           innervate: false,

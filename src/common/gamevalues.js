@@ -52,12 +52,18 @@ const data = {
     },
     constants: {
         manaFromOneInt: 15,
+        baseGCD: 1.5,
         // 166.667 points of Intellect equals 1% of Spell Critical; divide by 100 to convert to decimal points
         critChanceFromOneInt: 1 / 16666.7,
         replenishment: 0.01, //returns 1% of mana pool every 5s
     },
     classes: {
         paladin: {
+            // when we calculate hasteFactor, we also need to consider the number of spells that
+            // are not healing spells (e.g. divine plea) but are casted
+            // otherwise we will undercount the haste factor
+            numGcdsPerMinNotCountedUnderSpells: 1, // divine plea
+            numberOfSoWHitsFromSpellsNotInSim: 4, // per min; 1 from beacon and Sacred Shield, 2 from judgement
             intModifier: 1.1 * 1.1, //blessing of kings and divine intellect
             baseCritChanceModifier: 0.05, // 5% additional crit chance from holy power
             sanctifiedLightCritChanceModifier: 0.06, // 6% additional crit chance for holy shock and holy light
@@ -72,6 +78,7 @@ const data = {
                 'cooldown': 6, // the actual cooldown of spell
                 'instant': true,
                 'baseManaCost': 790.92,
+                'baseCastTime': 0,
                 baseHeal: 2500,
                 coefficient: 0.806, // https://wowwiki-archive.fandom.com/wiki/Spell_power_coefficient
             },
@@ -109,16 +116,10 @@ const data = {
                 '2pT7': true, // +10% crit chance to holy shock
                 '4pT7': true, // 5% reduction to HL mana cost
                 trinkets: ['soup', 'eog'],
-                // trinkets: [],
-                // only for spells that are not instants
-                castTimes: {
-                    HOLY_LIGHT: 1.5,
-                },
-                // for holy shock to proc sow, user is using a 1.6s weapon and/or pauses for a short while after.
-                // for simplicity sakes, assume that after a holy_shock, player always waits for full GCD (1.5s) to allow for melee hit to happen
                 cpm: {
                   HOLY_LIGHT: 30,
                   HOLY_SHOCK: 3,
+                  FLASH_OF_LIGHT: 0,
                 },
                 gcd: 1.5,
                 firstSpell: 'HOLY_LIGHT', // fix which is the first spell we want to cast
@@ -138,6 +139,7 @@ const data = {
                   innervate: false,
                   manaTideTotem: false,
                 },
+                addPausesToStabilizeCpm: true,
             }
         }
     },
