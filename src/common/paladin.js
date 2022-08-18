@@ -15,7 +15,7 @@ function getKeyBoolean(obj, key) {
 class Paladin extends BasePlayer {
     // note that maxMana doesn't include mana pool from dmcg
     constructor(options, rng, thresholdItemsToCreate, maxMinsToOOM) {
-        super(options['manaPool'], 'paladin', options['mp5FromGearAndRaidBuffs'], options['critChance'], options, rng, thresholdItemsToCreate, maxMinsToOOM);
+        super('paladin', options, rng, thresholdItemsToCreate, maxMinsToOOM);
 
         if (!this._options['2pT7'] && this._options['4pT7']) {
             throw new Error('4PT7 was selected but not 2PT7');

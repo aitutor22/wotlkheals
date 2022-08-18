@@ -10,8 +10,7 @@ const SpellQueue = require('./spellqueue');
  *  - After creating a player object, run createRngThresholds and createSpellQueue to complete the initialization.
  */
 class BasePlayer {
-    // procs include isCrit, isEoG, etc
-    constructor(maxMana, playerClass, otherMP5, critChance, options, rng, thresholdItemsToCreate, maxMinsToOOM) {
+    constructor(playerClass, options, rng, thresholdItemsToCreate, maxMinsToOOM) {
         /** 
          * The description begins here.
          * More description continues here.
@@ -31,8 +30,8 @@ class BasePlayer {
         this._intModifier = this.classInfo['intModifier']; // different classes have different int modifiers
         
         // when there is dmc: greatness proc, we increase mana_pool, so need baseMaxMana as a reference
-        this._baseMaxMana = maxMana;
-        this._baseCritChance = critChance + this.classInfo['baseCritChanceModifier'];
+        this._baseMaxMana = options['manaPool'];
+        this._baseCritChance = options['critChance'] + this.classInfo['baseCritChanceModifier'];
         this._baseSpellPower = options['spellPower'];
 
         // loops through the trinkets selected, and adds base stat values - currently only supports int
@@ -44,7 +43,7 @@ class BasePlayer {
             }
         }
 
-        this._otherMP5 = otherMP5; // does not include raid buffs
+        this._otherMP5 = options['mp5FromGearAndRaidBuffs'];
         this._currentMana = this._baseMaxMana;
 
         // tracks potential buffs like dmcg
