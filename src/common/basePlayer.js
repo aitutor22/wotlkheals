@@ -226,7 +226,7 @@ class BasePlayer {
     // end functions that are used for initialisation
 
 
-    selectSpell(timestamp, spellIndex, overrideSpellSelection='') {
+    selectSpellHelper(timestamp, spellIndex, overrideSpellSelection='') {
         let spellSelected = null, selectedSpellKey;
 
         // # we first look among spells with cd (e.g. holy shock, sacred shield), and update their availability

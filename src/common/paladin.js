@@ -39,6 +39,14 @@ class Paladin extends BasePlayer {
         }
     }
 
+    // majority of spell selection is done in basePlayer's selectSpellHelper
+    // the only logic we want to add is if infusion of light is active, always cast Holy Light unless CPM is set to 0
+    selectSpell(timestamp, spellIndex) {
+        let overrideSpellSelection = this.isBuffActive('infusionOfLight') && this._options['cpm']['HOLY_LIGHT'] > 0 
+            ? 'HOLY_LIGHT' : '';
+        return this.selectSpellHelper(timestamp, spellIndex, overrideSpellSelection);
+    }
+
     // selectSpell and castSpell work differently
     // selectSpell (in basePlayer) selects a spell given spellIndex, and returns the spell
     // castSpell is run when the event loop receves the spellcast event, and we determine if the spell is a crit, or has other procs

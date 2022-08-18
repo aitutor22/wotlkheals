@@ -229,8 +229,8 @@ class Experiment {
         };
     }
 
-    selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, offset, overrideSpellSelection='') {
-        let spellSelected = player.selectSpell(currentTime, spellIndex, overrideSpellSelection);
+    selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, offset) {
+        let spellSelected = player.selectSpell(currentTime, spellIndex);
         let spellFinishCastingTimestamp = currentTime + spellSelected['castTime'] + offset;
 
         // self.add_spell_cast_helper(event_heap, selected_spell['name'], is_crit, is_soup_proc, is_sow_proc, is_eog_proc, current_time, cast_time + offset)

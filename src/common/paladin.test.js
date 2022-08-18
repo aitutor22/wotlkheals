@@ -127,24 +127,24 @@ test('maxMana and critChance when dmcg active', () => {
 
 test('selectSpell overrideSpellSelection', () => {
     let player = new Paladin(dmcgOptions, rng, thresholdItemsToCreate);
-    let spell = player.selectSpell(2, 0, 'HOLY_LIGHT');
+    let spell = player.selectSpellHelper(2, 0, 'HOLY_LIGHT');
     expect(spell['key']).toBe('HOLY_LIGHT');
 });
 
-// test('selectSpell', () => {
-//     let options = Object.assign({}, defaultOptions);
-//     options['holyShockCPM'] = 1;
-//     let player = new Paladin(options);
-//     let spell = player.selectSpell(1, 0);
-//     // if we don't override, then first spell should be holy shock
-//     expect(spell['key']).toBe('HOLY_SHOCK');
-//     let holyShockSpell = player._spells.find((_spell) => _spell['key'] === 'HOLY_SHOCK');
-//     expect(holyShockSpell['lastUsed']).toBe(1);
-//     expect(holyShockSpell['availableForUse']).toBe(false);
+test('selectSpell', () => {
+    let options = Object.assign({}, defaultOptions);
+    options['holyShockCPM'] = 1;
+    let player = new Paladin(options, rng, thresholdItemsToCreate);
+    let spell = player.selectSpellHelper(1, 0);
+    // if we don't override, then first spell should be holy shock
+    expect(spell['key']).toBe('HOLY_SHOCK');
+    let holyShockSpell = player._spells.find((_spell) => _spell['key'] === 'HOLY_SHOCK');
+    expect(holyShockSpell['lastUsed']).toBe(1);
+    expect(holyShockSpell['availableForUse']).toBe(false);
 
-//     spell = player.selectSpell(3.5, 1);
-//     expect(spell['key']).toBe('HOLY_LIGHT');
-// });
+    spell = player.selectSpellHelper(3.5, 1);
+    expect(spell['key']).toBe('HOLY_LIGHT');
+});
 
 test('passing no discount factors in subtractManaHelper returns just base cost', () => {
     let player = new Paladin(defaultOptions, rng, thresholdItemsToCreate);
