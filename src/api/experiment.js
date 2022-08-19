@@ -52,7 +52,7 @@ class Experiment {
         if (this.logger) this.logger.log(`${currentTime}s: Used ${manaSource}`, 2);
     }
 
-    handleManaTick(nextEvent, player, eventHeap) {
+    handleManaTick(nextEvent, player, eventHeap, spellIndex=-1) {
         let currentTime = nextEvent._timestamp,
             manaSource = nextEvent._subEvent;
         if (manaSource === 'replenishment') {
@@ -60,6 +60,16 @@ class Experiment {
             // assume replenishment ticks every 2s
             eventHeap.addEvent(currentTime + 2, 'MANA_TICK', 'replenishment');
         } 
+        // code here is for the standalone events for sacred shield and judgement that we created
+        // because we haven't introduced it in system yet
+        // makeshift code that willl replaced eventually
+        // chanceForSealOfWisdomProc_normal or chanceForSealOfWisdomProc_judgment
+        else if (manaSource.startsWith('chanceForSealOfWisdomProc')) {
+            let procKind = nextEvent._subEvent.split('_')[1];
+            this.logger.log(`${currentTime}s: Chance for SoW from misc instant spell`, 2);
+
+            player.checkForAndHandleSoWProc(currentTime, spellIndex, this.logger);
+        }
         // divine plea/mana_tide or innervate
         else {
             // nextEvent._subEvent is INNERVATE, DIVINE_PLEA, etc
@@ -100,6 +110,28 @@ class Experiment {
         // assume first mana tick in 2s
         eventHeap.addEvent(2, 'MANA_TICK', 'replenishment');
 
+        // temporary measure -  we set up SoW chances
+        // 1 Sacred Shield, 2 from judgement (Beacon doesnt proc SoW since it resets, and divine plea/HS SoW is calculated separately)
+        // assumption: first judgement doesnt restore mana since it's our first cast as we are running in
+        // and thus even if sow hits, mana pool is still full
+        // meanwhile sacred shield is already precasted and refreshed 60s later
+        // thus, we begin our SoW checks only 60s into the fight
+        // technically, judgement and the melee have different hit chance and judgement can't be blocked
+        // for now, disregard
+        // NEED TO ADDINTERVAL - > should tick for until forver
+        if (player._playerClass === 'paladin') {
+            let t = 0;
+            while (t <= maxMinsToOOM * 60) {
+                // sacred shield
+                eventHeap.addEvent(t + 59.5, 'MANA_TICK', 'chanceForSealOfWisdomProc_normal');
+                // judgement
+                eventHeap.addEvent(t + 61, 'MANA_TICK', 'chanceForSealOfWisdomProc_normal');
+                eventHeap.addEvent(t + 61, 'MANA_TICK', 'chanceForSealOfWisdomProc_judgment');
+
+                t += 60;
+            }
+        }
+
         while (eventHeap.hasElements() && currentTime <= maxMinsToOOM * 60) {
             nextEvent = eventHeap.pop();
             currentTime = nextEvent._timestamp;
@@ -113,6 +145,12 @@ class Experiment {
                 }
                 player.addNonHealingSpellsWithGcdToStatistics()
                 this.logger.log(`${currentTime}s: Used ${nextEvent._subEvent}`, 2);
+
+                // for paladins, assume that their mana cooldowns like divine plea and loh can proc sow
+                if (player._playerClass === 'paladin') {
+                    player.checkForAndHandleSoWProc(currentTime, spellIndex, this.logger, 'normal');
+                }
+
                 // continues with next spell in simulation
                 // NOTE: we use player._gcd as this is reduced by hastefactor
                 this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime + player._gcd, spellIndex, 0);
@@ -165,7 +203,7 @@ class Experiment {
                 // code here sets availableForUse to false; this is fine, as we have other code that checks for availability on next spellcast
                 player.setBuffActive(nextEvent._subEvent, false, currentTime, false, this.logger);
             } else if (nextEvent._eventType === 'MANA_TICK') {
-                this.handleManaTick(nextEvent, player, eventHeap);
+                this.handleManaTick(nextEvent, player, eventHeap, spellIndex);
             }
 
             player.checkOverflowMana();

@@ -61,6 +61,11 @@
           <input type="text" class="form-control" v-model.number="oomOptions['critChance']">
         </div>
 
+        <div class="input-group mb-2" style="width: 100%">
+          <span class="input-group-text" id="basic-addon1">#pts (Enl. Judgements)</span>
+          <input type="text" class="form-control" v-model.number="oomOptions['talents']['enlightenedJudgements']">
+        </div>
+
         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="2pT7" v-model="oomOptions['2pT7']">
           <label class="form-check-label" for="2pT7">2pT7</label>
@@ -172,6 +177,7 @@
         <li>
           For instants to proc SoW, the player might to pause for a very short while to allow the hit to go off when using a 1.8 speed weapon. Currently, the system does not implement this delay as more work needs to be done to determine how long, if any, a pause is required.
         </li>
+        <li>When infusion of light is active, Holy Light is always casted unless you have set HL cpm to 0.</li>
         <li>
           There are minor rounding issues which can slightly increase the CPM shown.
         </li>
@@ -206,6 +212,9 @@ export default {
           HOLY_LIGHT: 30,
           HOLY_SHOCK: 0,
           FLASH_OF_LIGHT: 6,
+        },
+        talents: {
+          enlightenedJudgements: 1,
         },
         manaOptions: {
           canSoW: true,
@@ -315,6 +324,11 @@ export default {
       if (!this.oomOptions['2pT7'] && this.oomOptions['4pT7']) {
         alert('4PT7 was selected but not 2PT7');
         return;
+      }
+
+      if (this.oomOptions['talents']['enlightenedJudgements'] < 0 || this.oomOptions['talents']['enlightenedJudgements'] > 2
+          || !Number.isInteger(this.oomOptions['talents']['enlightenedJudgements'])) {
+        alert('Please input a valid value for Enlightened Judgements');
       }
 
       this.fetching = true;

@@ -63,12 +63,16 @@ const data = {
             // are not healing spells (e.g. divine plea) but are casted
             // otherwise we will undercount the haste factor
             numGcdsPerMinNotCountedUnderSpells: 1, // divine plea
-            numberOfSoWHitsFromSpellsNotInSim: 4, // per min; 1 from beacon and Sacred Shield, 2 from judgement
             intModifier: 1.1 * 1.1, //blessing of kings and divine intellect
             baseCritChanceModifier: 0.05, // 5% additional crit chance from holy power
             sanctifiedLightCritChanceModifier: 0.06, // 6% additional crit chance for holy shock and holy light
+            // SoW is a physical attack that can be missed or dodged (modified by judgement)
+            // for normal physical hit, it can be missed and dodged while if using judgement, it can only miss and not be dodged
             sow: {
-                chance: 0.45 * (1 - 0.05 - 0.065), // 45% chance to proc on hit, include a 5% miss chance and 6.5% chance to be blocked,
+                missChance: 0.08,
+                dodgeChance: 0.065,
+                improvementInHitChancePerPointInEnglightenedJudgements: 0.02,
+                chance: 0.45,
                 value: 0.04, // 4% of max mana
             },
             spells: [
@@ -133,7 +137,11 @@ const data = {
                     {key: 'DIVINE_ILLUMINATION', minimumManaDeficit: 9000, minimumTimeElapsed: 0},
                     {key: 'RUNIC_MANA_POTION', minimumManaDeficit: 18000, minimumTimeElapsed: 0},
                 ],
+                talents: {
+                  enlightenedJudgements: 1,
+                },
                 manaOptions: {
+                  canSoW: true,
                   selfLoh: false,
                   injector: false,
                   innervate: false,
@@ -240,7 +248,7 @@ const data = {
         'divinePlea': 'Divine Plea',
         'divineIllumination': 'Divine Illumination',
         'RUNIC_MANA_POTION': 'Mana Potion',
-        'sow': 'Holy Shock SoW',
+        'sow': 'Seal of Wisdom',
         'eog': 'EoG',
         'OWL': 'Sapphire Owl',
         'LAY_ON_HANDS': 'Lay on Hands',

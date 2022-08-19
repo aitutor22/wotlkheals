@@ -21,9 +21,16 @@ class Paladin extends BasePlayer {
             throw new Error('4PT7 was selected but not 2PT7');
         }
 
-        // second part of this is we assume 1.1 sow procs a min, and convert it to mp5 terms
-        // should be refactored in future
-        this._otherMP5 = options['mp5FromGearAndRaidBuffs'] + 1.1 * this._baseMaxMana * 0.04 / 12;
+        // calculates SoW chances
+        let normalHitRate = 1 - this.classInfo['sow']['missChance'] - this.classInfo['sow']['dodgeChance'] +
+            this.classInfo['sow']['improvementInHitChancePerPointInEnglightenedJudgements'] * options['talents']['enlightenedJudgements']
+        let judgementHitRate = normalHitRate + this.classInfo['sow']['dodgeChance']; //judgement can't be dodged
+        this._sowProcChace = {
+            'normal': this.classInfo['sow']['chance'] * normalHitRate,
+            'judgement': this.classInfo['sow']['chance'] * judgementHitRate,
+        }
+
+        this._otherMP5 = options['mp5FromGearAndRaidBuffs'];
         this._otherMultiplicativeTotal = 1;
         // glyph of SOW reduces healing cost by 5%; note that we don't put 4pt7 here as it only affects HL
         this._baseOtherMultiplicativeTotal = Utility.getKeyBoolean(this._options, 'glyphSOW') ? (1 - this.classInfo['manaCostModifiers']['glyphSOW']) : 1;
@@ -131,9 +138,7 @@ class Paladin extends BasePlayer {
         }
 
         // checks if sow proc from holy shock
-        if (spellKey === 'HOLY_SHOCK' && this.checkProcHelper('sow', spellIndex, 1, this.classInfo['sow']['chance'])) {
-            this.addManaFromSOWProc(logger);
-        }
+        if (spellKey === 'HOLY_SHOCK') this.checkForAndHandleSoWProc(timestamp, spellIndex, logger, 'normal');
 
         return [status, errorMessage, offset, eventsToCreate];
     }
@@ -168,11 +173,19 @@ class Paladin extends BasePlayer {
         return this.addManaHelper(amount, 'illumination', logger);
     }
 
-    // seal of wisdom proc
-    addManaFromSOWProc(logger) {
-        let amount = Math.floor(this.maxMana * this.classInfo['sow']['value']);
-        return this.addManaHelper(amount, 'sow', logger);
+    // checks if there is a sow proc, and adds mana if there is
+    // note that melee have a lower proc chance than judgement hit (only the spell portion; the melee portion is the normal proc rate)
+    checkForAndHandleSoWProc(timestamp, spellIndex, logger, normalOrJudgement='normal') {
+        if (!this._options['manaOptions']['canSoW']) return false;
+        let hasProc = this.checkProcHelper('sow', spellIndex, 1, this._sowProcChace[normalOrJudgement]);
+
+        if (hasProc) {
+            let amount = Math.floor(this.maxMana * this.classInfo['sow']['value']);
+            this.addManaHelper(amount, 'sow', logger, timestamp);
+        }
+        return hasProc;
     }
+
 }
 
 module.exports = Paladin;
