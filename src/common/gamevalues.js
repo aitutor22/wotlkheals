@@ -165,6 +165,8 @@ const data = {
             secsBetweenInterval: 3,
             startAtTimestamp: false,
             percentageManaPool: 0.05,
+            totalDuration: 15,
+            healingPenalty: 0.5,
             playerClass: 'paladin',
         },
         MANA_TIDE_TOTEM: {

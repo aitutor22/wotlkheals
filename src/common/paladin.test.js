@@ -102,18 +102,23 @@ test('calculateHealingHelper', () => {
     let player = new Paladin(options, rng, thresholdItemsToCreate);
     let uncritAmount = player.calculateHealing('HOLY_LIGHT', false);
         critAmount = player.calculateHealing('HOLY_LIGHT', true);
-    expect(Math.floor(uncritAmount)).toBe(26897); //double checked againstr currelius' sheet
-    expect(Math.floor(critAmount)).toBe(40345); //double checked againstr currelius' sheet
+    expect(Math.floor(uncritAmount)).toBe(27035); //double checked againstr currelius' sheet
+    expect(Math.floor(critAmount)).toBe(40552); //double checked againstr currelius' sheet
 
     uncritAmount = player.calculateHealing('FLASH_OF_LIGHT', false);
     critAmount = player.calculateHealing('FLASH_OF_LIGHT', true);
-    expect(Math.floor(uncritAmount)).toBe(7621); //double checked againstr currelius' sheet
-    expect(Math.floor(critAmount)).toBe(11431); //double checked againstr currelius' sheet
+    expect(Math.floor(uncritAmount)).toBe(7660); //double checked againstr currelius' sheet
+    expect(Math.floor(critAmount)).toBe(11491); //double checked againstr currelius' sheet
 
     uncritAmount = player.calculateHealing('HOLY_SHOCK', false);
     critAmount = player.calculateHealing('HOLY_SHOCK', true);
-    expect(Math.floor(uncritAmount)).toBe(10382); //double checked againstr currelius' sheet
-    expect(Math.floor(critAmount)).toBe(15573); //double checked againstr currelius' sheet
+    expect(Math.floor(uncritAmount)).toBe(10435); //double checked againstr currelius' sheet
+    expect(Math.floor(critAmount)).toBe(15653); //double checked againstr currelius' sheet
+
+
+    // testing divine plea should halve healing
+    uncritAmount = player.calculateHealing('HOLY_LIGHT', false, true);
+    expect(Math.floor(uncritAmount)).toBe(13517);
 });
 
 

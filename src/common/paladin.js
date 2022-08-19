@@ -62,15 +62,23 @@ class Paladin extends BasePlayer {
     }
 
     // should eventually support wings
-    calculateHealing(spellKey, isCrit) {
+    // reduces healing by half when divinePlea is active
+    calculateHealing(spellKey, isCrit, isDivinePleaActive=false) {
+        let amount = 0,
+            multiplicativeFactors = [];
         if (spellKey === 'HOLY_LIGHT') {
-            return this.calculateHealingHelper(spellKey, {}, [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1, 'glpyh': 0.5}], isCrit);
+            multiplicativeFactors = [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1, 'glpyh': 0.5}];
         } else if (spellKey === 'FLASH_OF_LIGHT' || spellKey === 'HOLY_SHOCK') {
-            return this.calculateHealingHelper(spellKey, {}, [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1}], isCrit);
+            multiplicativeFactors = [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1}];
         } 
         else {
             throw new Error('Unknown spellkey: ' + spellKey);
         }
+        if (isDivinePleaActive) {
+            // calculateHealingHelper does  amount x (1 + val); so for divine plea, we need to pay in -0.5
+            multiplicativeFactors.push({'divinePlea': -DATA['manaCooldowns']['DIVINE_PLEA']['healingPenalty']})
+        }
+        return Math.floor(this.calculateHealingHelper(spellKey, {}, multiplicativeFactors, isCrit));
     }
 
     // selectSpell and castSpell work differently
@@ -114,7 +122,7 @@ class Paladin extends BasePlayer {
         // all pally spells have 1 chance to crit (beacon just mirrors the spell cast)
         isCrit = this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance);
 
-        amountHealed = this.calculateHealing(spellKey, isCrit);
+        amountHealed = this.calculateHealing(spellKey, isCrit, this.isBuffActive('divinePlea'));
         [status, manaUsed, currentMana, errorMessage] = this.subtractMana(spellKey, timestamp, procs);
 
         // player oom

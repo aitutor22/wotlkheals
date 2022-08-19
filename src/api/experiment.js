@@ -146,9 +146,14 @@ class Experiment {
                 player.addNonHealingSpellsWithGcdToStatistics()
                 this.logger.log(`${currentTime}s: Used ${nextEvent._subEvent}`, 2);
 
+                // should refactor in future
                 // for paladins, assume that their mana cooldowns like divine plea and loh can proc sow
                 if (player._playerClass === 'paladin') {
                     player.checkForAndHandleSoWProc(currentTime, spellIndex, this.logger, 'normal');
+                    if (nextEvent._subEvent === 'DIVINE_PLEA') {
+                        player.setBuffActive('divinePlea', true, currentTime);
+                        eventHeap.addEvent(currentTime + DATA['manaCooldowns']['DIVINE_PLEA']['totalDuration'], 'BUFF_EXPIRE', 'divinePlea');
+                    }
                 }
 
                 // continues with next spell in simulation
