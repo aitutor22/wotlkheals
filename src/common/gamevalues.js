@@ -84,7 +84,7 @@ const data = {
                 'baseManaCost': 790.92,
                 'baseCastTime': 0,
                 baseHeal: 2500,
-                coefficient: 0.806, // https://wowwiki-archive.fandom.com/wiki/Spell_power_coefficient
+                coefficient: 0.807, // tested by currelius, before talents
             },
             {
                 'key': 'HOLY_LIGHT',
@@ -103,8 +103,8 @@ const data = {
                 'instant': false,
                 'baseCastTime': 1.5,
                 'baseManaCost': 307.58,
-                baseHeal: 832,
-                coefficient: 1, // untested, from wowhead
+                baseHeal: 835.5,
+                coefficient: 1.009, // tested by currelius, before talents
             }
             ],
             manaCostModifiers: {
@@ -141,6 +141,7 @@ const data = {
                   enlightenedJudgements: 1,
                 },
                 manaOptions: {
+                  replenishmentUptime: 0.90,
                   divineIllumination: true,
                   canSoW: true,
                   selfLoh: false,
@@ -148,7 +149,6 @@ const data = {
                   innervate: false,
                   manaTideTotem: false,
                 },
-                addPausesToStabilizeCpm: true,
             }
         }
     },

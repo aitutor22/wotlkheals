@@ -20,6 +20,8 @@ function createOptions(playerOptions) {
         }
     }
 
+    options['manaOptions']['replenishmentUptime'] = options['manaOptions']['replenishmentUptime'] / 100;
+
     // start handling of mana options
     // values are currently hardcoded; should improve in future
     if (playerOptions['manaOptions']['selfLoh']) {

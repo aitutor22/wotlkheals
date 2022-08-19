@@ -61,6 +61,20 @@ class Paladin extends BasePlayer {
         return this.selectSpellHelper(timestamp, spellIndex, overrideSpellSelection);
     }
 
+    // should eventually support wings
+    calculateHealing(spellKey, isCrit) {
+        let amount = 0;
+        if (spellKey === 'HOLY_LIGHT') {
+            amount = this.calculateHealingHelper(spellKey, {}, [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1, 'glpyh': 0.5}]);
+        } else if (spellKey === 'FLASH_OF_LIGHT' || spellKey === 'HOLY_SHOCK') {
+            amount = this.calculateHealingHelper(spellKey, {}, [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1}]);
+        } 
+        else {
+            throw new Error('Unknown spellkey: ' + spellKey);
+        }
+        return Math.floor(amount * (isCrit ? 1.5 : 1));
+    }
+
     // selectSpell and castSpell work differently
     // selectSpell (in basePlayer) selects a spell given spellIndex, and returns the spell
     // castSpell is run when the event loop receves the spellcast event, and we determine if the spell is a crit, or has other procs

@@ -42,6 +42,10 @@
           <span class="input-group-text" id="basic-addon1">Avg hit from glyph HL</span>
           <input type="text" class="form-control" v-model.number="oomOptions['glyphHolyLightHits']">
         </div>
+        <div class="input-group mb-2" style="width: 100%">
+          <span class="input-group-text" id="basic-addon1">MP5 From Gear & Buffs</span>
+          <input type="text" class="form-control" v-model.number="oomOptions['mp5FromGearAndRaidBuffs']">
+        </div>
         <div>
           <button class="btn btn-primary" @click="runSim">
             {{ fetching ? 'Loading...' : 'Run Simulation' }}
@@ -52,10 +56,6 @@
       </div>
 
       <div class="col-4">
-        <div class="input-group mb-2" style="width: 100%">
-          <span class="input-group-text" id="basic-addon1">MP5 From Gear & Buffs</span>
-          <input type="text" class="form-control" v-model.number="oomOptions['mp5FromGearAndRaidBuffs']">
-        </div>
         <div class="input-group mb-2" style="width: 100%">
           <span class="input-group-text" id="basic-addon1">Crit Chance %</span>
           <input type="text" class="form-control" v-model.number="oomOptions['critChance']">
@@ -96,6 +96,10 @@
 
       <div class="col-4">
         <b>Mana Options</b>
+        <div class="input-group mb-2" style="width: 100%">
+          <span class="input-group-text" id="basic-addon1">Replenishment Uptime %</span>
+          <input type="text" class="form-control" v-model.number="oomOptions['manaOptions']['replenishmentUptime']">
+        </div>
         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="canSoW" v-model="oomOptions['manaOptions']['canSoW']">
           <label class="form-check-label" for="canSoW">Can SoW?</label>
@@ -221,6 +225,7 @@ export default {
           enlightenedJudgements: 1,
         },
         manaOptions: {
+          replenishmentUptime: 90,
           divineIllumination: true,
           canSoW: true,
           selfLoh: false,

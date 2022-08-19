@@ -344,6 +344,7 @@ class BasePlayer {
         return [requireGCD ? 2 : 1, eventsToCreate];
     }
 
+    // returns uncrit healing amount
     // multplicative factors are passed as an array of dictionaries
     // each dictionary is added together before mulitplied with the healingValue
     // lets say multiplicativeFactors = [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1, 'glpyh': 0.5}]
@@ -459,7 +460,7 @@ class BasePlayer {
     // converts mp5 to a mp2 tick value
     addManaRegenFromReplenishmentAndOtherMP5(logger=null, timestamp=null) {
         // we could use a cached value, but DMCG increases max mana pool, so for time being, we recalculate each time we call this
-        const replenishmentTick = (this.maxMana * DATA['constants']['replenishment'] / 5 * 2);
+        const replenishmentTick = (this.maxMana * DATA['constants']['replenishment'] / 5 * 2 * this._options['manaOptions']['replenishmentUptime']);
         const otherMP5Tick = (this._otherMP5 / 5 * 2);
         const tickAmount = Math.floor(replenishmentTick + otherMP5Tick);
         // since replenishment might tick outside spellcast, we print timestamp
@@ -531,7 +532,9 @@ class BasePlayer {
             let totalCasts = this._statistics['spellsCasted'][key]['total'],
                 totalManaSpent = 0;
 
-            totalManaSpent = this._statistics['manaSpent'][key];
+            // trying to calculate how much mana we spent on average
+            totalManaSpent = (typeof this._statistics['manaSpent'] !== 'undefined') && (typeof this._statistics['manaSpent'][key] !== 'undefined')
+                ? this._statistics['manaSpent'][key] : 0;
             // only applicable for paladin - subtract mana saved from illumination
             if ((typeof this._statistics['illumination'] !== 'undefined') &&
                     (typeof this._statistics['illumination'][key] !== 'undefined')) {
@@ -550,7 +553,6 @@ class BasePlayer {
 
     toString() {
         return `Mana: ${this._currentMana} / ${this.maxMana}`;
-        // return `${this._timestamp}s: ${this._eventType}`;
     }
 }
 module.exports = BasePlayer;
