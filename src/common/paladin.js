@@ -63,16 +63,14 @@ class Paladin extends BasePlayer {
 
     // should eventually support wings
     calculateHealing(spellKey, isCrit) {
-        let amount = 0;
         if (spellKey === 'HOLY_LIGHT') {
-            amount = this.calculateHealingHelper(spellKey, {}, [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1, 'glpyh': 0.5}]);
+            return this.calculateHealingHelper(spellKey, {}, [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1, 'glpyh': 0.5}], isCrit);
         } else if (spellKey === 'FLASH_OF_LIGHT' || spellKey === 'HOLY_SHOCK') {
-            amount = this.calculateHealingHelper(spellKey, {}, [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1}]);
+            return this.calculateHealingHelper(spellKey, {}, [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1}], isCrit);
         } 
         else {
             throw new Error('Unknown spellkey: ' + spellKey);
         }
-        return Math.floor(amount * (isCrit ? 1.5 : 1));
     }
 
     // selectSpell and castSpell work differently
@@ -88,7 +86,7 @@ class Paladin extends BasePlayer {
         // player.add_spellcast_to_statistics(event._name, event._is_crit, event._is_soup_proc, event._is_eog_proc)
         let procs = {},
             eventsToCreate = [];
-        let status, manaUsed, currentMana, errorMessage, offset, isCrit, msg, modifiedCritChance, sanctifiedLightCritChance;
+        let status, manaUsed, currentMana, errorMessage, offset, isCrit, msg, modifiedCritChance, sanctifiedLightCritChance, amountHealed;
 
         // checks for soup, and eog procs
         // holy light has more hits; all other spells have 2 hits (due to beacon)
@@ -116,7 +114,7 @@ class Paladin extends BasePlayer {
         // all pally spells have 1 chance to crit (beacon just mirrors the spell cast)
         isCrit = this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance);
 
-        this.calculateHealingHelper(spellKey);
+        amountHealed = this.calculateHealing(spellKey, isCrit);
         [status, manaUsed, currentMana, errorMessage] = this.subtractMana(spellKey, timestamp, procs);
 
         // player oom
@@ -132,8 +130,8 @@ class Paladin extends BasePlayer {
             logger.log('👀 👀 EOG 👀 👀', 2);
         }
 
-        msg = isCrit ? `${timestamp}s: **CRIT ${spellKey}** (spent ${originalMana - currentMana} mana)` :
-            `${timestamp}s: Casted ${spellKey} (spent ${originalMana - currentMana} mana)`;
+        msg = isCrit ? `${timestamp}s: **CRIT ${spellKey} for ${amountHealed}** (spent ${originalMana - currentMana} mana)` :
+            `${timestamp}s: Casted ${spellKey} for ${amountHealed} (spent ${originalMana - currentMana} mana)`;
         logger.log(msg, 2);
 
         // if we cast an instant spell, we need to account for it using the gcd (modified by haste factor)

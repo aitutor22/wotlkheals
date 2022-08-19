@@ -34,12 +34,16 @@ class BasePlayer {
         this._baseCritChance = options['critChance'] + this.classInfo['baseCritChanceModifier'];
         this._baseSpellPower = options['spellPower'];
 
-        // loops through the trinkets selected, and adds base stat values - currently only supports int
+        // loops through the trinkets selected, and adds base stat values - currently only supports int and spellpower
         for (let key of this._options['trinkets']) {
             let item = DATA['items'][key];
             if (typeof item['base']['int'] !== 'undefined') {
                 this._baseMaxMana += this.manaIncreaseFromInt(item['base']['int']);
                 this._baseCritChance += this.critIncreaseFromInt(item['base']['int']);
+                this._baseSpellPower += this.spellPowerIncreaseFromInt(item['base']['int']);
+            }
+            if (typeof item['base']['spellpower'] !== 'undefined') {
+                this._baseSpellPower += item['base']['spellpower'];
             }
         }
 
@@ -65,7 +69,8 @@ class BasePlayer {
             'manaGenerated': {},
             'manaSpent': {},
             'spellsCasted': {},
-            'overall': {spellsCasted: 0, nonHealingSpellsWithGcd: 0},
+            'healing': {},
+            'overall': {spellsCasted: 0, nonHealingSpellsWithGcd: 0, healing: 0},
         }
 
         this._hasteFactor = 0;
@@ -360,7 +365,17 @@ class BasePlayer {
                 amount *= factorSum;
             }
         }
-        return Math.floor(amount);
+
+        amount = Math.floor(amount * (isCrit ? 1.5 : 1));
+
+        // stores in statistics
+        if (!(spellKey in this._statistics['healing'])) {
+            this._statistics['healing'][spellKey] = 0;
+        }
+
+        this._statistics['healing'][spellKey] += amount;
+        this._statistics['overall']['healing'] += amount;
+        return amount;
     }
 
     checkProcHelper(key, spellIndex, numHits, procChance) {
@@ -530,8 +545,14 @@ class BasePlayer {
 
         for (let key in this._statistics['spellsCasted']) {
             let totalCasts = this._statistics['spellsCasted'][key]['total'],
-                totalManaSpent = 0;
+                totalManaSpent = 0,
+                castTime = this._spells.find((_spell) => _spell['key'] === key)['castTime'],
+                hpet = 0; // healing per effective time
 
+            // for instants, use gcd to calculate
+            if (castTime === 0) {
+                castTime = this._gcd;
+            }
             // trying to calculate how much mana we spent on average
             totalManaSpent = (typeof this._statistics['manaSpent'] !== 'undefined') && (typeof this._statistics['manaSpent'][key] !== 'undefined')
                 ? this._statistics['manaSpent'][key] : 0;
@@ -541,13 +562,17 @@ class BasePlayer {
                 totalManaSpent -= this._statistics['illumination'][key]
             }
 
+            hpet = Math.floor((this._statistics['healing'][key] / totalCasts) / castTime)
+
             toReturn['spellsCasted'].push({
                 // converts HOLY_LIGHT to Holy Light
                 'spell': key.split('_').map(k => Utility.capitalizeFirstLetter(k.toLowerCase())).join(' '),
                 'cpm': Utility.roundDp(totalCasts / total_time * 60, 1),
                 'avgManaCost': Math.floor(totalManaSpent / totalCasts),
+                'hpet': hpet, 
             });
         }
+
         return toReturn;
     }
 

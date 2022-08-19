@@ -2,7 +2,7 @@
   <div class="container">
     <div class="row" v-if="showExplanation">
       <p>
-        This tool simulates how long it takes for a Holy Paladin to go OOM (ttoom), especially due to the high mana cost of Holy Light. Given the high number of procs in the hpld toolkit, the tool simulates 300 runs and returns the median ttoom, and the specific statistics from that run.
+        This tool simulates how long it takes for a Holy Paladin to go OOM (ttoom), especially due to the high mana cost of Holy Light. Given the high number of procs in the hpld toolkit, the tool simulates 400 runs and returns the median ttoom, and the specific statistics from that run.
       </p>
 
       <p>Please input raid-buffed values for spellpower, mana pool and crit chance (do not add crit from talents). Note: do not change stats from trinkets to these values as the tool will automatically calculate it.</p>
@@ -130,7 +130,7 @@
     <hr>
     <div class="row" v-if="results">
       <div class="col-7">
-        <p>Median Time to OOM: <b>{{ results['ttoom'] }}s</b></p>
+        <p>Median Time to OOM: <b>{{ results['ttoom'] }}s ({{ formatNumber(results['hps']) }} HPS)</b></p>
         <p>
           HPLD's ttoom has higher variance vs other healers due to Divine Plea breakpoints (amplified by using Darkmoon Card: Greatness).
         </p>
@@ -168,7 +168,7 @@
 
       <div class="pad-bottom">
         <i>
-          The above values for Cast Profile and Mana Generated are median values over 300 runs, and do not come from the same log.
+          The above values for Cast Profile and Mana Generated are median values over 400 runs, and do not come from the same log.
         </i>
       </div>
     </div>
@@ -217,9 +217,9 @@ export default {
           FLASH_OF_LIGHT: 1.4,
         },
         cpm: {
-          HOLY_LIGHT: 30,
-          HOLY_SHOCK: 0,
-          FLASH_OF_LIGHT: 6,
+          HOLY_LIGHT: 35,
+          HOLY_SHOCK: 3,
+          FLASH_OF_LIGHT: 0,
         },
         talents: {
           enlightenedJudgements: 1,

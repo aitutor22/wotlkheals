@@ -211,13 +211,14 @@ class Experiment {
         } //end while loop
 
 
-        let statistics = player.calculate_statistics_after_sim_ends(lastCastTimestamp);
+        let statistics = player.calculate_statistics_after_sim_ends(lastCastTimestamp),
+            hps = Math.floor(player._statistics['overall']['healing'] / lastCastTimestamp);
         // console.log(statistics);
-        return {ttoom: lastCastTimestamp, statistics: statistics, logs: this.logger._resultArr};
+        return {ttoom: lastCastTimestamp, statistics: statistics, logs: this.logger._resultArr, hps: hps};
     }
 
     runBatch(batchSize=10, seed=0, logsLevel=0, numBins=30) {
-        let timings = [], manaGeneratedStatistics = [], spellsCastedStatistics = [], medianEntry, resultSingleLoop, binResults;
+        let timings = [], listOfHPS = [], manaGeneratedStatistics = [], spellsCastedStatistics = [], medianEntry, resultSingleLoop, binResults;
         // if seed is 0, we get a random number from 1 to 9999 and used it to seed
         if (seed === 0) {
             seed = Math.floor(Math.random() * 10000 + 1)
@@ -230,6 +231,7 @@ class Experiment {
             manaGeneratedStatistics.push(resultSingleLoop['statistics']['manaGenerated']);
             spellsCastedStatistics.push(resultSingleLoop['statistics']['spellsCasted']);
             timings.push({ttoom: resultSingleLoop['ttoom'], seed: seed * (i + 1)});
+            listOfHPS.push(resultSingleLoop['hps']);
         }
 
         medianEntry = Utility.medianArrDict(timings, 'ttoom');
@@ -247,19 +249,24 @@ class Experiment {
         }
         let minXAxis = binResults[0].minNum, maxXAxis = binResults[binResults.length - 1].maxNum;
 
+        // gets the hps, mana cost and cpm of spells casted, and combines it into a single list
         let cpmSummary = Utility.medianStatistics(spellsCastedStatistics, 'spell', 'cpm', '1dp'),
-            manaCostSummary = Utility.medianStatistics(spellsCastedStatistics, 'spell', 'avgManaCost', 'floor');
+            manaCostSummary = Utility.medianStatistics(spellsCastedStatistics, 'spell', 'avgManaCost', 'floor'),
+            hpetSummary = Utility.medianStatistics(spellsCastedStatistics, 'spell', 'hpet', 'floor');
 
         let castProfileSummary = [];
         for (let cpmEntry of cpmSummary) {
             let _spell = cpmEntry['spell'],
-                manaEntry = manaCostSummary.find((_m) => _m['spell'] === _spell);
+                manaEntry = manaCostSummary.find((_m) => _m['spell'] === _spell),
+                hpetEntry = hpetSummary.find((_m) => _m['spell'] === _spell);
 
             castProfileSummary.push({
                 spell: cpmEntry['spell'],
-                cpm: cpmEntry['cpm'],
-                avgManaCost: manaEntry['avgManaCost'],
+                'CPM': cpmEntry['cpm'],
+                'Cost': manaEntry['avgManaCost'],
+                'HPET': hpetEntry['hpet'],
             });
+
         };
 
         // we run a single iteration of the median seed to get log info
@@ -268,6 +275,7 @@ class Experiment {
         // console.log(resultSingleLoop['logs'])
         return {
             ttoom: medianEntry['ttoom'],
+            hps: Utility.median(listOfHPS),
             logs: resultSingleLoop['logs'],
             manaStatistics: Utility.medianStatistics(manaGeneratedStatistics, 'source', 'MP5', 'floor'),
             spellsCastedStatistics: castProfileSummary,
