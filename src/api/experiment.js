@@ -212,6 +212,7 @@ class Experiment {
 
 
         let statistics = player.calculate_statistics_after_sim_ends(lastCastTimestamp);
+        // console.log(statistics);
         return {ttoom: lastCastTimestamp, statistics: statistics, logs: this.logger._resultArr};
     }
 
@@ -246,6 +247,21 @@ class Experiment {
         }
         let minXAxis = binResults[0].minNum, maxXAxis = binResults[binResults.length - 1].maxNum;
 
+        let cpmSummary = Utility.medianStatistics(spellsCastedStatistics, 'spell', 'cpm', '1dp'),
+            manaCostSummary = Utility.medianStatistics(spellsCastedStatistics, 'spell', 'avgManaCost', 'floor');
+
+        let castProfileSummary = [];
+        for (let cpmEntry of cpmSummary) {
+            let _spell = cpmEntry['spell'],
+                manaEntry = manaCostSummary.find((_m) => _m['spell'] === _spell);
+
+            castProfileSummary.push({
+                spell: cpmEntry['spell'],
+                cpm: cpmEntry['cpm'],
+                avgManaCost: manaEntry['avgManaCost'],
+            });
+        };
+
         // we run a single iteration of the median seed to get log info
         // first argument is logLevel - 2 shows most details but ommits crti details
         resultSingleLoop = this.runSingleLoop(3, medianEntry['seed']);
@@ -254,7 +270,7 @@ class Experiment {
             ttoom: medianEntry['ttoom'],
             logs: resultSingleLoop['logs'],
             manaStatistics: Utility.medianStatistics(manaGeneratedStatistics, 'source', 'MP5', 'floor'),
-            spellsCastedStatistics: Utility.medianStatistics(spellsCastedStatistics, 'spell', 'cpm', '1dp'),
+            spellsCastedStatistics: castProfileSummary,
             // statistics: resultSingleLoop['statistics'][0],
             chartDetails: {
                 labels: labels,

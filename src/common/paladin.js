@@ -35,6 +35,13 @@ class Paladin extends BasePlayer {
         // glyph of SOW reduces healing cost by 5%; note that we don't put 4pt7 here as it only affects HL
         this._baseOtherMultiplicativeTotal = Utility.getKeyBoolean(this._options, 'glyphSOW') ? (1 - this.classInfo['manaCostModifiers']['glyphSOW']) : 1;
         this._numHitsPerHolyLight = Math.floor(2 + this._options['glyphHolyLightHits']) // beacon + original target + glpyh
+
+
+        // removes Divine Illumination depending on user input
+        if (!this._options['manaOptions']['divineIllumination']) {
+            let divineIlluminationIndex = options['manaCooldowns'].findIndex((entry) => entry['key'] === 'DIVINE_ILLUMINATION');
+            options['manaCooldowns'].splice(divineIlluminationIndex, 1);
+        }        
         this.initialiseManaCooldowns(options['manaCooldowns']);
 
         // filters out holyShock if cpm is set to 0
@@ -170,6 +177,14 @@ class Paladin extends BasePlayer {
     addManaFromIllumination(spellKey, logger=null) {
         let baseManaCost = this.classInfo['spells'].find((_spell) => _spell['key'] === spellKey)['baseManaCost'];
         let amount = Math.floor(baseManaCost * 0.3);
+        
+        if (typeof this._statistics['illumination'] === 'undefined') {
+            this._statistics['illumination'] = {};
+        }
+        if (!(spellKey in this._statistics['illumination'])) {
+            this._statistics['illumination'][spellKey] = 0;
+        }
+        this._statistics['illumination'][spellKey] += amount;
         return this.addManaHelper(amount, 'illumination', logger);
     }
 

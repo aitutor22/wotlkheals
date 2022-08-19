@@ -141,6 +141,7 @@ const data = {
                   enlightenedJudgements: 1,
                 },
                 manaOptions: {
+                  divineIllumination: true,
                   canSoW: true,
                   selfLoh: false,
                   injector: false,

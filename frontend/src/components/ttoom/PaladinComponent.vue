@@ -101,6 +101,10 @@
           <label class="form-check-label" for="canSoW">Can SoW?</label>
         </div>
         <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="divineIllumination" v-model="oomOptions['manaOptions']['divineIllumination']">
+          <label class="form-check-label" for="divineIllumination">Divine Illumination</label>
+        </div>
+        <div class="form-check">
           <input class="form-check-input" type="checkbox" id="selfLoh" v-model="oomOptions['manaOptions']['selfLoh']">
           <label class="form-check-label" for="selfLoh">Self LoH (Divinity)</label>
         </div>
@@ -217,6 +221,7 @@ export default {
           enlightenedJudgements: 1,
         },
         manaOptions: {
+          divineIllumination: true,
           canSoW: true,
           selfLoh: false,
           injector: false,

@@ -63,6 +63,7 @@ class BasePlayer {
         this._instantSpells = this._spells.filter((_spell) => _spell['instant']).map((_spell) => _spell['key']);
         this._statistics = {
             'manaGenerated': {},
+            'manaSpent': {},
             'spellsCasted': {},
             'overall': {spellsCasted: 0, nonHealingSpellsWithGcd: 0},
         }
@@ -415,7 +416,10 @@ class BasePlayer {
         }
         else {
             this._currentMana -= value
-            // self._statistics['overall']['total_mana_used'] += mana_cost
+            if (!(spellKey in this._statistics['manaSpent'])) {
+                this._statistics['manaSpent'][spellKey] = 0;
+            }
+            this._statistics['manaSpent'][spellKey] += value;
             return [1, value, this._currentMana, null];
         }
     }
@@ -509,9 +513,9 @@ class BasePlayer {
         // this._statistics['overall']['hps'] = this._statistics['overall']['total_healing'] / total_time
         // console.log(this._spells);
         // if (logger) logger.log(this._statistics, 2);
+        // console.log('printing statistics');
         // console.log(this._statistics);
 
-        // console.log()
         let toReturn = {manaGenerated: [], spellsCasted: []};
         for (let key in this._statistics['manaGenerated']) {
             // poor code: manually converts certain keys to what is shown on client's table
@@ -524,15 +528,21 @@ class BasePlayer {
         }
 
         for (let key in this._statistics['spellsCasted']) {
-            // // poor code: manually converts certain keys to what is shown on client's table
-            // let newKey = key in DATA['manaCooldownNamesMap'] ? DATA['manaCooldownNamesMap'][key] : Utility.capitalizeFirstLetter(key);
-            // // the keys here are what is shown on the client table, hence the weird notation
-            // console.log(this._statistics['spellsCasted']);
-            // console.log(this._statistics['spellsCasted'][key]['total'] / total_time * 60, total_time)
+            let totalCasts = this._statistics['spellsCasted'][key]['total'],
+                totalManaSpent = 0;
+
+            totalManaSpent = this._statistics['manaSpent'][key];
+            // only applicable for paladin - subtract mana saved from illumination
+            if ((typeof this._statistics['illumination'] !== 'undefined') &&
+                    (typeof this._statistics['illumination'][key] !== 'undefined')) {
+                totalManaSpent -= this._statistics['illumination'][key]
+            }
+
             toReturn['spellsCasted'].push({
                 // converts HOLY_LIGHT to Holy Light
                 'spell': key.split('_').map(k => Utility.capitalizeFirstLetter(k.toLowerCase())).join(' '),
-                'cpm': Utility.roundDp(this._statistics['spellsCasted'][key]['total'] / total_time * 60, 1),
+                'cpm': Utility.roundDp(totalCasts / total_time * 60, 1),
+                'avgManaCost': Math.floor(totalManaSpent / totalCasts),
             });
         }
         return toReturn;
