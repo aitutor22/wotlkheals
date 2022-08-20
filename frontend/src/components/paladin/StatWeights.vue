@@ -78,7 +78,10 @@
         <div class="col-7">
           <h3>MP5 Stat Weight</h3>
           <p>
-            Traditionally, it has been difficult to reconcile mana and throughput stat weights for healers. However, HPLD have an extremely efficient way to convert healing throughput into mana conservation through Divine Plea.
+            Traditionally, it has been difficult to reconcile mana and throughput stat weights for healers. In particular, if you never run out of mana, what value do mana stats have?"
+          </p>
+          <p>
+            HPLDs in WotLK can directly convert extra mana into throughput with Divine Plea. If you have enough Intellect or MP5 to delay your Plea to downtime, or even avoid using it at all during a fight, then that Intellect or MP5 are likely better throughput stats in this situation than spell-power or haste.
           </p>
           <p>
             We use Divine Plea to obtain a MP5 stat weight by essentially asking "how much is the reduced throughput worth in spellpower terms" and comparing it to "how much MP5 do we need so we can skip a plea".
