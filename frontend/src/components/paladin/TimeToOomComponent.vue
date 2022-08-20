@@ -7,7 +7,7 @@
       <p>
         Two warnings - firstly, due to Divine Plea and numerous procs in the HPLD toolkit, there is high variance in ttoom. Players that have mastered the intricacies of Holy Paladin from playing TBC can easily adjust their cast profile, but it is recommended to not fixate on median ttoom, and also consider unlucky situations. Secondly, if a fight is shorter than 5 mins, then the MP5 and ttoom generated from Owl is theoretically inflated (not an issue if the player is aggressively swapping trinkets that go off cooldown).
       <p>
-        This tool is in alpha and thus buggy and please message <b>Trollhealer#8441</b> on Discord if you see any bugs or have suggestions. Special thanks to <b>Lovelace</b> and <b>Currelius</b> for formula help, as well as the rest of the healer cabal for valuable feedback and testing of beta values.
+        This tool is in alpha and thus buggy and please message <b>Trollhealer#8441</b> on Discord if you see any bugs or have suggestions. Special thanks to <b>Lovelace</b> and <b>Currelius</b> for formula help, <b>Kanga</b> for setting everything up, as well as the rest of the healer cabal for valuable feedback and testing of beta values.
       </p>
     </div>
 <!--     <div class="row chart-container">
