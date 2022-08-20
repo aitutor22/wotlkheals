@@ -45,6 +45,9 @@ class BasePlayer {
             if (typeof item['base']['spellpower'] !== 'undefined') {
                 this._baseSpellPower += item['base']['spellpower'];
             }
+            if (typeof item['base']['crit'] !== 'undefined') {
+                this._baseCritChance += item['base']['crit'];
+            }
         }
 
         this._otherMP5 = options['mp5FromGearAndRaidBuffs'];

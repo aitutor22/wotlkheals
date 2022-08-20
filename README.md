@@ -7,6 +7,7 @@ npm run serve
 Project Organisation notes
  - Vue code is in `frontend`, node backend code in in `src`
  - backend code structured like a django project, with each folder in src representing a standalone module
+ - create a .env file in root, and add ACCESS_TOKEN = "xxxx", where XXX refers to your wcl api key
 
 
 

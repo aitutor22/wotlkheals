@@ -2,7 +2,7 @@
   <div class="container">
     <div class="row" v-if="showExplanation">
       <p>
-        This tool simulates how long it takes for a Holy Paladin to go OOM (ttoom). Please input raid-buffed values for spellpower, mana pool and crit chance (do not add crit from talents). Note: do not change stats from trinkets to these values as the tool will automatically calculate it.
+        This tool simulates how long it takes for a Holy Paladin to go OOM (ttoom). Hover over the fields to see a quick explanation. Note: do not add stats from trinkets to spellpower, crit, etc as the tool will automatically calculate it.
       </p>
       <p>
         Two warnings - firstly, due to Divine Plea and numerous procs in the HPLD toolkit, there is high variance in ttoom. Players that have mastered the intricacies of Holy Paladin from playing TBC can easily adjust their cast profile, but it is recommended to not fixate on median ttoom, and also consider unlucky situations. Secondly, if a fight is shorter than 5 mins, then the MP5 and ttoom generated from Owl is theoretically inflated (not an issue if the player is aggressively swapping trinkets that go off cooldown).
@@ -23,11 +23,13 @@
     <div class="row">
       <div class="col-4">
         <div class="input-group mb-2" style="width: 100%">
-          <span class="input-group-text" id="basic-addon1">Mana Pool</span>
+          <span class="input-group-text" id="basic-addon1"
+            v-b-tooltip.hover title="Raid Buffed">Mana Pool</span>
           <input type="text" class="form-control" v-model.number="oomOptions['manaPool']">
         </div>
         <div class="input-group mb-2" style="width: 100%">
-          <span class="input-group-text" id="basic-addon1">Spellpower</span>
+          <span class="input-group-text" id="basic-addon1"
+            v-b-tooltip.hover title="Raid Buffed, including spellpower from Holy Guidance">Spellpower</span>
           <input type="text" class="form-control" v-model.number="oomOptions['spellPower']">
         </div>
         <div class="input-group mb-2" style="width: 100%">
@@ -43,11 +45,13 @@
           <input type="text" class="form-control" v-model.number="oomOptions['cpm']['HOLY_SHOCK']">
         </div>
         <div class="input-group mb-2" style="width: 100%">
-          <span class="input-group-text" id="basic-addon1"># hits from glyph HL</span>
+          <span class="input-group-text" id="basic-addon1"
+            v-b-tooltip.hover title="Integer from 0 to 5"># hits from glyph HL</span>
           <input type="text" class="form-control" v-model.number="oomOptions['glyphHolyLightHits']">
         </div>
         <div class="input-group mb-2" style="width: 100%">
-          <span class="input-group-text" id="basic-addon1">MP5 From Gear & Buffs</span>
+          <span class="input-group-text" id="basic-addon1"
+            v-b-tooltip.hover title="Raid Buffed">MP5 From Gear & Buffs</span>
           <input type="text" class="form-control" v-model.number="oomOptions['mp5FromGearAndRaidBuffs']">
         </div>
         <div>
@@ -61,22 +65,26 @@
 
       <div class="col-4">
         <div class="input-group mb-2" style="width: 100%">
-          <span class="input-group-text" id="basic-addon1">Crit Chance %</span>
+          <span class="input-group-text" id="basic-addon1"
+            v-b-tooltip.hover title="Raid Buffed, DO NOT include values from Holy Power and Sanctified Light talents as system will automatically add">Crit Chance %</span>
           <input type="text" class="form-control" v-model.number="oomOptions['critChance']">
         </div>
 
         <div class="input-group mb-2" style="width: 100%">
-          <span class="input-group-text" id="basic-addon1">#pts (Enl. Judgements)</span>
+          <span class="input-group-text" id="basic-addon1"
+            v-b-tooltip.hover title="Number of talent points in Enlightened Judgements (0 to 2)">#pts (Enl. Judgements)</span>
           <input type="text" class="form-control" v-model.number="oomOptions['talents']['enlightenedJudgements']">
         </div>
 
         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="2pT7" v-model="oomOptions['2pT7']">
-          <label class="form-check-label" for="2pT7">2pT7</label>
+          <label class="form-check-label" for="2pT7"
+            v-b-tooltip.hover title="Your Holy Shock gains an additional 10% chance to critically strike.">2pT7</label>
         </div>
         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="4pT7" v-model="oomOptions['4pT7']">
-          <label class="form-check-label" for="4pT7">4pT7</label>
+          <label class="form-check-label" for="4pT7"
+            v-b-tooltip.hover title="The cost of your Holy Light is reduced by 5%.">4pT7</label>
         </div>
 
         <b>Trinkets</b>
@@ -110,7 +118,8 @@
         </div>
         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="canSoW" v-model="oomOptions['manaOptions']['canSoW']">
-          <label class="form-check-label" for="canSoW">Can SoW?</label>
+          <label class="form-check-label" for="canSoW"
+            v-b-tooltip.hover title="Is HPLD in melee range and thus able to proc Seal of Wisdom for mana?">Can SoW?</label>
         </div>
         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="divineIllumination" v-model="oomOptions['manaOptions']['divineIllumination']">
@@ -118,11 +127,13 @@
         </div>
         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="selfLoh" v-model="oomOptions['manaOptions']['selfLoh']">
-          <label class="form-check-label" for="selfLoh">Self LoH (Divinity)</label>
+          <label class="form-check-label" for="selfLoh"
+            v-b-tooltip.hover title="Is the HPLD using Glyph of Divinity and casting Lay on Hands on him/herself for additional mana?">Self LoH (Divinity)</label>
         </div>
         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="injector" v-model="oomOptions['manaOptions']['injector']">
-          <label class="form-check-label" for="injector">Mana Injector</label>
+          <label class="form-check-label" for="injector"
+            v-b-tooltip.hover title="Engineers using mana injectors gain a +25% bonus to mana potion">Mana Injector</label>
         </div>
         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="innervate" v-model="oomOptions['manaOptions']['innervate']">

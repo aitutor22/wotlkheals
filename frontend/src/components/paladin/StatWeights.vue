@@ -16,18 +16,20 @@
       <div class="col-6">
         <div class="input-group mb-2" style="width: 100%">
           <span class="input-group-text" id="basic-addon1">Mana Pool</span>
-          <input type="text" class="form-control" v-model.number="manaPool">
+          <input type="text" class="form-control" v-b-tooltip.hover title="Raid Buffed" v-model.number="manaPool">
         </div>
         <div class="input-group mb-2" style="width: 100%">
           <span class="input-group-text" id="basic-addon1">Spellpower</span>
-          <input type="text" class="form-control" v-model.number="spellPower">
+          <input type="text" class="form-control" v-model.number="spellPower"
+            v-b-tooltip.hover title="Raid Buffed, including spellpower from Holy Guidance" >
         </div>
         <div class="input-group mb-2" style="width: 100%">
           <span class="input-group-text" id="basic-addon1">HL CPM</span>
           <input type="text" class="form-control" v-model.number="cpm">
         </div>
         <div class="input-group mb-2" style="width: 100%">
-          <span class="input-group-text" id="basic-addon1">Raid Buffed Crit Chance (exc. talents)</span>
+          <span class="input-group-text" id="basic-addon1"
+            v-b-tooltip.hover title="Raid Buffed, DO NOT include values from Holy Power and Sanctified Light talents as system will automatically add">Raid Buffed Crit Chance (exc. talents)</span>
           <input type="text" class="form-control" v-model.number="critChance">
         </div>
         <button class="btn btn-primary" @click="run">Run</button>
@@ -43,11 +45,13 @@
           <input type="text" class="form-control" v-model.number="replenishmentUptime">
         </div>
         <div class="input-group mb-2" style="width: 100%">
-          <span class="input-group-text" id="basic-addon1">SoW Hits (min)</span>
+          <span class="input-group-text" id="basic-addon1"
+            v-b-tooltip.hover title="The number of melee attacks a HPLD does, which has a chance to proc Seal of Wisdom for mana?">Num melee Hits (min)</span>
           <input type="text" class="form-control" v-model.number="numSoWHitsPerMin">
         </div>
         <div class="input-group mb-2" style="width: 100%">
-          <span class="input-group-text" id="basic-addon1">Haste %</span>
+          <span class="input-group-text" id="basic-addon1"
+            v-b-tooltip.hover title="Haste % from gear only; DO NOT add JotP or other raid buffs">Haste %</span>
           <input type="text" class="form-control" v-model.number="hastePercent">
         </div>
       </div>
@@ -178,7 +182,7 @@ export default {
       spellPower: 2400, // includes holy guidance; to extract out later
       manaPool: 28000,
       critChance: 30, // includes raid buffs
-      hastePercent: 15,
+      hastePercent: 20,
       cpm: 40,
       glyphHolyLightHits: 5,
       critOverhealDiscountFactor: 10,
@@ -380,12 +384,11 @@ export default {
       const HOLY_LIGHT_BASE_CAST_TIME = 2;
       const OTHER_HASTE_MODIFIERS = 1.03 * 1.05 * 1.15; // moonkin, WoA, JotP
 
-
       const HL_HPS_COEFFICIENT = this.HL_CRIT_COEFFICIENT * (1 + this.hastePercent / 100) * OTHER_HASTE_MODIFIERS / HOLY_LIGHT_BASE_CAST_TIME;
       let table = [];
       // how much additional healing per second 1 spellpower gives you, using a cast time of 2 / (1 + haste%)
       // the raw healing per second of HL if you had 0% haste
-      let hlUnhastedRawHps = this.hlRawHealing / HOLY_LIGHT_BASE_CAST_TIME;
+      let hlUnhastedRawHps = this.hlRawHealing / HOLY_LIGHT_BASE_CAST_TIME * OTHER_HASTE_MODIFIERS;
 
       let increaseInHPSFromOnePercentageHaste = hlUnhastedRawHps / 100;
       let increaseInHPSFromOneHasteRating = increaseInHPSFromOnePercentageHaste / HASTE_RATING;
