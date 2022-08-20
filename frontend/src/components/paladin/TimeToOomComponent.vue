@@ -2,12 +2,12 @@
   <div class="container">
     <div class="row" v-if="showExplanation">
       <p>
-        This tool simulates how long it takes for a Holy Paladin to go OOM (ttoom), especially due to the high mana cost of Holy Light. Given the high number of procs in the hpld toolkit, the tool simulates 400 runs and returns the median ttoom, and the specific statistics from that run.
+        This tool simulates how long it takes for a Holy Paladin to go OOM (ttoom). Please input raid-buffed values for spellpower, mana pool and crit chance (do not add crit from talents). Note: do not change stats from trinkets to these values as the tool will automatically calculate it.
       </p>
-
-      <p>Please input raid-buffed values for spellpower, mana pool and crit chance (do not add crit from talents). Note: do not change stats from trinkets to these values as the tool will automatically calculate it.</p>
       <p>
-        Special thanks to Lovelace and Currelius for formula help, as well as the rest of the healer cabal for valuable feedback and beta testing.
+        Two warnings - firstly, due to Divine Plea and numerous procs in the HPLD toolkit, there is high variance in ttoom. Players that have mastered the intricacies of Holy Paladin from playing TBC can easily adjust their cast profile, but it is recommended to not fixate on median ttoom, and also consider unlucky situations. Secondly, if a fight is shorter than 5 mins, then the MP5 and ttoom generated from Owl is theoretically inflated (not an issue if the player is aggressively swapping trinkets that go off cooldown).
+      <p>
+        This tool is in alpha and thus buggy and please message <b>Trollhealer#8441</b> on Discord if you see any bugs or have suggestions. Special thanks to <b>Lovelace</b> and <b>Currelius</b> for formula help, as well as the rest of the healer cabal for valuable feedback and testing of beta values.
       </p>
     </div>
 <!--     <div class="row chart-container">
@@ -39,7 +39,7 @@
           <input type="text" class="form-control" v-model.number="oomOptions['cpm']['HOLY_SHOCK']">
         </div>
         <div class="input-group mb-2" style="width: 100%">
-          <span class="input-group-text" id="basic-addon1">Avg hit from glyph HL</span>
+          <span class="input-group-text" id="basic-addon1"># hits from glyph HL</span>
           <input type="text" class="form-control" v-model.number="oomOptions['glyphHolyLightHits']">
         </div>
         <div class="input-group mb-2" style="width: 100%">
@@ -131,11 +131,13 @@
     <div class="row" v-if="results">
       <div class="col-7">
         <p>Median Time to OOM: <b>{{ results['ttoom'] }}s ({{ formatNumber(results['hps']) }} HPS)</b></p>
-        <p>
+        <p><em>
           HPLD's ttoom has higher variance vs other healers due to Divine Plea breakpoints (amplified by using Darkmoon Card: Greatness).
-        </p>
+        </em></p>
         <p>
-          The bimodal distribution means a simple median/mean ttoom misses important context - you could have a high median ttoom but also be mana-screwed 30-40% of the time. The histogram (median in red) provides more contex, and you can click on bars to see the log on the right.</p>
+          <em>The bimodal distribution means a simple median/mean ttoom misses important context - you could have a high median ttoom but also be mana-screwed 30-40% of the time. The histogram (median in red) provides more context, and you can click on bars to see the log on the right.
+          </em>
+        </p>
         <div>
           <input type="text" name="" v-model="minXAxis">
           <input type="text" name="" v-model="maxXAxis">
@@ -176,6 +178,7 @@
     <div v-if="results" class="row gap-top">
       <h5>Implementation Assumptions & Known Issues</h5>
       <ol>
+        <li>The following have NOT been implented yet: Divine Favour, FoL Infusion of Light (currently the system will automatically prioritise HL when Infusion of Light is up), and standalone gcds used for Beacon and Sacred Shield.</li>
         <li>
           Sacred Shield, Beacon of Light and Judgement are not casted in the sim, but an expected value for SoW procs is automatically calculated based on 4 hits a min (Judgement counts as 2 hits) and added to MP5.
         </li>
@@ -323,6 +326,12 @@ export default {
     formatNumber (num) {
         return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
     },
+    basicNumberValidation(num) {
+      if (isNaN(num) || num === '' || num < 0) {
+        return false;
+      }
+      return true;
+    },
     runSim() {
       if (this.fetching) return;
 
@@ -339,6 +348,28 @@ export default {
       if (this.oomOptions['talents']['enlightenedJudgements'] < 0 || this.oomOptions['talents']['enlightenedJudgements'] > 2
           || !Number.isInteger(this.oomOptions['talents']['enlightenedJudgements'])) {
         alert('Please input a valid value for Enlightened Judgements');
+        return;
+      }
+
+      for (let key in this.oomOptions['cpm']) {
+        let entry = this.oomOptions['cpm'][key];
+        if (!this.basicNumberValidation(entry)) {
+          alert('Please enter a valid number for : ' + key);
+          return;
+        }
+      }
+
+      for (let otherField of ['manaPool', 'glyphHolyLightHits', 'critChance']) {
+        if (!this.basicNumberValidation(this.oomOptions[otherField])) {
+          alert('Please enter a valid number for : ' + otherField);
+          return;
+        }
+      }
+
+      if (this.oomOptions['glyphHolyLightHits'] < 0 || this.oomOptions['glyphHolyLightHits'] > 5 ||
+            !Number.isInteger(this.oomOptions['glyphHolyLightHits'])) {
+          alert('glyphHolyLightHits should be an integer between 0 and 5');
+          return; 
       }
 
       this.fetching = true;

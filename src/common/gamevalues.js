@@ -66,6 +66,7 @@ const data = {
             intModifier: 1.1 * 1.1, //blessing of kings and divine intellect
             baseCritChanceModifier: 0.05, // 5% additional crit chance from holy power
             sanctifiedLightCritChanceModifier: 0.06, // 6% additional crit chance for holy shock and holy light
+            glyphHolyLightHitHealingPercentage: 0.1, // each hit heals for 10%
             // SoW is a physical attack that can be missed or dodged (modified by judgement)
             // for normal physical hit, it can be missed and dodged while if using judgement, it can only miss and not be dodged
             sow: {

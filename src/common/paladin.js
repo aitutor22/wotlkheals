@@ -65,9 +65,11 @@ class Paladin extends BasePlayer {
     // reduces healing by half when divinePlea is active
     calculateHealing(spellKey, isCrit, isDivinePleaActive=false) {
         let amount = 0,
-            multiplicativeFactors = [];
+            multiplicativeFactors = [],
+            glyphHLFactor = this._options['glyphHolyLightHits'] * this.classInfo['glyphHolyLightHitHealingPercentage'];
+
         if (spellKey === 'HOLY_LIGHT') {
-            multiplicativeFactors = [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1, 'glpyh': 0.5}];
+            multiplicativeFactors = [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1, 'glpyh': glyphHLFactor}];
         } else if (spellKey === 'FLASH_OF_LIGHT' || spellKey === 'HOLY_SHOCK') {
             multiplicativeFactors = [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1}];
         } 

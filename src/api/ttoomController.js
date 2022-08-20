@@ -53,7 +53,7 @@ exports.paladinTtoom = (req, res) => {
     try {
         // second argument is where logs are sent - 0 for console.log, 1 to an arr that is returned to the client
         let experiment = new Experiment(options, 1);
-        let result = experiment.runBatch(1);
+        let result = experiment.runBatch(400);
         res.send(result);
     } catch (error) {
         console.log(error);
