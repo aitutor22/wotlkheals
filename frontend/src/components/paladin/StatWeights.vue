@@ -5,7 +5,7 @@
       Preliminary guestimates of HPLD statweights by <b>Trollhealer</b>, <b>Lovelace</b> and <b>Currelius</b>.
     </p>
     <p>
-      The central idea is that paladins have an extremely efficient way to convert healing throughput into mana conservation through Divine Plea. From here, we can work out a standard conversion or stat-weight for MP5 relative to 1 spellpower, and then use that to derive valuations for int and crit. Haste has also been included for completeness.
+      IMPORTANT NOTE FOR HASTE: the higher the existing haste, the lower the marginal value of adding more haste. If you wish to see what are your stat weights based on your current gear to determine incremental upgrades, then put your existing haste. But if you are trying to determine phase bis, put a low to midrange haste value to avoid undervaluing haste (this will not affect your mp5, int or crit weights).
     </p>
     <p>
       The stat-weight for stamina has been left as an exercise for the reader.
@@ -31,6 +31,25 @@
           <input type="text" class="form-control" v-model.number="critChance">
         </div>
         <button class="btn btn-primary" @click="run">Run</button>
+      </div>
+
+      <div class="col-6">
+        <div class="input-group mb-2" style="width: 100%">
+          <span class="input-group-text" id="basic-addon1">Fight Length (s)</span>
+          <input type="text" class="form-control" v-model.number="fightLength">
+        </div>
+        <div class="input-group mb-2" style="width: 100%">
+          <span class="input-group-text" id="basic-addon1">Replenishment %</span>
+          <input type="text" class="form-control" v-model.number="replenishmentUptime">
+        </div>
+        <div class="input-group mb-2" style="width: 100%">
+          <span class="input-group-text" id="basic-addon1">SoW Hits (min)</span>
+          <input type="text" class="form-control" v-model.number="numSoWHitsPerMin">
+        </div>
+        <div class="input-group mb-2" style="width: 100%">
+          <span class="input-group-text" id="basic-addon1">Haste %</span>
+          <input type="text" class="form-control" v-model.number="hastePercent">
+        </div>
       </div>
     </div>
     <br>
@@ -59,7 +78,10 @@
         <div class="col-7">
           <h3>MP5 Stat Weight</h3>
           <p>
-            Traditionally, it has been difficult to reconcile mana and throughput stat weights for healers. We use Divine Plea to calculate MP5 stat weight - essentially, we are asking "how much is the reduced throughput worth in spellpowerterms" and comparing it to "how much Mp5 do we need so we can skip a plea".
+            Traditionally, it has been difficult to reconcile mana and throughput stat weights for healers. However, HPLD have an extremely efficient way to convert healing throughput into mana conservation through Divine Plea.
+          </p>
+          <p>
+            We use Divine Plea to obtain a MP5 stat weight by essentially asking "how much is the reduced throughput worth in spellpower terms" and comparing it to "how much MP5 do we need so we can skip a plea".
           </p>
           <p>
             This assumes that the player is chain-casting with no downtime. If a fight has breaks that allows the HPLD to get "free" pleas off, MP5 stat value drops since the player suffers less of a throughput penalty.
@@ -91,7 +113,37 @@
           <b-table striped hover :items="results['tables']['crit']"></b-table>
         </div>
       </div>
-      {{ results }}
+      <div class="row">
+        <div class="col-7">
+          <h3>Int Stat Weight</h3>
+          <p>
+            Int has three components - 1. increased mana pool, 2. direct spellpower increase through Holy Guidance, and 3. increased crit chance. Having already calculated MP5 and Crit stat weights above, the calculation is straightforward and a breakdown is shown on the right.
+          </p>
+          <p>
+            The increased mana pool is calculated by considering how much mana 1 int gives, after considering effects like Divine Plea, Replenishment, and Seal of Wisdom hits.
+          </p>
+          <p>
+            By default, we assume that a player has 4 SoW hits a min (2 from Judgement, 1 from Sacred Shield and Plea - note that the spell component of judgement technically cannot be dodged, but for simplicity, we assume all SoW hits has the same miss/dodge chance.
+          </p>
+        </div>
+        <div class="col-5">
+          <b-table striped hover :items="results['tables']['int']"></b-table>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-7">
+          <h3>Haste Stat Weight</h3>
+          <p>
+            Haste stat weight is calculated independently of all the above stats, and assumes no mana problems. Importantly, this means that we don't factor in situations like a higher haste rating causing the player to OOM faster and thus reducing output.
+          </p>
+          <p>
+            Use the TTOOM tool to get a rough idea of how long you can sustain and adjust your weights accordingly.
+          </p>
+        </div>
+        <div class="col-5">
+          <b-table striped hover :items="results['tables']['haste']"></b-table>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -123,11 +175,14 @@ export default {
       spellPower: 2400, // includes holy guidance; to extract out later
       manaPool: 28000,
       critChance: 30, // includes raid buffs
-      hastePercent: 0.15,
+      hastePercent: 15,
       cpm: 40,
       glyphHolyLightHits: 5,
       critOverhealDiscountFactor: 10,
       results: {statWeights: [], tables: {}},
+      fightLength: 5 * 60, // in seconds
+      replenishmentUptime: 90,
+      numSoWHitsPerMin: 4,
     };
   },
   computed: {
@@ -158,14 +213,21 @@ export default {
     run() {
       this.showExplanation = false;
       let mp5Results = this.calculateMP5(),
-        critResults = this.calculateCrit(mp5Results[0]);
+        critResults = this.calculateCrit(mp5Results[0]),
+        intResults = this.calculateInt(mp5Results[0], critResults[0]),
+        hasteResults = this.calculateHaste();
+
       let statWeights = [
-        {'stat': 'MP5', 'value': mp5Results[0]},
-        {'stat': 'Crit', 'value': critResults[0]},
+        {'stat': 'MP5', 'value': this.roundDp(mp5Results[0], 1)},
+        {'stat': 'Crit', 'value': this.roundDp(critResults[0], 1)},
+        {'stat': 'Int', 'value': this.roundDp(intResults[0], 1)},
+        {'stat': 'Haste', 'value': this.roundDp(hasteResults[0], 1)},
       ];
 
       Vue.set(this.results['tables'], 'mp5', mp5Results[1]);
       Vue.set(this.results['tables'], 'crit', critResults[1]);
+      Vue.set(this.results['tables'], 'int', intResults[1]);
+      Vue.set(this.results['tables'], 'haste', hasteResults[1]);
       
       this.$set(this.results, 'statWeights', statWeights);
       this.showResults = true;
@@ -181,7 +243,7 @@ export default {
       spellPowerLoss = totalHealingLossDuringDivinePlea / (this.HL_CRIT_COEFFICIENT * this.cpm);
       totalManaRegenFromDivinePleaMp5 = this.manaPool * 0.25 / 12;
 
-      mp5StatWeight = this.roundDp(spellPowerLoss / totalManaRegenFromDivinePleaMp5, 1);
+      mp5StatWeight = spellPowerLoss / totalManaRegenFromDivinePleaMp5;
      table.push({
         'field': 'Total healing loss',
         'value': this.formatNumber(Math.floor(totalHealingLossDuringDivinePlea)),
@@ -199,7 +261,7 @@ export default {
 
       table.push({
         'field': 'Stat Weight',
-        'value': mp5StatWeight,
+        'value': this.roundDp(mp5StatWeight, 1)
       });
 
       return [mp5StatWeight, table];
@@ -222,7 +284,7 @@ export default {
       let amountOfManaSavedFromOnCriRatingPerCast = (1 / CRIT_RATING * MANA_OBTAINED_FROM_HL_CRIT) / 100;
       let amountOfManaSavedFromOnCriRatingMp5 = amountOfManaSavedFromOnCriRatingPerCast * this.cpm / 12;
       let critStatWeightFromManaRegen = amountOfManaSavedFromOnCriRatingMp5 * mp5StatWeight;
-      let totalCritStatWeight = this.roundDp(critStatWeightFromManaRegen + critStatWeightFromIncreasedHealing, 1);
+      let totalCritStatWeight = critStatWeightFromManaRegen + critStatWeightFromIncreasedHealing;
 
       table.push({
         'field': 'Stat Weight from throughput increase',
@@ -236,10 +298,116 @@ export default {
 
       table.push({
         'field': 'Total Stat Weight',
-        'value': totalCritStatWeight,
+        'value': this.roundDp(totalCritStatWeight, 1),
       });
       return [totalCritStatWeight, table];
-    }
+    },
+    calculateInt(mp5StatWeight, critStatWeight) {
+      let table = [];
+
+      // fight length in mins ==  number of divine plea (theoretically, a pally could use divine plea 6 times in a 5 min fight)
+      // but unlikely to use at the start, so assume divine_plea_num is same as fight_length mins
+      let numDivinePleas = Math.floor(this.fightLength / 60);
+      let baseManaFromOneInt = 15 * 1.1 * 1.1 // includes blessing of kings and the mana talent
+      let manaFromOneIntIncludingDivinePlea = baseManaFromOneInt * (1 + numDivinePleas * 0.25);
+      // 1% of mana pool every 5s, assumes 100% replenishment rate
+      let manaFromReplenishment = baseManaFromOneInt * 0.01 * this.fightLength / 60 * 12 * this.replenishmentUptime / 100;
+
+      // for SOW, assume 45% proc chance per hit, 4% chance to miss and 6.5% chance to be dodged.
+      let numSowProcsWholeFight = this.numSoWHitsPerMin * 0.45 * (1 - 0.04 - 0.065) * this.fightLength / 60;
+      // 4% of manapool per successful sow proc; should multiply by the incremental mana from 1 int
+      let manaFromSoW = numSowProcsWholeFight * baseManaFromOneInt * 0.04 ;
+
+      let totalManaFromOneInt = manaFromOneIntIncludingDivinePlea + manaFromReplenishment + manaFromSoW;
+      let implied_mp5 = totalManaFromOneInt / (this.fightLength / 60 * 12);
+      // we can get a partial valuation of int purely from mp5 valuation
+      let intStatWeightFromMp5 = implied_mp5 * mp5StatWeight;
+
+      let intStatWeightFromHolyGuidance = 1.1 * 1.1 * 0.2;
+
+
+      // # 166.667 points of Intellect equals 1% of Spell Critical.
+      let critPercentIncreaseFromOneInt = 1.1 * 1.1 / 166.667;
+      let intStatWeightFromSpellCrit = critPercentIncreaseFromOneInt * CRIT_RATING * critStatWeight
+      let intStatWeight = intStatWeightFromMp5 + intStatWeightFromHolyGuidance + intStatWeightFromSpellCrit
+
+      table.push({
+        'field': 'Mana from Int & Plea',
+        'value': this.roundDp(manaFromOneIntIncludingDivinePlea, 1),
+      });
+
+      table.push({
+        'field': 'Mana from Replenishment',
+        'value': this.roundDp(manaFromReplenishment, 1),
+      });
+
+      table.push({
+        'field': 'Mana from SoW',
+        'value': this.roundDp(manaFromSoW, 1),
+      });
+
+      table.push({
+        'field': 'Total MP5 From Int',
+        'value': this.roundDp(implied_mp5, 2),
+      });
+
+      table.push({
+        'field': 'Stat Weight from Mana',
+        'value': this.roundDp(intStatWeightFromMp5, 1),
+      });
+
+      table.push({
+        'field': 'Stat Weight from Holy Guidance',
+        'value': this.roundDp(intStatWeightFromHolyGuidance, 1),
+      });
+
+      table.push({
+        'field': 'Stat Weight from Crit',
+        'value': this.roundDp(intStatWeightFromSpellCrit, 1),
+      });
+
+      table.push({
+        'field': 'Total Stat Weight',
+        'value': this.roundDp(intStatWeight, 1),
+      });
+      return [intStatWeight, table];
+    },
+    calculateHaste() {
+      const HOLY_LIGHT_BASE_CAST_TIME = 2;
+      const OTHER_HASTE_MODIFIERS = 1.03 * 1.05 * 1.15; // moonkin, WoA, JotP
+
+
+      const HL_HPS_COEFFICIENT = this.HL_CRIT_COEFFICIENT * (1 + this.hastePercent / 100) * OTHER_HASTE_MODIFIERS / HOLY_LIGHT_BASE_CAST_TIME;
+      let table = [];
+      // how much additional healing per second 1 spellpower gives you, using a cast time of 2 / (1 + haste%)
+      // the raw healing per second of HL if you had 0% haste
+      let hlUnhastedRawHps = this.hlRawHealing / HOLY_LIGHT_BASE_CAST_TIME;
+
+      let increaseInHPSFromOnePercentageHaste = hlUnhastedRawHps / 100;
+      let increaseInHPSFromOneHasteRating = increaseInHPSFromOnePercentageHaste / HASTE_RATING;
+      let hasteStatWeightFromIncresedHealing = increaseInHPSFromOneHasteRating / HL_HPS_COEFFICIENT
+
+      table.push({
+        'field': 'Unhasted HPS',
+        'value': this.formatNumber(Math.floor(hlUnhastedRawHps)),
+      });
+
+      table.push({
+        'field': 'Increase in HPS from 0% to 1% haste',
+        'value': this.formatNumber(Math.floor(increaseInHPSFromOnePercentageHaste)),
+      });
+
+      table.push({
+        'field': 'Increase in HPS from x% to x+1% haste',
+        'value': this.formatNumber(Math.floor(increaseInHPSFromOnePercentageHaste / (1 + this.hastePercent / 100))),
+      });
+
+      table.push({
+        'field': 'Total Stat Weight',
+        'value': this.roundDp(hasteStatWeightFromIncresedHealing, 1),
+      });
+      return [hasteStatWeightFromIncresedHealing, table];
+    },
   },
   mounted() {
     console.log('mounting');
