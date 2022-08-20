@@ -1,4 +1,5 @@
 require('dotenv').config();
+console.log(process.env)
 
 var createError = require('http-errors');
 var express = require('express');
@@ -7,7 +8,6 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-var indexRouter = require('./routes/index');
 var apiRouter = require('./api/urls');
 
 var app = express();
@@ -22,16 +22,9 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-// app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.use('/api', apiRouter);
-// app.use('/', (req, res, next) => {
-
-// });
-
-/* GET home page. */
-
 app.use(express.static('public'));
 app.use('*', function(req, res, next) {
   res.sendFile(path.resolve(__dirname, '../public/index.html'));

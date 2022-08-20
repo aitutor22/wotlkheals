@@ -1,4 +1,4 @@
-const Utility = require('./utilities');
+const Utility = require('../common/utilities');
 
 /* 
     Given a particular cast profile that doesn't contain any cooldown spells (e.g. 30 HL and 10 FoL)

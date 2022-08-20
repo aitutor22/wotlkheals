@@ -1,6 +1,6 @@
-const EventHeap = require('../common/eventheap');
-const Paladin = require('../common/paladin');
-const DATA = require('../common/gamevalues');
+const EventHeap = require('../ttoom/eventheap');
+const Paladin = require('../ttoom/paladin');
+const DATA = require('../ttoom/gamevalues');
 const Utility = require('../common/utilities');
 
 class Logger {

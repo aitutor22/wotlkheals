@@ -1,4 +1,4 @@
-console.log(process.env)
+console.log(process.env.TEST)
 
 const helperFunctions = {
     pullData(query) {

@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 
 const ttoomController = require('./ttoomController');
+require('../wcl/services');
 
 router.post('/ttoom/paladin/:seed', ttoomController.paladinTtoomSeed);
 

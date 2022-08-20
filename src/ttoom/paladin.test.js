@@ -1,5 +1,5 @@
 const Paladin = require('./paladin');
-const Utility = require('./utilities');
+const Utility = require('../common/utilities');
 
 const thresholdItemsToCreate = ['crit', 'soup', 'eog', 'sow', 'dmcg'];
 let rng = Utility.setSeed(0);

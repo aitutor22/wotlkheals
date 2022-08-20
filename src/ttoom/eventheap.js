@@ -1,6 +1,6 @@
 const { Heap } = require('heap-js');
 
-const Utility = require('./utilities');
+const Utility = require('../common/utilities');
 
 const timestampComparator = (a, b) => a._timestamp - b._timestamp;
 

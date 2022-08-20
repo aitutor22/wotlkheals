@@ -1,6 +1,6 @@
-const BasePlayer = require('../common/basePlayer');
+const BasePlayer = require('./basePlayer');
 const DATA = require('./gamevalues');
-const Utility = require('./utilities');
+const Utility = require('../common/utilities');
 
 // helper function - given an object, check if a key exists and whether it is true/false
 function getKeyBoolean(obj, key) {

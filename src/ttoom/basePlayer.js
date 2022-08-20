@@ -1,5 +1,5 @@
 const DATA = require('./gamevalues');
-const Utility = require('./utilities');
+const Utility = require('../common/utilities');
 const SpellQueue = require('./spellqueue');
 
 

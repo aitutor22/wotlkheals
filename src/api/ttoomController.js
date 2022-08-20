@@ -1,5 +1,5 @@
-const Experiment = require('./experiment');
-const DATA = require('../common/gamevalues');
+const Experiment = require('../ttoom/experiment');
+const DATA = require('../ttoom/gamevalues');
 
 
 // helper function that combines playerOptions passed from client to create

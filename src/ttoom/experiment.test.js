@@ -1,9 +1,9 @@
 const Experiment = require('./experiment');
-const Paladin = require('../common/paladin');
-const EventHeap = require('../common/eventheap');
+const Paladin = require('../ttoom/paladin');
+const EventHeap = require('../ttoom/eventheap');
 const Utility = require('../common/utilities');
 
-const DATA = require('../common/gamevalues');
+const DATA = require('../ttoom/gamevalues');
 
 const thresholdItemsToCreate = ['crit', 'soup', 'eog', 'sow', 'dmcg'];
 let rng = Utility.setSeed(0);
