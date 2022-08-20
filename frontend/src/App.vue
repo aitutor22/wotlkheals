@@ -2,8 +2,8 @@
   <div id="app">
     <nav>
       <router-link to="/">Home</router-link> |
-      <router-link to="/paladin/ttoom/">Paladin TTOOM</router-link> | 
-      <router-link to="/paladin/statweights/">Paladin Stat Weights</router-link>
+      <router-link to="/paladin/ttoom/">Paladin TTOOM</router-link>
+      <!-- <router-link to="/paladin/statweights/">Paladin Stat Weights</router-link> -->
     </nav>
     <router-view/>
   </div>
