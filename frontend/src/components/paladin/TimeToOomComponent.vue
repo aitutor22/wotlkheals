@@ -27,6 +27,10 @@
           <input type="text" class="form-control" v-model.number="oomOptions['manaPool']">
         </div>
         <div class="input-group mb-2" style="width: 100%">
+          <span class="input-group-text" id="basic-addon1">Spellpower</span>
+          <input type="text" class="form-control" v-model.number="oomOptions['spellPower']">
+        </div>
+        <div class="input-group mb-2" style="width: 100%">
           <span class="input-group-text" id="basic-addon1">HL CPM</span>
           <input type="text" class="form-control" v-model.number="oomOptions['cpm']['HOLY_LIGHT']">
         </div>
@@ -91,6 +95,10 @@
         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="owl" v-model="oomOptions['trinkets']" value="owl">
           <label class="form-check-label" for="owl">Figurine - Sapphire Owl</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="illustration" v-model="oomOptions['trinkets']" value="illustration">
+          <label class="form-check-label" for="illustration">Illustration</label>
         </div>
       </div>
 
@@ -215,6 +223,7 @@ export default {
       selectedLog: null,
       oomOptions: {
         manaPool: 28000,
+        spellPower: 2400,
         castTimes: {
           HOLY_LIGHT: 1.6,
           FLASH_OF_LIGHT: 1.4,

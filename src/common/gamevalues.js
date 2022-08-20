@@ -49,6 +49,14 @@ const data = {
                 int: 42 + 2 * GEM_VALUES['int'],
             },
         },
+        // assume we prestack illustration before entering the fight
+        illustration: {
+            name: 'Illustration of the Dragon Soul',
+            itemType: 'trinket',
+            base: {
+                spellpower: 200,
+            },
+        },
     },
     constants: {
         manaFromOneInt: 15,

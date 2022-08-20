@@ -119,7 +119,10 @@ class Paladin extends BasePlayer {
             modifiedCritChance += 0.2
         }
 
-        logger.log(`Crit Chance: ${Utility.roundDp(modifiedCritChance * 100, 1)}%`, 3);
+        let statMsg = '';
+        statMsg += `Crit Chance: ${Utility.roundDp(modifiedCritChance * 100, 1)}% ; `;
+        statMsg += `Spellpower: ${this.spellPower}`;
+        logger.log(statMsg, 3);
 
         // all pally spells have 1 chance to crit (beacon just mirrors the spell cast)
         isCrit = this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance);

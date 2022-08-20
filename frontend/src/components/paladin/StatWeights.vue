@@ -221,6 +221,7 @@ export default {
         hasteResults = this.calculateHaste();
 
       let statWeights = [
+      {'stat': 'Spellpower', 'value': 1},
         {'stat': 'MP5', 'value': this.roundDp(mp5Results[0], 1)},
         {'stat': 'Crit', 'value': this.roundDp(critResults[0], 1)},
         {'stat': 'Int', 'value': this.roundDp(intResults[0], 1)},
@@ -390,6 +391,8 @@ export default {
       let increaseInHPSFromOneHasteRating = increaseInHPSFromOnePercentageHaste / HASTE_RATING;
       let hasteStatWeightFromIncresedHealing = increaseInHPSFromOneHasteRating / HL_HPS_COEFFICIENT
 
+      // console.log((1 + this.hastePercent / 100) * OTHER_HASTE_MODIFIERS)
+
       table.push({
         'field': 'Unhasted HPS',
         'value': this.formatNumber(Math.floor(hlUnhastedRawHps)),
@@ -407,7 +410,7 @@ export default {
 
       table.push({
         'field': 'Total Stat Weight',
-        'value': this.roundDp(hasteStatWeightFromIncresedHealing, 1),
+        'value': this.roundDp(hasteStatWeightFromIncresedHealing, 2),
       });
       return [hasteStatWeightFromIncresedHealing, table];
     },
