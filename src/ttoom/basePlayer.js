@@ -304,6 +304,10 @@ class BasePlayer {
 
         if (cooldownSelected['category'] === 'immediate') {
             let value = cooldownSelected['value'];
+            // e.g. arcane torrent uses % of max mana pool rather than fixed amount
+            if (cooldownSelected['subCategory'] === 'percentageManaPool') {
+                value = Math.floor(this.maxMana * value);
+            }
             // checks for injector bonus if runic mana potion
             if (cooldownSelected['key'] === 'RUNIC_MANA_POTION' && this._options['manaOptions']['injector']) {
                 value *= (1 + DATA['manaCooldowns']['RUNIC_MANA_POTION']['injectorBonus']);

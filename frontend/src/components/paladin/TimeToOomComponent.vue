@@ -143,6 +143,10 @@
           <input class="form-check-input" type="checkbox" id="manaTideTotem" v-model="oomOptions['manaOptions']['manaTideTotem']">
           <label class="form-check-label" for="manaTideTotem">Mana Tide Totem</label>
         </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="arcaneTorrent" v-model="oomOptions['manaOptions']['arcaneTorrent']">
+          <label class="form-check-label" for="arcaneTorrent">Arcane Torrent</label>
+        </div>
       </div>
     </div>
 
@@ -255,6 +259,7 @@ export default {
           injector: false,
           innervate: false,
           manaTideTotem: false,
+          arcaneTorrent: false,
         },
         trinkets: ['soup', 'eog'],
         glyphHolyLightHits: 4,

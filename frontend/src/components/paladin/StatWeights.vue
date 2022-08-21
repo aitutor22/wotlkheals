@@ -15,13 +15,14 @@
     <div class="row">
       <div class="col-6">
         <div class="input-group mb-2" style="width: 100%">
-          <span class="input-group-text" id="basic-addon1">Mana Pool</span>
-          <input type="text" class="form-control" v-b-tooltip.hover title="Raid Buffed" v-model.number="manaPool">
+          <span class="input-group-text" id="basic-addon1"
+            v-b-tooltip.hover title="Raid Buffed">Mana Pool</span>
+          <input type="text" class="form-control" v-model.number="manaPool">
         </div>
         <div class="input-group mb-2" style="width: 100%">
-          <span class="input-group-text" id="basic-addon1">Spellpower</span>
-          <input type="text" class="form-control" v-model.number="spellPower"
-            v-b-tooltip.hover title="Raid Buffed, including spellpower from Holy Guidance" >
+          <span class="input-group-text" id="basic-addon1"
+            v-b-tooltip.hover title="Raid Buffed, including spellpower from Holy Guidance">Spellpower</span>
+          <input type="text" class="form-control" v-model.number="spellPower">
         </div>
         <div class="input-group mb-2" style="width: 100%">
           <span class="input-group-text" id="basic-addon1">HL CPM</span>

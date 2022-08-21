@@ -159,7 +159,101 @@ const data = {
                   manaTideTotem: false,
                 },
             }
-        }
+        },
+        shaman: {
+            // when we calculate hasteFactor, we also need to consider the number of spells that
+            // are not healing spells (e.g. divine plea) but are casted
+            // otherwise we will undercount the haste factor
+            numGcdsPerMinNotCountedUnderSpells: 0, // 
+            intModifier: 1.1 * 1.1, // ancestral intellect
+            baseCritChanceModifier: 0.05, // 5% additional crit chance from holy power
+            sanctifiedLightCritChanceModifier: 0.06, // 6% additional crit chance for holy shock and holy light
+            glyphHolyLightHitHealingPercentage: 0.1, // each hit heals for 10%
+            // SoW is a physical attack that can be missed or dodged (modified by judgement)
+            // for normal physical hit, it can be missed and dodged while if using judgement, it can only miss and not be dodged
+            sow: {
+                missChance: 0.08,
+                dodgeChance: 0.065,
+                improvementInHitChancePerPointInEnglightenedJudgements: 0.02,
+                chance: 0.45,
+                value: 0.04, // 4% of max mana
+            },
+            spells: [
+            {
+                'key': 'HOLY_SHOCK',
+                'name': 'Holy Shock',
+                'cooldown': 6, // the actual cooldown of spell
+                'instant': true,
+                'baseManaCost': 790.92,
+                'baseCastTime': 0,
+                baseHeal: 2500,
+                coefficient: 0.807, // tested by currelius, before talents
+            },
+            {
+                'key': 'HOLY_LIGHT',
+                'name': 'Holy Light',
+                'cooldown': 0,
+                'instant': false,
+                'baseCastTime': 2, // assumed light's grace
+                'baseManaCost': 1274.26,
+                baseHeal: 5166,
+                coefficient: 1.679, // tested by currelius, before talents
+            },
+            {
+                'key': 'FLASH_OF_LIGHT',
+                'name': 'Flash of Light',
+                'cooldown': 0,
+                'instant': false,
+                'baseCastTime': 1.5,
+                'baseManaCost': 307.58,
+                baseHeal: 835.5,
+                coefficient: 1.009, // tested by currelius, before talents
+            }
+            ],
+            manaCostModifiers: {
+                '4pT7': 0.05, // 5% mana discount on HL
+                'glyphSOW': 0.05, // 5% mana discount on all spells
+                'libramOfRenewal': 113, // subtracts 113
+            },
+            maxSoupHits: 7, //up to 7 for HL
+            spellPowerFromInt: 0.2, // holy guidance
+            defaultValues: {
+                playerClass: 'paladin',
+                glyphSOW: true,
+                '2pT7': true, // +10% crit chance to holy shock
+                '4pT7': true, // 5% reduction to HL mana cost
+                trinkets: ['soup', 'eog'],
+                cpm: {
+                  HOLY_LIGHT: 30,
+                  HOLY_SHOCK: 3,
+                  FLASH_OF_LIGHT: 0,
+                },
+                gcd: 1.5,
+                firstSpell: 'HOLY_LIGHT', // fix which is the first spell we want to cast
+                glyphHolyLightHits: 4, 
+                manaPool: 29000,
+                mp5FromGearAndRaidBuffs: 300,
+                spellPower: 2400, // includes spellpower from holy guidance (though if dmcg procs, system will auto calculate)
+                critChance: 0.3, // from gear and raid buffs; does not include talents
+                manaCooldowns: [
+                    {key: 'DIVINE_PLEA', minimumManaDeficit: 8000, minimumTimeElapsed: 0},
+                    {key: 'DIVINE_ILLUMINATION', minimumManaDeficit: 9000, minimumTimeElapsed: 0},
+                    {key: 'RUNIC_MANA_POTION', minimumManaDeficit: 18000, minimumTimeElapsed: 0},
+                ],
+                talents: {
+                  enlightenedJudgements: 1,
+                },
+                manaOptions: {
+                  replenishmentUptime: 0.90,
+                  divineIllumination: true,
+                  canSoW: true,
+                  selfLoh: false,
+                  injector: false,
+                  innervate: false,
+                  manaTideTotem: false,
+                },
+            }
+        },
     },
     manaCooldowns: {
         DIVINE_PLEA: {
@@ -197,8 +291,7 @@ const data = {
             name: 'Runic Mana Potion',
             value: 4300,
             category: 'immediate',
-            // 'minimum_time_elapsed': 0,
-            // 'minimum_mana_deficit': 18000, # how much mana needs to be lost before using this
+            subCategory: 'fixed',
             cooldown: 9999, // mana pots can only be used once
             offGcd: true,
             playerClass: 'all',
@@ -223,6 +316,17 @@ const data = {
             offGcd: false,
             playerClass: 'paladin',
             category: 'immediate',
+            subCategory: 'fixed',
+        },
+        ARCANE_TORRENT: {
+            key: 'ARCANE_TORRENT',
+            name: 'Arcane Torrent',
+            value: 0.06, // 6% of mana pool
+            cooldown: 2 * 60, // the actual cooldown of spell
+            offGcd: true,
+            playerClass: 'all',
+            category: 'immediate',
+            subCategory: 'percentageManaPool',
         },
         // technically a 12s 2340 mana regen; but just assume you get it all at one shot for simplicity
         OWL: {
@@ -266,6 +370,7 @@ const data = {
         'LAY_ON_HANDS': 'Lay on Hands',
         'INNERVATE': 'Innervate',
         'ManaTideTotem': 'Mana Tide Totem',
+        'ARCANE_TORRENT': 'Arcane Torrent',
     },
 }
 
