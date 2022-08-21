@@ -122,6 +122,15 @@
             v-b-tooltip.hover title="Is HPLD in melee range and thus able to proc Seal of Wisdom for mana?">Can SoW?</label>
         </div>
         <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="divinePlea" v-model="oomOptions['manaOptions']['divinePlea']">
+          <label class="form-check-label" for="divinePlea">Divine Plea</label>
+        </div>
+        <div class="input-group mb-2" style="width: 100%" v-if="oomOptions['manaOptions']['divinePlea']">
+          <span class="input-group-text" id="basic-addon1"
+            v-b-tooltip.hover title="This controls when to use Divine Plea - if you would like to delay Divine Plea, set this to a higher value.">Mana Deficit to use Divine Plea</span>
+          <input type="text" class="form-control" v-model.number="oomOptions['manaOptions']['divinePleaMinimumManaDeficit']">
+        </div>
+        <div class="form-check">
           <input class="form-check-input" type="checkbox" id="divineIllumination" v-model="oomOptions['manaOptions']['divineIllumination']">
           <label class="form-check-label" for="divineIllumination">Divine Illumination</label>
         </div>
@@ -254,6 +263,8 @@ export default {
         manaOptions: {
           replenishmentUptime: 90,
           divineIllumination: true,
+          divinePlea: true,
+          divinePleaMinimumManaDeficit: 8000,
           canSoW: true,
           selfLoh: false,
           injector: false,

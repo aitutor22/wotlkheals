@@ -34,50 +34,60 @@ test('setBuffActive should create a buff entry if not currently present', () => 
     expect(Object.keys(player._buffs).length).toBe(1);
 });
 
-// test('setBuffActive', () => {
-//     let player = new Shaman(defaultOptions, rng, thresholdItemsToCreate);
-//     player.setBuffActive('dmcg', true, 2);
-//     expect(player._buffs['dmcg']['active']).toBe(true);
-//     expect(player._buffs['dmcg']['availableForUse']).toBe(false);
-//     expect(player._buffs['dmcg']['lastUsed']).toBe(2);
+test('setBuffActive', () => {
+    let player = new Shaman(defaultOptions, rng, thresholdItemsToCreate);
+    player.setBuffActive('dmcg', true, 2);
+    expect(player._buffs['dmcg']['active']).toBe(true);
+    expect(player._buffs['dmcg']['availableForUse']).toBe(false);
+    expect(player._buffs['dmcg']['lastUsed']).toBe(2);
 
-//     player.setBuffActive('dmcg', false, 16);
-//     expect(player._buffs['dmcg']['active']).toBe(false);
-//     expect(player._buffs['dmcg']['availableForUse']).toBe(false);
-//     // lastUsed is updated when active is set to true not when set to false
-//     expect(player._buffs['dmcg']['lastUsed']).toBe(2);
-// });
+    player.setBuffActive('dmcg', false, 16);
+    expect(player._buffs['dmcg']['active']).toBe(false);
+    expect(player._buffs['dmcg']['availableForUse']).toBe(false);
+    // lastUsed is updated when active is set to true not when set to false
+    expect(player._buffs['dmcg']['lastUsed']).toBe(2);
+});
 
 
-// test('getManaIncreaseFromInt for a Shaman should use 1.1 x 1.1 modifier', () => {
-//     let player = new Shaman(defaultOptions, rng, thresholdItemsToCreate);
-//     let manaGenerated = player.manaIncreaseFromInt(300);
-//     expect(manaGenerated).toBe(5445);
-// });
+test('getCritIncreaseFromInt for a Shaman should use 1.1 x 1.1 modifier', () => {
+    let player = new Shaman(defaultOptions, rng, thresholdItemsToCreate);
+    let getCritIncreaseFromInt = player.critIncreaseFromInt(300);
+    expect((Math.abs(getCritIncreaseFromInt - 0.021779956440087123))).toBeLessThan(1e-9);
+});
 
-// test('getCritIncreaseFromInt for a Shaman should use 1.1 x 1.1 modifier', () => {
-//     let player = new Shaman(defaultOptions, rng, thresholdItemsToCreate);
-//     let getCritIncreaseFromInt = player.critIncreaseFromInt(300);
-//     expect((Math.abs(getCritIncreaseFromInt - 0.021779956440087123))).toBeLessThan(1e-9);
-// });
+test('baseCritChance for Shaman', () => {
+    let player = new Shaman(defaultOptions, rng, thresholdItemsToCreate);
+    expect(player.critChance).toBe(0.44);
+});
 
-// test('spellPowerIncreaseFromInt for a Shaman should use 1.1 x 1.1 modifier', () => {
-//     let player = new Shaman(defaultOptions, rng, thresholdItemsToCreate);
-//     let amount = player.spellPowerIncreaseFromInt(300);
-//     expect(amount).toBe(72);
-// });
+test('getManaIncreaseFromInt for a Shaman should use 1.1 x 1.1 modifier', () => {
+    let player = new Shaman(defaultOptions, rng, thresholdItemsToCreate);
+    let manaGenerated = player.manaIncreaseFromInt(300);
+    expect(manaGenerated).toBe(5445);
+});
 
-// // comparing values against currelius' sheet
-// test('calculateHealingHelper', () => {
-//     let options = Object.assign({}, defaultOptions);
-//     options['critChance'] = 0.25;
-//     options['spellPower'] = 2400;
-//     options['glyphHolyLightHits'] = 5;
-//     let player = new Shaman(options, rng, thresholdItemsToCreate);
-//     let uncritAmount = player.calculateHealing('HOLY_LIGHT', false);
-//         critAmount = player.calculateHealing('HOLY_LIGHT', true);
-//     expect(Math.floor(uncritAmount)).toBe(27035); //double checked againstr currelius' sheet
-//     expect(Math.floor(critAmount)).toBe(40552); //double checked againstr currelius' sheet
+test('getCritIncreaseFromInt for a Shaman should use 1.1 x 1.1 modifier', () => {
+    let player = new Shaman(defaultOptions, rng, thresholdItemsToCreate);
+    let getCritIncreaseFromInt = player.critIncreaseFromInt(300);
+    expect((Math.abs(getCritIncreaseFromInt - 0.021779956440087123))).toBeLessThan(1e-9);
+});
+
+test('spellPowerIncreaseFromInt for a Shaman should use 1.1 x 1.1 modifier', () => {
+    let player = new Shaman(defaultOptions, rng, thresholdItemsToCreate);
+    let amount = player.spellPowerIncreaseFromInt(300);
+    expect(amount).toBe(72);
+});
+
+// comparing values against currelius' sheet
+test('calculateHealingHelper', () => {
+    let options = Object.assign({}, defaultOptions);
+    options['critChance'] = 0.3;
+    options['spellPower'] = 2500;
+    let player = new Shaman(options, rng, thresholdItemsToCreate);
+    let uncritAmount = player.calculateHealing('CHAIN_HEAL', false);
+        critAmount = player.calculateHealing('CHAIN_HEAL', true);
+    expect(Math.floor(uncritAmount)).toBe(12867); // from lovelace's sheet
+    expect(Math.floor(critAmount)).toBe(19301);
 
 //     uncritAmount = player.calculateHealing('FLASH_OF_LIGHT', false);
 //     critAmount = player.calculateHealing('FLASH_OF_LIGHT', true);
@@ -88,31 +98,7 @@ test('setBuffActive should create a buff entry if not currently present', () => 
 //     critAmount = player.calculateHealing('HOLY_SHOCK', true);
 //     expect(Math.floor(uncritAmount)).toBe(10435); //double checked againstr currelius' sheet
 //     expect(Math.floor(critAmount)).toBe(15653); //double checked againstr currelius' sheet
-
-
-//     // testing divine plea should halve healing
-//     uncritAmount = player.calculateHealing('HOLY_LIGHT', false, true);
-//     expect(Math.floor(uncritAmount)).toBe(13517);
-
-//     // testing divine plea should halve healing
-//     critAmount = player.calculateHealing('FLASH_OF_LIGHT', true, true);
-//     expect(Math.floor(critAmount)).toBe(5745);
-
-//     // reducing glyphHolyLightHits should reduce Holy Light but not Holy Shock or Flash Of Light
-//     player._options['glyphHolyLightHits'] = 0
-//     uncritAmount = player.calculateHealing('HOLY_LIGHT', false);
-//     critAmount = player.calculateHealing('HOLY_LIGHT', true);
-//     expect(Math.floor(uncritAmount)).toBe(21628); // reduced since 0 glyph hits
-//     expect(Math.floor(critAmount)).toBe(32442); 
-
-
-//     uncritAmount = player.calculateHealing('HOLY_SHOCK', false);
-//     critAmount = player.calculateHealing('HOLY_SHOCK', true);
-//     expect(Math.floor(uncritAmount)).toBe(10435); // not affected by reducing glyph hl hits
-//     expect(Math.floor(critAmount)).toBe(15653);
-
-
-// });
+});
 
 // test('system should add spellpower if soup is selected', () => {
 //     let copiedOptions = JSON.parse(JSON.stringify(defaultOptions));

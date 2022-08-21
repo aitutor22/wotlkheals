@@ -142,8 +142,6 @@ const data = {
                 spellPower: 2400, // includes spellpower from holy guidance (though if dmcg procs, system will auto calculate)
                 critChance: 0.3, // from gear and raid buffs; does not include talents
                 manaCooldowns: [
-                    {key: 'DIVINE_PLEA', minimumManaDeficit: 8000, minimumTimeElapsed: 0},
-                    {key: 'DIVINE_ILLUMINATION', minimumManaDeficit: 9000, minimumTimeElapsed: 0},
                     {key: 'RUNIC_MANA_POTION', minimumManaDeficit: 18000, minimumTimeElapsed: 0},
                 ],
                 talents: {
@@ -152,6 +150,8 @@ const data = {
                 manaOptions: {
                   replenishmentUptime: 0.90,
                   divineIllumination: true,
+                  divinePlea: true,
+                  divinePleaMinimumManaDeficit: 8000,
                   canSoW: true,
                   selfLoh: false,
                   injector: false,
@@ -165,50 +165,29 @@ const data = {
             // are not healing spells (e.g. divine plea) but are casted
             // otherwise we will undercount the haste factor
             numGcdsPerMinNotCountedUnderSpells: 0, // 
-            intModifier: 1.1 * 1.1, // ancestral intellect
-            baseCritChanceModifier: 0.05, // 5% additional crit chance from holy power
-            sanctifiedLightCritChanceModifier: 0.06, // 6% additional crit chance for holy shock and holy light
-            glyphHolyLightHitHealingPercentage: 0.1, // each hit heals for 10%
-            // SoW is a physical attack that can be missed or dodged (modified by judgement)
-            // for normal physical hit, it can be missed and dodged while if using judgement, it can only miss and not be dodged
-            sow: {
-                missChance: 0.08,
-                dodgeChance: 0.065,
-                improvementInHitChancePerPointInEnglightenedJudgements: 0.02,
-                chance: 0.45,
-                value: 0.04, // 4% of max mana
-            },
+            intModifier: 1.1 * 1.1, // ancestral intellect, blessing of kings
+            baseCritChanceModifier: 0.14, // 5% additional crit chance from thundering strikes, 5% from tidal mastery, 4% from blessing of elements
             spells: [
+            // {
+            //     'key': 'HOLY_SHOCK',
+            //     'name': 'Holy Shock',
+            //     'cooldown': 6, // the actual cooldown of spell
+            //     'instant': true,
+            //     'baseManaCost': 790.92,
+            //     'baseCastTime': 0,
+            //     baseHeal: 2500,
+            //     coefficient: 0.807, // tested by currelius, before talents
+            // },
             {
-                'key': 'HOLY_SHOCK',
-                'name': 'Holy Shock',
-                'cooldown': 6, // the actual cooldown of spell
-                'instant': true,
-                'baseManaCost': 790.92,
-                'baseCastTime': 0,
-                baseHeal: 2500,
-                coefficient: 0.807, // tested by currelius, before talents
-            },
-            {
-                'key': 'HOLY_LIGHT',
-                'name': 'Holy Light',
+                'key': 'CHAIN_HEAL',
+                'name': 'Chain Heal',
                 'cooldown': 0,
                 'instant': false,
-                'baseCastTime': 2, // assumed light's grace
+                'baseCastTime': 2.5,
                 'baseManaCost': 1274.26,
-                baseHeal: 5166,
-                coefficient: 1.679, // tested by currelius, before talents
+                baseHeal: 1130,
+                coefficient: 1.34, // from lovelace
             },
-            {
-                'key': 'FLASH_OF_LIGHT',
-                'name': 'Flash of Light',
-                'cooldown': 0,
-                'instant': false,
-                'baseCastTime': 1.5,
-                'baseManaCost': 307.58,
-                baseHeal: 835.5,
-                coefficient: 1.009, // tested by currelius, before talents
-            }
             ],
             manaCostModifiers: {
                 '4pT7': 0.05, // 5% mana discount on HL

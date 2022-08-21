@@ -24,14 +24,28 @@ function createOptions(playerOptions) {
 
     // start handling of mana options
     // values are currently hardcoded; should improve in future
-    if (playerOptions['manaOptions']['selfLoh']) {
-        // use LoH when left 3k mana as it's last resort
-        let manaDeficit = playerOptions['manaPool'] - 3000;
-        options['manaCooldowns'].push({key: 'LAY_ON_HANDS', minimumManaDeficit: manaDeficit, minimumTimeElapsed: 0});
+    // the order we push is important, as the first to be pushed will be evaluated first, assuming same mana deficit
+    // to avoid a situation where mana tide totem is always trigged by dmcg, we set both a minimum mana and minimum time requirement for MTT
+    if (playerOptions['manaOptions']['arcaneTorrent']) {
+        options['manaCooldowns'].push({key: 'ARCANE_TORRENT', minimumManaDeficit: 3000, minimumTimeElapsed: 0});
     }
 
-    if (playerOptions['manaOptions']['innervate']) {
-        options['manaCooldowns'].push({key: 'INNERVATE', minimumManaDeficit: 18000, minimumTimeElapsed: 0});
+
+    if (playerOptions['manaOptions']['divinePlea']) {
+        options['manaCooldowns'].push({
+            key: 'DIVINE_PLEA',
+            minimumManaDeficit: playerOptions['manaOptions']['divinePleaMinimumManaDeficit'],
+            minimumTimeElapsed: 0
+        });
+    }
+
+    if (playerOptions['manaOptions']['divineIllumination']) {
+        options['manaCooldowns'].push({key: 'DIVINE_ILLUMINATION', minimumManaDeficit: 9000, minimumTimeElapsed: 0});
+    }
+
+    // adds owl to manaCooldowns if player has equipped it
+    if (playerOptions['trinkets'].indexOf('owl') > -1) {
+        options['manaCooldowns'].push({key: 'OWL', minimumManaDeficit: 10000, minimumTimeElapsed: 0});
     }
 
     // to avoid a situation where mana tide totem is always trigged by dmcg, we set both a minimum mana and minimum time requirement for MTT
@@ -39,14 +53,14 @@ function createOptions(playerOptions) {
         options['manaCooldowns'].push({key: 'MANA_TIDE_TOTEM', minimumManaDeficit: 12000, minimumTimeElapsed: 40});
     }
 
-    // to avoid a situation where mana tide totem is always trigged by dmcg, we set both a minimum mana and minimum time requirement for MTT
-    if (playerOptions['manaOptions']['arcaneTorrent']) {
-        options['manaCooldowns'].push({key: 'ARCANE_TORRENT', minimumManaDeficit: 3000, minimumTimeElapsed: 0});
+    if (playerOptions['manaOptions']['innervate']) {
+        options['manaCooldowns'].push({key: 'INNERVATE', minimumManaDeficit: 18000, minimumTimeElapsed: 0});
     }
 
-    // adds owl to manaCooldowns if player has equipped it
-    if (playerOptions['trinkets'].indexOf('owl') > -1) {
-        options['manaCooldowns'].push({key: 'OWL', minimumManaDeficit: 10000, minimumTimeElapsed: 0});
+    if (playerOptions['manaOptions']['selfLoh']) {
+        // use LoH when left 3k mana as it's last resort
+        let manaDeficit = playerOptions['manaPool'] - 3000;
+        options['manaCooldowns'].push({key: 'LAY_ON_HANDS', minimumManaDeficit: manaDeficit, minimumTimeElapsed: 0});
     }
 
     return options;

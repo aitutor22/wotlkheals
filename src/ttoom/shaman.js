@@ -11,26 +11,17 @@ const Utility = require('../common/utilities');
 class Shaman extends BasePlayer {
     // note that maxMana doesn't include mana pool from dmcg
     constructor(options, rng, thresholdItemsToCreate, maxMinsToOOM) {
-        super('paladin', options, rng, thresholdItemsToCreate, maxMinsToOOM);
+        super('shaman', options, rng, thresholdItemsToCreate, maxMinsToOOM);
 
         // if (!this._options['2pT7'] && this._options['4pT7']) {
         //     throw new Error('4PT7 was selected but not 2PT7');
         // }
 
-        // // calculates SoW chances
-        // let normalHitRate = 1 - this.classInfo['sow']['missChance'] - this.classInfo['sow']['dodgeChance'] +
-        //     this.classInfo['sow']['improvementInHitChancePerPointInEnglightenedJudgements'] * options['talents']['enlightenedJudgements']
-        // let judgementHitRate = normalHitRate + this.classInfo['sow']['dodgeChance']; //judgement can't be dodged
-        // this._sowProcChace = {
-        //     'normal': this.classInfo['sow']['chance'] * normalHitRate,
-        //     'judgement': this.classInfo['sow']['chance'] * judgementHitRate,
-        // }
-
-        // this._otherMP5 = options['mp5FromGearAndRaidBuffs'];
+        this._otherMP5 = options['mp5FromGearAndRaidBuffs'];
         // this._otherMultiplicativeTotal = 1;
         // // glyph of SOW reduces healing cost by 5%; note that we don't put 4pt7 here as it only affects HL
         // this._baseOtherMultiplicativeTotal = Utility.getKeyBoolean(this._options, 'glyphSOW') ? (1 - this.classInfo['manaCostModifiers']['glyphSOW']) : 1;
-        // this._numHitsPerHolyLight = Math.floor(2 + this._options['glyphHolyLightHits']) // beacon + original target + glpyh
+
 
 
         // // removes Divine Illumination depending on user input
@@ -54,29 +45,32 @@ class Shaman extends BasePlayer {
     selectSpell(timestamp, spellIndex) {
         // let overrideSpellSelection = this.isBuffActive('infusionOfLight') && this._options['cpm']['HOLY_LIGHT'] > 0 
         //     ? 'HOLY_LIGHT' : '';
-        // return this.selectSpellHelper(timestamp, spellIndex, overrideSpellSelection);
+        return this.selectSpellHelper(timestamp, spellIndex);
     }
 
     // should eventually support wings
     // reduces healing by half when divinePlea is active
     calculateHealing(spellKey, isCrit, isDivinePleaActive=false) {
-        // let amount = 0,
-        //     multiplicativeFactors = [],
-        //     glyphHLFactor = this._options['glyphHolyLightHits'] * this.classInfo['glyphHolyLightHitHealingPercentage'];
+        let amount = 0,
+            multiplicativeFactors = [];
+            // glyphHLFactor = this._options['glyphHolyLightHits'] * this.classInfo['glyphHolyLightHitHealingPercentage'];
 
-        // if (spellKey === 'HOLY_LIGHT') {
-        //     multiplicativeFactors = [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1, 'glpyh': glyphHLFactor}];
-        // } else if (spellKey === 'FLASH_OF_LIGHT' || spellKey === 'HOLY_SHOCK') {
+        if (spellKey === 'CHAIN_HEAL') {
+            let chainHealBounceFactor = 0.6 + 0.36 + 0.216; // 40% reduction per bounce, 4 hits with glyph
+            // {'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1, 'glpyh': glyphHLFactor}
+            multiplicativeFactors = [{purification: 0.1}, {improvedChainHeal: 0.2}, {'bounces': chainHealBounceFactor}];
+        }
+        // else if (spellKey === 'FLASH_OF_LIGHT' || spellKey === 'HOLY_SHOCK') {
         //     multiplicativeFactors = [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1}];
         // } 
-        // else {
-        //     throw new Error('Unknown spellkey: ' + spellKey);
-        // }
+        else {
+            throw new Error('Unknown spellkey: ' + spellKey);
+        }
         // if (isDivinePleaActive) {
         //     // calculateHealingHelper does  amount x (1 + val); so for divine plea, we need to pay in -0.5
         //     multiplicativeFactors.push({'divinePlea': -DATA['manaCooldowns']['DIVINE_PLEA']['healingPenalty']})
         // }
-        // return Math.floor(this.calculateHealingHelper(spellKey, {}, multiplicativeFactors, isCrit));
+        return Math.floor(this.calculateHealingHelper(spellKey, {}, multiplicativeFactors, isCrit));
     }
 
     // selectSpell and castSpell work differently
