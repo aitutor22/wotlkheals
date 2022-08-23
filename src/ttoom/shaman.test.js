@@ -100,69 +100,83 @@ test('calculateHealingHelper', () => {
 //     expect(Math.floor(critAmount)).toBe(15653); //double checked againstr currelius' sheet
 });
 
-// test('system should add spellpower if soup is selected', () => {
-//     let copiedOptions = JSON.parse(JSON.stringify(defaultOptions));
-//     copiedOptions['trinkets'] = ['soup'];
-//     let player = new Shaman(copiedOptions, rng, thresholdItemsToCreate);
-//     expect(player.spellPower).toBe(2475);
-// });
+test('system should add spellpower if soup is selected', () => {
+    let copiedOptions = JSON.parse(JSON.stringify(defaultOptions));
+    copiedOptions['trinkets'] = ['soup'];
+    let player = new Shaman(copiedOptions, rng, thresholdItemsToCreate);
+    expect(player.spellPower).toBe(2475);
+});
 
-// test('system should add int and spellpower if owl is selected', () => {
-//     let copiedOptions = JSON.parse(JSON.stringify(defaultOptions));
-//     copiedOptions['trinkets'] = ['owl'];
-//     let player = new Shaman(copiedOptions, rng, thresholdItemsToCreate);
-//     expect(player.maxMana).toBe(29343);
-//     expect(player.spellPower).toBe(2417);
-// });
+test('system should add int and spellpower if owl is selected', () => {
+    let copiedOptions = JSON.parse(JSON.stringify(defaultOptions));
+    copiedOptions['trinkets'] = ['owl'];
+    let player = new Shaman(copiedOptions, rng, thresholdItemsToCreate);
+    expect(player.maxMana).toBe(29343);
+    expect(player.spellPower).toBe(2417);
+});
 
-// test('system should add spellpower from 90 int if dmcg is selected', () => {
-//     let player = new Shaman(dmcgOptions, rng, thresholdItemsToCreate);
-//     expect(player.spellPower).toBe(2421);
-// });
+test('system should add spellpower from 90 int if dmcg is selected', () => {
+    let options = JSON.parse(JSON.stringify(defaultOptions));
+    options.trinkets.push('dmcg');
+    let player = new Shaman(options, rng, thresholdItemsToCreate);
+    expect(player.spellPower).toBe(2421);
+});
 
-// test('system should add mana from 90 int if dmcg is selected', () => {
-//     let player = new Shaman(dmcgOptions, rng, thresholdItemsToCreate);
-//     expect(player.maxMana).toBe(29633);
-// });
+test('system should add mana from 90 int if dmcg is selected', () => {
+    let options = JSON.parse(JSON.stringify(defaultOptions));
+    options.trinkets.push('dmcg');
+    let player = new Shaman(options, rng, thresholdItemsToCreate);
+    expect(player.maxMana).toBe(29633);
+});
 
-// test('system should add crit from 90 int if dmcg is selected', () => {
-//     let player = new Shaman(dmcgOptions, rng, thresholdItemsToCreate);
-//     expect((Math.abs(player.critChance - 0.3565339869320261))).toBeLessThan(1e-5);
-// });
+test('system should add crit from 90 int if dmcg is selected', () => {
+    let options = JSON.parse(JSON.stringify(defaultOptions));
+    options.trinkets.push('dmcg');
+    let player = new Shaman(options, rng, thresholdItemsToCreate);
+    expect((Math.abs(player.critChance - 0.4465339869320261))).toBeLessThan(1e-5);
+});
 
-// test('testing setting dmcg to true', () => {
-//     let player = new Shaman(dmcgOptions, rng, thresholdItemsToCreate);
-//     player.setBuffActive('dmcg', true, 2);
-//     expect(player._buffs['dmcg']['active']).toBe(true);
-//     expect(player._buffs['dmcg']['availableForUse']).toBe(false);
-//     expect(player._buffs['dmcg']['lastUsed']).toBe(2);
-// });
+test('testing setting dmcg to true', () => {
+    let options = JSON.parse(JSON.stringify(defaultOptions));
+    options.trinkets.push('dmcg');
+    let player = new Shaman(options, rng, thresholdItemsToCreate);
+    player.setBuffActive('dmcg', true, 2);
+    expect(player._buffs['dmcg']['active']).toBe(true);
+    expect(player._buffs['dmcg']['availableForUse']).toBe(false);
+    expect(player._buffs['dmcg']['lastUsed']).toBe(2);
+});
 
-// test('setting dmcg to true', () => {
-//     let player = new Shaman(dmcgOptions, rng, thresholdItemsToCreate);
-//     player.setBuffActive('dmcg', true, 2);
-//     player.setBuffActive('dmcg', false, 17);
-//     expect(player._buffs['dmcg']['active']).toBe(false);
-//     expect(player._buffs['dmcg']['availableForUse']).toBe(false);
-//     expect(player._buffs['dmcg']['lastUsed']).toBe(2);
-// });
+test('setting dmcg to true', () => {
+    let options = JSON.parse(JSON.stringify(defaultOptions));
+    options.trinkets.push('dmcg');
+    let player = new Shaman(options, rng, thresholdItemsToCreate);
+    player.setBuffActive('dmcg', true, 2);
+    player.setBuffActive('dmcg', false, 17);
+    expect(player._buffs['dmcg']['active']).toBe(false);
+    expect(player._buffs['dmcg']['availableForUse']).toBe(false);
+    expect(player._buffs['dmcg']['lastUsed']).toBe(2);
+});
 
-// test('testing isBuffActive', () => {
-//     let player = new Shaman(dmcgOptions, rng, thresholdItemsToCreate);
-//     expect(player.isBuffActive('dmcg')).toBe(false);
-//     player.setBuffActive('dmcg', true, 2);
-//     expect(player.isBuffActive('dmcg')).toBe(true);
-//     player.setBuffActive('dmcg', false, 17);
-//     expect(player.isBuffActive('dmcg')).toBe(false);
-//     expect(player.isBuffActive('others')).toBe(false);
-// });
+test('testing isBuffActive', () => {
+    let options = JSON.parse(JSON.stringify(defaultOptions));
+    options.trinkets.push('dmcg');
+    let player = new Shaman(options, rng, thresholdItemsToCreate);
+    expect(player.isBuffActive('dmcg')).toBe(false);
+    player.setBuffActive('dmcg', true, 2);
+    expect(player.isBuffActive('dmcg')).toBe(true);
+    player.setBuffActive('dmcg', false, 17);
+    expect(player.isBuffActive('dmcg')).toBe(false);
+    expect(player.isBuffActive('others')).toBe(false);
+});
 
-// test('maxMana and critChance when dmcg active', () => {
-//     let player = new Shaman(dmcgOptions, rng, thresholdItemsToCreate);
-//     player.setBuffActive('dmcg', true, 2);
-//     expect(player.maxMana).toBe(35078);
-//     expect((Math.abs(player.critChance - 0.3783139433721132))).toBeLessThan(1e-5);
-// });
+test('maxMana and critChance when dmcg active', () => {
+    let options = JSON.parse(JSON.stringify(defaultOptions));
+    options.trinkets.push('dmcg');
+    let player = new Shaman(options, rng, thresholdItemsToCreate);
+    player.setBuffActive('dmcg', true, 2);
+    expect(player.maxMana).toBe(35078);
+    expect((Math.abs(player.critChance - 0.46831394337211324))).toBeLessThan(1e-5);
+});
 
 // test('selectSpell overrideSpellSelection', () => {
 //     let player = new Shaman(dmcgOptions, rng, thresholdItemsToCreate);
@@ -185,10 +199,10 @@ test('calculateHealingHelper', () => {
 //     expect(spell['key']).toBe('HOLY_LIGHT');
 // });
 
-// test('passing no discount factors in subtractManaHelper returns just base cost', () => {
-//     let player = new Shaman(defaultOptions, rng, thresholdItemsToCreate);
-//     expect(player.subtractManaHelper('HOLY_LIGHT', 2)[1]).toBe(1274);
-// });
+test('passing no discount factors in subtractManaHelper returns just base cost', () => {
+    let player = new Shaman(defaultOptions, rng, thresholdItemsToCreate);
+    expect(player.subtractManaHelper('CHAIN_HEAL', 2)[1]).toBe(835);
+});
 
 // test('testing baseCostMultiplicativeFactors arugment for subtractManaHelper', () => {
 //     let player = new Shaman(defaultOptions, rng, thresholdItemsToCreate);

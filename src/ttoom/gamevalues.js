@@ -184,7 +184,7 @@ const data = {
                 'cooldown': 0,
                 'instant': false,
                 'baseCastTime': 2.5,
-                'baseManaCost': 1274.26,
+                'baseManaCost': 835.24,
                 baseHeal: 1130,
                 coefficient: 1.34, // from lovelace
             },
