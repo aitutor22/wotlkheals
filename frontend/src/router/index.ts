@@ -5,7 +5,7 @@ import PaladinCalculator from
   '../components/calculator/PaladinComponent.vue';
 
 import TTOOM from
-  '../components/ttoom/TimeToOomComponent.vue';
+  '../components/ttoom/MainComponent.vue';
 
 import PaladinStatWeights from
   '../components/paladin/StatWeights.vue';

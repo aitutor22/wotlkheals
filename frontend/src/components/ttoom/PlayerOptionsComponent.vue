@@ -1,3 +1,8 @@
+<!-- 
+  not the smartest way to do this but we just 
+  list all the possible fields from the 4 classes and
+  show/hide only the relevant ones
+-->
 <template>
   <section id="options-modal" class="full-screen-modal" :class="{active: isShow}">
     <div class="container">
@@ -9,10 +14,11 @@
         </div>
       </div>
 
-      <div class="row">
+      <div class="row" v-if="oomOptions">
         <div class="col-12">
           <b-card no-body>
             <b-tabs pills card>
+              <!-- general options that apply to all healers -->
               <b-tab title="General" active><b-card-text>
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
@@ -24,6 +30,20 @@
                     v-b-tooltip.hover title="Raid Buffed, including spellpower from Holy Guidance">Spellpower</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['spellPower']">
                 </div>
+                <div class="input-group mb-2" style="width: 100%">
+                  <span class="input-group-text" id="basic-addon1"
+                    v-b-tooltip.hover title="Raid Buffed">MP5 From Gear & Buffs</span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['mp5FromGearAndRaidBuffs']">
+                </div>
+                <div class="input-group mb-2" style="width: 100%">
+                  <span class="input-group-text" id="basic-addon1"
+                    v-b-tooltip.hover title="Raid Buffed, DO NOT include values from Holy Power and Sanctified Light talents as system will automatically add">Crit Chance %</span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['critChance']">
+                </div>
+              </b-card-text></b-tab>
+
+              <!-- options that apply to specific classes; we use v-if to show the correct one -->
+              <b-tab v-if="playerClass === 'paladin'" title="Paladin Specific"><b-card-text>
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1">HL CPM</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['cpm']['HOLY_LIGHT']">
@@ -43,24 +63,9 @@
                 </div>
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
-                    v-b-tooltip.hover title="Raid Buffed">MP5 From Gear & Buffs</span>
-                  <input type="text" class="form-control" v-model.number="oomOptions['mp5FromGearAndRaidBuffs']">
-                </div>
-                <div class="input-group mb-2" style="width: 100%">
-                  <span class="input-group-text" id="basic-addon1"
-                    v-b-tooltip.hover title="Raid Buffed, DO NOT include values from Holy Power and Sanctified Light talents as system will automatically add">Crit Chance %</span>
-                  <input type="text" class="form-control" v-model.number="oomOptions['critChance']">
-                </div>
-
-                <div class="input-group mb-2" style="width: 100%">
-                  <span class="input-group-text" id="basic-addon1"
                     v-b-tooltip.hover title="Number of talent points in Enlightened Judgements (0 to 2)">#pts (Enl. Judgements)</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['talents']['enlightenedJudgements']">
                 </div>
-              </b-card-text></b-tab>
-
-              <b-tab title="Gear"><b-card-text>
-                <b>Tier Bonus</b>
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" id="2pT7" v-model="oomOptions['2pT7']">
                   <label class="form-check-label" for="2pT7"
@@ -71,58 +76,37 @@
                   <label class="form-check-label" for="4pT7"
                     v-b-tooltip.hover title="The cost of your Holy Light is reduced by 5%.">4pT7</label>
                 </div>
+              </b-card-text></b-tab>
 
-                <b>Trinkets</b>
+              <!-- we first show trinkets that all healers are interested in, then show specific player class ones -->
+              <b-tab title="Trinkets"><b-card-text>
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" id="soup" v-model="oomOptions['trinkets']" value="soup">
                   <label class="form-check-label" for="soup">Soul Preserver</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="eog" v-model="oomOptions['trinkets']" value="eog">
-                  <label class="form-check-label" for="eog">Eye of Gruul</label>
                 </div>
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" id="dmcg" v-model="oomOptions['trinkets']" value="dmcg">
                   <label class="form-check-label" for="dmcg">Darkmoon Card: Greatness</label>
                 </div>
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="owl" v-model="oomOptions['trinkets']" value="owl">
-                  <label class="form-check-label" for="owl">Figurine - Sapphire Owl</label>
-                </div>
-                <div class="form-check">
                   <input class="form-check-input" type="checkbox" id="illustration" v-model="oomOptions['trinkets']" value="illustration">
                   <label class="form-check-label" for="illustration">Illustration</label>
                 </div>
+                <div v-if="playerClass === 'paladin'" class="form-check">
+                  <input class="form-check-input" type="checkbox" id="owl" v-model="oomOptions['trinkets']" value="owl">
+                  <label class="form-check-label" for="owl">Figurine - Sapphire Owl</label>
+                </div>
+                <div v-if="playerClass === 'paladin'" class="form-check">
+                  <input class="form-check-input" type="checkbox" id="eog" v-model="oomOptions['trinkets']" value="eog">
+                  <label class="form-check-label" for="eog">Eye of Gruul</label>
+                </div>
               </b-card-text></b-tab>
 
-              <b-tab title="Mana Cooldowns"><b-card-text>
-                <b>Mana Options</b>
+              <b-tab title="Mana Options"><b-card-text>
+                <!-- general options available to all classes -->
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1">Replenishment Uptime %</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['manaOptions']['replenishmentUptime']">
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="canSoW" v-model="oomOptions['manaOptions']['canSoW']">
-                  <label class="form-check-label" for="canSoW"
-                    v-b-tooltip.hover title="Is HPLD in melee range and thus able to proc Seal of Wisdom for mana?">Can SoW?</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="divinePlea" v-model="oomOptions['manaOptions']['divinePlea']">
-                  <label class="form-check-label" for="divinePlea">Divine Plea</label>
-                </div>
-                <div class="input-group mb-2" style="width: 100%" v-if="oomOptions['manaOptions']['divinePlea']">
-                  <span class="input-group-text" id="basic-addon1"
-                    v-b-tooltip.hover title="This controls when to use Divine Plea - if you would like to delay Divine Plea, set this to a higher value.">Mana Deficit to use Divine Plea</span>
-                  <input type="text" class="form-control" v-model.number="oomOptions['manaOptions']['divinePleaMinimumManaDeficit']">
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="divineIllumination" v-model="oomOptions['manaOptions']['divineIllumination']">
-                  <label class="form-check-label" for="divineIllumination">Divine Illumination</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="selfLoh" v-model="oomOptions['manaOptions']['selfLoh']">
-                  <label class="form-check-label" for="selfLoh"
-                    v-b-tooltip.hover title="Is the HPLD using Glyph of Divinity and casting Lay on Hands on him/herself for additional mana?">Self LoH (Divinity)</label>
                 </div>
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" id="injector" v-model="oomOptions['manaOptions']['injector']">
@@ -141,6 +125,31 @@
                   <input class="form-check-input" type="checkbox" id="arcaneTorrent" v-model="oomOptions['manaOptions']['arcaneTorrent']">
                   <label class="form-check-label" for="arcaneTorrent">Arcane Torrent</label>
                 </div>
+
+                <!-- class specific -->
+                <div v-if="playerClass === 'paladin'" class="form-check">
+                  <input class="form-check-input" type="checkbox" id="canSoW" v-model="oomOptions['manaOptions']['canSoW']">
+                  <label class="form-check-label" for="canSoW"
+                    v-b-tooltip.hover title="Is HPLD in melee range and thus able to proc Seal of Wisdom for mana?">Can SoW?</label>
+                </div>
+                <div v-if="playerClass === 'paladin'" class="form-check">
+                  <input class="form-check-input" type="checkbox" id="divinePlea" v-model="oomOptions['manaOptions']['divinePlea']">
+                  <label class="form-check-label" for="divinePlea">Divine Plea</label>
+                </div>
+                <div class="input-group mb-2" style="width: 100%" v-if="oomOptions['manaOptions']['divinePlea']">
+                  <span class="input-group-text" id="basic-addon1"
+                    v-b-tooltip.hover title="This controls when to use Divine Plea - if you would like to delay Divine Plea, set this to a higher value.">Mana Deficit to use Divine Plea</span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['manaOptions']['divinePleaMinimumManaDeficit']">
+                </div>
+                <div v-if="playerClass === 'paladin'" class="form-check">
+                  <input class="form-check-input" type="checkbox" id="divineIllumination" v-model="oomOptions['manaOptions']['divineIllumination']">
+                  <label class="form-check-label" for="divineIllumination">Divine Illumination</label>
+                </div>
+                <div v-if="playerClass === 'paladin'" class="form-check">
+                  <input class="form-check-input" type="checkbox" id="selfLoh" v-model="oomOptions['manaOptions']['selfLoh']">
+                  <label class="form-check-label" for="selfLoh"
+                    v-b-tooltip.hover title="Is the HPLD using Glyph of Divinity and casting Lay on Hands on him/herself for additional mana?">Self LoH (Divinity)</label>
+                </div>
               </b-card-text></b-tab>
             </b-tabs>
           </b-card>
@@ -153,64 +162,26 @@
 
 <script>
 
-import {mapMutations} from 'vuex';
+import {mapState} from 'vuex';
 
 export default {
-  name: 'PaladinTtoomOptions',
+  name: 'TtoomOptions',
   props: {
+    playerClass: String,
     isShow: Boolean,
   },
   computed: {
+    ...mapState('ttoom', ['oomOptions']),
   },
   data() {
     return {
-      oomOptions: {
-        manaPool: 28000,
-        spellPower: 2400,
-        castTimes: {
-          HOLY_LIGHT: 1.6,
-          FLASH_OF_LIGHT: 1.4,
-        },
-        cpm: {
-          HOLY_LIGHT: 35,
-          HOLY_SHOCK: 3,
-          FLASH_OF_LIGHT: 0,
-        },
-        talents: {
-          enlightenedJudgements: 1,
-        },
-        manaOptions: {
-          replenishmentUptime: 90,
-          divineIllumination: true,
-          divinePlea: true,
-          divinePleaMinimumManaDeficit: 8000,
-          canSoW: true,
-          selfLoh: false,
-          injector: false,
-          innervate: false,
-          manaTideTotem: false,
-          arcaneTorrent: false,
-        },
-        trinkets: ['soup', 'eog'],
-        glyphHolyLightHits: 4,
-        mp5FromGearAndRaidBuffs: 300,
-        '2pT7': true,
-        '4pT7': true,
-        critChance: 30,
-      },
     };
   },
   methods: {
-     ...mapMutations('ttoom', ['setOomOptions']),
     close() {
       this.$emit('close');
-      this.setOomOptions(this.oomOptions);
     },
   },
-  mounted() {
-    // sets default values
-    this.setOomOptions(this.oomOptions);
-  }
 }
 </script>
 

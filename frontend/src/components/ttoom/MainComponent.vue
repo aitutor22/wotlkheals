@@ -19,12 +19,11 @@
       </div>
     </div>
 
-    <!-- dynamically load the correct cast options component -->
-    <component
-      :is="optionsComponent"
+    <player-options
       :is-show="showOptionsModal"
+      :player-class="playerClass"
       @close="showOptionsModal = false"
-    ></component>
+    ></player-options>
 
     <hr>
     <div class="row" v-if="results">
@@ -98,10 +97,12 @@
 
 <script>
 
-import {mapState} from 'vuex';
+import {mapState, mapMutations} from 'vuex';
 import axios from 'axios';
 import BarChart from './BarChart';
-import PaladinOptions from '../paladin/TimeToOomOptionsComponent';
+import PlayerOptions from './PlayerOptionsComponent';
+
+import data from './data';
 
 // https://stackoverflow.com/questions/38085352/how-to-use-two-y-axes-in-chart-js-v2
 export default {
@@ -123,7 +124,7 @@ export default {
   },
   components: {
     BarChart,
-    PaladinOptions,
+    PlayerOptions,
   },
   computed: {
     ...mapState('ttoom', ['oomOptions']),
@@ -204,6 +205,7 @@ export default {
     }, // end chartOptions
   },
   methods: {
+    ...mapMutations('ttoom', ['setOomOptions']),
     formatNumber (num) {
         return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
     },
@@ -258,7 +260,6 @@ export default {
           .then((response) => {
             this.fetching = false;
             this.showExplanation = false;
-            console.log(response.data);
             this.results = response.data;
             this.selectedLog = response.data['logs'];
             if (!this.isFixedAxis) {
@@ -291,7 +292,9 @@ export default {
     }
   },
   mounted() {
-    console.log(this.playerClass);
+    // passes a copy to avoid dirtying data
+    let _data = JSON.parse(JSON.stringify(data[this.playerClass]['oomOptions']));
+    this.setOomOptions(_data);
   },
 }
 </script>

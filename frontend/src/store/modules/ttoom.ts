@@ -4,7 +4,7 @@ import Vue from 'vue';
 const getDefaultState = () => {
   // note: index resets for every subtrack
   const results = {
-    oomOptions: {},
+    oomOptions: null,
   };
 
   return results;
