@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" class="container">
     <nav>
       <router-link to="/">Home</router-link> |
       <router-link to="/paladin/ttoom/">Paladin TTOOM</router-link> | 

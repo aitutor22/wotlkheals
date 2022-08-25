@@ -1,9 +1,10 @@
-// import Vue from 'vue';
+import Vue from 'vue';
 
 
 const getDefaultState = () => {
   // note: index resets for every subtrack
   const results = {
+    oomOptions: {},
   };
 
   return results;
@@ -19,6 +20,9 @@ export const ttoom = {
   mutations: {
     resetStateMutation(state: object) {
       Object.assign(state, getDefaultState());
+    },
+    setOomOptions(state: object, value: object) {
+      Vue.set(state, 'oomOptions', value);
     },
   },
   actions: {

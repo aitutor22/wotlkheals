@@ -4,8 +4,8 @@ import VueRouter, { RouteConfig } from 'vue-router';
 import PaladinCalculator from
   '../components/calculator/PaladinComponent.vue';
 
-import PaladinTTOOM from
-  '../components/paladin/TimeToOomComponent.vue';
+import TTOOM from
+  '../components/ttoom/TimeToOomComponent.vue';
 
 import PaladinStatWeights from
   '../components/paladin/StatWeights.vue';
@@ -23,7 +23,8 @@ const routes: Array<RouteConfig> = [
   {
     path: '/paladin/ttoom/',
     name: 'paladin-ttoom',
-    component: PaladinTTOOM,
+    component: TTOOM,
+    props: {playerClass: 'paladin'},
   },
   {
     path: '/',
