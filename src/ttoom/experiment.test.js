@@ -98,3 +98,19 @@ test('test MANA_TIDE_TOTEM subevent on handleOffGcdManaCooldown', () => {
     expect(evt._subEvent).toBe('MANA_TIDE_TOTEM');
 });
 
+
+// test('test owl subevent on handleManaTick', () => {
+//     let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
+//     let experiment = new Experiment(options, 1);
+//     let eventHeap = new EventHeap();
+//     let player = new Paladin(options, rng, thresholdItemsToCreate);
+//     player._currentMana = 10000;
+//     eventHeap.addEvent(2, 'MANA_TICK', 'OWL');
+//     let owlEvent = eventHeap.pop();
+
+//     experiment.handleManaTick(owlEvent, player, eventHeap);
+//     // we code innervate to be 5 ticks of 5% mana
+//     expect(player._currentMana).toBe(10000 + 390);
+//     // should expect no events added
+//     expect(eventHeap.priorityQueue.length).toBe(0);
+// });

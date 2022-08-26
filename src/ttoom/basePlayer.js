@@ -168,6 +168,8 @@ class BasePlayer {
     }
     // end setters
 
+
+
     isBuffActive(buffKey) {
         return (typeof this._buffs[buffKey] !== 'undefined') && this._buffs[buffKey]['active'];
     }
@@ -193,7 +195,7 @@ class BasePlayer {
                 }
             }
         }
-        return eventToCreate;
+        return eventsToCreate;
     }
 
     // checks to see if currentMana has exceeded max mana at end of turn
@@ -211,17 +213,29 @@ class BasePlayer {
             // object.assign is fine here as no nested stuff
             let entry = Object.assign({}, _spell);
 
-            // // KIV -> to remove
-            // // setting cast time for each spell based on user options
-            // if (_spell['instant']) {
-            //     entry['castTime'] = 0;
-            // } else if (typeof this._options['castTimes'][_spell['key']] === 'undefined') {
-            //     throw new Error('missing cast time for ' + _spell['key']);
-            // } else {
-            //     entry['castTime'] = this._options['castTimes'][_spell['key']];
-            // }
-            entry['availableForUse'] = true;
-            entry['lastUsed'] = -9999;
+            // for spells that have a cooldown (e.g. HOLY_SHOCK) and user passes in the cpm
+            // we modify the cooldown in the system
+            if (entry['key'] in this._options['cpm']) {
+                let spellCpm = this._options['cpm'][entry['key']];
+                // if user has said don't cast the spell, then we don't include in _spells
+                if (spellCpm === 0) continue;
+
+                // if spell has a cooldown, then we should modify it according to the passed in cpm
+                // spells with no cooldowns like FoL or HL won't be affected
+                if (entry['cooldown'] > 0) {
+                    entry['cooldown'] = 60 / spellCpm;
+                }
+            }
+
+            // for precasted hots (e.g. earthshield, sacred shield), system will assume that it is casted just before fight begins
+            // will also put the spell on cooldown
+            if (entry['category'] === 'hot' && entry['precasted']) {
+                entry['availableForUse'] = false;
+                entry['lastUsed'] = -1;    
+            } else {
+                entry['availableForUse'] = true;
+                entry['lastUsed'] = -9999;
+            }
             results.push(entry);
         }
         return results;

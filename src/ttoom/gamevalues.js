@@ -92,8 +92,25 @@ const data = {
                 'instant': true,
                 'baseManaCost': 790.92,
                 'baseCastTime': 0,
+                category: 'directHeal',
                 baseHeal: 2500,
                 coefficient: 0.807, // tested by currelius, before talents
+            },
+            {
+                'key': 'SACRED_SHIELD',
+                'name': 'Sacred Shield',
+                'cooldown': 60, // we only want to cast sacred shield once every minute
+                'instant': true,
+                'baseCastTime': 0,
+                'baseManaCost': 527.28,
+                baseHeal: 500,
+                coefficient: 0.75, // tested by currelius, before talents
+                // following are hot only options
+                category: 'hot',
+                precasted: true, //should be casted at start of fight
+                numIntervals: 10,
+                secsBetweenInterval: 6,
+                startAtTimestamp: false,
             },
             {
                 'key': 'HOLY_LIGHT',
@@ -102,6 +119,7 @@ const data = {
                 'instant': false,
                 'baseCastTime': 2, // assumed light's grace
                 'baseManaCost': 1274.26,
+                category: 'directHeal',
                 baseHeal: 5166,
                 coefficient: 1.679, // tested by currelius, before talents
             },
@@ -112,6 +130,7 @@ const data = {
                 'instant': false,
                 'baseCastTime': 1.5,
                 'baseManaCost': 307.58,
+                category: 'directHeal',
                 baseHeal: 835.5,
                 coefficient: 1.009, // tested by currelius, before talents
             }
@@ -185,6 +204,7 @@ const data = {
                 'baseManaCost': 835.24,
                 baseHeal: 1130,
                 coefficient: 1.34, // from lovelace
+                category: 'directHeal',
             },
             ],
             manaCostModifiers: {

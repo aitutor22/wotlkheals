@@ -37,14 +37,6 @@ class Paladin extends BasePlayer {
         this._numHitsPerHolyLight = Math.floor(2 + this._options['glyphHolyLightHits']) // beacon + original target + glpyh
    
         this.initialiseManaCooldowns(options['manaCooldowns']);
-
-        // filters out holyShock if cpm is set to 0
-        if (this._options['cpm']['HOLY_SHOCK'] === 0) {
-            this._spells = this._spells.filter((_spell) => _spell['key'] !== 'HOLY_SHOCK');
-        } else {
-            // otherwise change cooldown according to cpm
-            this._spells.find((_spell) => _spell['key'] === 'HOLY_SHOCK')['cooldown'] = 60 / this._options['cpm']['HOLY_SHOCK'];
-        }
     }
 
     // majority of spell selection is done in basePlayer's selectSpellHelper
@@ -66,7 +58,9 @@ class Paladin extends BasePlayer {
             multiplicativeFactors = [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1, 'glpyh': glyphHLFactor}];
         } else if (spellKey === 'FLASH_OF_LIGHT' || spellKey === 'HOLY_SHOCK') {
             multiplicativeFactors = [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1}];
-        } 
+        } else if (spellKey === 'SACRED_SHIELD') {
+            multiplicativeFactors = [{'divinity': 0.05}, {'divineGuardian': 0.2}];
+        }
         else {
             throw new Error('Unknown spellkey: ' + spellKey);
         }
@@ -118,10 +112,19 @@ class Paladin extends BasePlayer {
         statMsg += `Spellpower: ${this.spellPower}`;
         logger.log(statMsg, 3);
 
-        // all pally spells have 1 chance to crit (beacon just mirrors the spell cast)
-        isCrit = this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance);
-
-        amountHealed = this.calculateHealing(spellKey, isCrit, this.isBuffActive('divinePlea'));
+        let spellInfo = this.classInfo['spells'].find(_spell => _spell['key'] === spellKey);
+        // all pally direcHeals spells have 1 chance to crit (beacon just mirrors the spell cast); hots cannot crit
+        isCrit = spellInfo['category'] === 'directHeal' ? this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance) : false;
+        // directHeals should just calculate actual healing amount, for hots, just cast the spell
+        if (spellInfo['category'] === 'directHeal') {
+            amountHealed = this.calculateHealing(spellKey, isCrit, this.isBuffActive('divinePlea'));
+        } else {
+            eventsToCreate.push({
+                timestamp: timestamp, 
+                eventType: 'INITIALIZE_HOT_EVENTS',
+                subEvent: spellInfo['key'],
+            })
+        }
         [status, manaUsed, currentMana, errorMessage] = this.subtractMana(spellKey, timestamp, procs);
 
         // player oom
@@ -137,13 +140,17 @@ class Paladin extends BasePlayer {
             logger.log('👀 👀 EOG 👀 👀', 2);
         }
 
-        msg = isCrit ? `${timestamp}s: **CRIT ${spellKey} for ${amountHealed}** (spent ${originalMana - currentMana} mana)` :
-            `${timestamp}s: Casted ${spellKey} for ${amountHealed} (spent ${originalMana - currentMana} mana)`;
+        if (spellInfo['category'] === 'directHeal' ) {
+            msg = isCrit ? `${timestamp}s: **CRIT ${spellKey} for ${amountHealed}** (spent ${originalMana - currentMana} mana)` :
+                `${timestamp}s: Casted ${spellKey} for ${amountHealed} (spent ${originalMana - currentMana} mana)`;
+        } else {
+            // don't show amountHealed for hots
+            msg = `${timestamp}s: Casted ${spellKey} (spent ${originalMana - currentMana} mana)`;
+        }
         logger.log(msg, 2);
 
         // if we cast an instant spell, we need to account for it using the gcd (modified by haste factor)
         offset = this._instantSpells.indexOf(spellKey) > -1 ? this._gcd : 0;
-        // console.log(offset)
 
         // after spell is casted, add effects
         if (isCrit) {
@@ -154,22 +161,7 @@ class Paladin extends BasePlayer {
             }
         }
 
-        // if dmcg is worn, see if it can proc
-        if (typeof this._buffs['dmcg'] !== 'undefined') {
-            // NOTE -> while mana cooldowns availability are checked regularly (under useManaCooldown), dmcg isn't as it is not a mana cooldown
-            // hence we need to update it's avaialability
-            if (!this._buffs['dmcg']['availableForUse'] && (timestamp - this._buffs['dmcg']['lastUsed'] >= DATA['items']['dmcg']['proc']['icd'])) {
-                this._buffs['dmcg']['availableForUse'] = true;
-            }
-
-            if (this._buffs['dmcg']['availableForUse']) {
-                let isDmcg = this.checkProcHelper('dmcg', spellIndex, 1, DATA['items']['dmcg']['proc']['chance']);
-                if (isDmcg) {
-                    this.setBuffActive('dmcg', true, timestamp, false, logger);
-                    eventsToCreate.push({timestamp: timestamp + DATA['items']['dmcg']['proc']['duration'], eventType: 'BUFF_EXPIRE', subEvent: 'dmcg'});
-                }
-            }
-        }
+        eventsToCreate = eventsToCreate.concat(this.handleDmcg(timestamp, spellIndex, logger));
 
         // checks if sow proc from holy shock
         if (spellKey === 'HOLY_SHOCK') this.checkForAndHandleSoWProc(timestamp, spellIndex, logger, 'normal');

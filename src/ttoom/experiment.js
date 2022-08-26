@@ -2,32 +2,8 @@ const EventHeap = require('../ttoom/eventheap');
 const Paladin = require('../ttoom/paladin');
 const DATA = require('../ttoom/gamevalues');
 const Utility = require('../common/utilities');
+const Logger = require('../common/logger');
 
-class Logger {
-    // output can be one of the following
-    // 0 - console,
-    // 1 - array object
-    constructor(logLevel, outputLocation=0) {
-        this._logLevel = logLevel;
-        this._outputLocation = outputLocation;
-        this._resultArr = [];
-    }
-
-    saveToArray(message) {
-        this._resultArr.push(message);
-    }
-
-    // logs message if logger's level exceeds minLogLevel
-    log(message, minLogLevel) {
-        if (this._logLevel >= minLogLevel) {
-            if (this._outputLocation === 0) {
-                console.log(message);
-            } else if (this._outputLocation === 1) {
-                this.saveToArray(message);
-            }
-        }
-    }
-}
 
 class Experiment {
     // loggerOutputLocation of 0 means print to console
@@ -80,6 +56,38 @@ class Experiment {
                 player.addManaHelper(DATA['manaCooldowns'][manaSource]['tickAmount'], manaSource, this.logger, currentTime);
             }
         }
+    }
+
+    // handle hots like sacred shield
+    handleHotTick(nextEvent, player, eventHeap, spellIndex=-1) {
+        let currentTime = nextEvent._timestamp,
+            hotSource = nextEvent._subEvent;
+
+        // if (manaSource === 'replenishment') {
+        //     player.addManaRegenFromReplenishmentAndOtherMP5(this.logger, currentTime);
+        //     // assume replenishment ticks every 2s
+        //     eventHeap.addEvent(currentTime + 2, 'MANA_TICK', 'replenishment');
+        // } 
+        // // code here is for the standalone events for sacred shield and judgement that we created
+        // // because we haven't introduced it in system yet
+        // // makeshift code that willl replaced eventually
+        // // chanceForSealOfWisdomProc_normal or chanceForSealOfWisdomProc_judgment
+        // else if (manaSource.startsWith('chanceForSealOfWisdomProc')) {
+        //     let procKind = nextEvent._subEvent.split('_')[1];
+        //     this.logger.log(`${currentTime}s: Chance for SoW from misc instant spell`, 2);
+
+        //     player.checkForAndHandleSoWProc(currentTime, spellIndex, this.logger);
+        // }
+        // // divine plea/mana_tide or innervate
+        // else {
+        //     // nextEvent._subEvent is INNERVATE, DIVINE_PLEA, etc
+        //     let cooldownInfo = DATA['manaCooldowns'][nextEvent._subEvent];
+        //     if (cooldownInfo['subCategory'] === 'percentageManaPool') {
+        //         player.addManaRegenPercentageOfManaPool(currentTime, DATA['manaCooldowns'][manaSource]['percentageManaPool'], manaSource, this.logger);
+        //     } if (cooldownInfo['subCategory'] === 'fixed') {
+        //         player.addManaHelper(DATA['manaCooldowns'][manaSource]['tickAmount'], manaSource, this.logger, currentTime);
+        //     }
+        // }
     }
 
     // seed === 0 means we don't use a seed
@@ -209,7 +217,10 @@ class Experiment {
                 player.setBuffActive(nextEvent._subEvent, false, currentTime, false, this.logger);
             } else if (nextEvent._eventType === 'MANA_TICK') {
                 this.handleManaTick(nextEvent, player, eventHeap, spellIndex);
+            } else if (nextEvent._eventType === 'HOT_TICK') {
+                this.handleHotTick(nextEvent, player, eventHeap, spellIndex);
             }
+
 
             player.checkOverflowMana();
             this.logger.log(`${player}\n----------`, 2);
