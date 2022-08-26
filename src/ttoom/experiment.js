@@ -58,6 +58,14 @@ class Experiment {
         }
     }
 
+    // creates healing over time events
+    initializeHotEvents(nextEvent, player, eventHeap, spellIndex=-1) {
+        let currentTime = nextEvent._timestamp,
+            hotSpellKey = nextEvent._subEvent,
+            hotSpellData = player.classInfo['spells'].find((_spell) => _spell['key'] === hotSpellKey);
+        eventHeap.addIntervalEvents(currentTime, 'HOT_TICK', hotSpellKey, hotSpellData['numIntervals'], hotSpellData['secsBetweenInterval'], hotSpellData['startAtTimestamp']);
+    }
+
     // handle hots like sacred shield
     handleHotTick(nextEvent, player, eventHeap, spellIndex=-1) {
         let currentTime = nextEvent._timestamp,
@@ -217,6 +225,8 @@ class Experiment {
                 player.setBuffActive(nextEvent._subEvent, false, currentTime, false, this.logger);
             } else if (nextEvent._eventType === 'MANA_TICK') {
                 this.handleManaTick(nextEvent, player, eventHeap, spellIndex);
+            } else if (nextEvent._eventType === 'INITIALIZE_HOT_EVENTS') {
+                this.initializeHotEvents(nextEvent, player, eventHeap, spellIndex);
             } else if (nextEvent._eventType === 'HOT_TICK') {
                 this.handleHotTick(nextEvent, player, eventHeap, spellIndex);
             }

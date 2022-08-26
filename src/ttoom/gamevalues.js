@@ -96,22 +96,22 @@ const data = {
                 baseHeal: 2500,
                 coefficient: 0.807, // tested by currelius, before talents
             },
-            {
-                'key': 'SACRED_SHIELD',
-                'name': 'Sacred Shield',
-                'cooldown': 60, // we only want to cast sacred shield once every minute
-                'instant': true,
-                'baseCastTime': 0,
-                'baseManaCost': 527.28,
-                baseHeal: 500,
-                coefficient: 0.75, // tested by currelius, before talents
-                // following are hot only options
-                category: 'hot',
-                precasted: true, //should be casted at start of fight
-                numIntervals: 10,
-                secsBetweenInterval: 6,
-                startAtTimestamp: false,
-            },
+            // {
+            //     'key': 'SACRED_SHIELD',
+            //     'name': 'Sacred Shield',
+            //     'cooldown': 60, // we only want to cast sacred shield once every minute
+            //     'instant': true,
+            //     'baseCastTime': 0,
+            //     'baseManaCost': 527.28,
+            //     baseHeal: 500,
+            //     coefficient: 0.75, // tested by currelius, before talents
+            //     // following are hot only options
+            //     category: 'hot',
+            //     precasted: true, //should be casted at start of fight
+            //     numIntervals: 10,
+            //     secsBetweenInterval: 6,
+            //     startAtTimestamp: false,
+            // },
             {
                 'key': 'HOLY_LIGHT',
                 'name': 'Holy Light',

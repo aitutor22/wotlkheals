@@ -99,18 +99,18 @@ test('test MANA_TIDE_TOTEM subevent on handleOffGcdManaCooldown', () => {
 });
 
 
-// test('test owl subevent on handleManaTick', () => {
-//     let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
-//     let experiment = new Experiment(options, 1);
-//     let eventHeap = new EventHeap();
-//     let player = new Paladin(options, rng, thresholdItemsToCreate);
-//     player._currentMana = 10000;
-//     eventHeap.addEvent(2, 'MANA_TICK', 'OWL');
-//     let owlEvent = eventHeap.pop();
+test('test creation of sacred shield on initializeHotEvents', () => {
+    let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
+    let experiment = new Experiment(options, 1);
+    let eventHeap = new EventHeap();
+    let player = new Paladin(options, rng, thresholdItemsToCreate);
+    eventHeap.addEvent(2, 'INITIALIZE_HOT_EVENTS', 'SACRED_SHIELD');
+    let sacredShieldEvent = eventHeap.pop();
+    console.log(sacredShieldEvent);
 
-//     experiment.handleManaTick(owlEvent, player, eventHeap);
+    experiment.initializeHotEvents(sacredShieldEvent, player, eventHeap);
 //     // we code innervate to be 5 ticks of 5% mana
 //     expect(player._currentMana).toBe(10000 + 390);
-//     // should expect no events added
-//     expect(eventHeap.priorityQueue.length).toBe(0);
-// });
+    // should expect 10 hot tick events to be added
+    expect(eventHeap.priorityQueue.length).toBe(10);
+});
