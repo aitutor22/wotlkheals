@@ -33,6 +33,31 @@ const data = {
         '2pT7': true,
         '4pT7': true,
       },
+    },
+    shaman: {
+      oomOptions: {
+        manaPool: 28000,
+        spellPower: 2400,
+        critChance: 30,
+        seed: '',
+        cpm: {
+          CHAIN_HEAL: 35,
+        },
+        talents: {
+        },
+        manaOptions: {
+          replenishmentUptime: 90,
+          manaPotion: true,
+          injector: false,
+          innervate: false,
+          manaTideTotem: false,
+          arcaneTorrent: false,
+          useArcaneTorrentWithDmcg: false,
+        },
+        trinkets: ['soup', ],
+        mp5FromGearAndRaidBuffs: 300,
+        '2pT6': true,
+      },
     }
 }
 

@@ -238,16 +238,6 @@ export default {
         alert('You can only select up to two trinkets.');
         return;
       }
-      if (!this.oomOptions['2pT7'] && this.oomOptions['4pT7']) {
-        alert('4PT7 was selected but not 2PT7');
-        return;
-      }
-
-      if (this.oomOptions['talents']['enlightenedJudgements'] < 0 || this.oomOptions['talents']['enlightenedJudgements'] > 2
-          || !Number.isInteger(this.oomOptions['talents']['enlightenedJudgements'])) {
-        alert('Please input a valid value for Enlightened Judgements');
-        return;
-      }
 
       for (let key in this.oomOptions['cpm']) {
         let entry = this.oomOptions['cpm'][key];
@@ -257,18 +247,39 @@ export default {
         }
       }
 
-      for (let otherField of ['manaPool', 'glyphHolyLightHits', 'critChance']) {
+      for (let otherField of ['manaPool', 'critChance']) {
         if (!this.basicNumberValidation(this.oomOptions[otherField])) {
           alert('Please enter a valid number for : ' + otherField);
           return;
         }
       }
 
-      if (this.oomOptions['glyphHolyLightHits'] < 0 || this.oomOptions['glyphHolyLightHits'] > 5 ||
-            !Number.isInteger(this.oomOptions['glyphHolyLightHits'])) {
-          alert('glyphHolyLightHits should be an integer between 0 and 5');
-          return; 
+
+      // class specific validation
+      if (this.playerClass === 'paladin') {
+        if (!this.oomOptions['2pT7'] && this.oomOptions['4pT7']) {
+          alert('4PT7 was selected but not 2PT7');
+          return;
+        }
+
+        if (this.oomOptions['talents']['enlightenedJudgements'] < 0 || this.oomOptions['talents']['enlightenedJudgements'] > 2
+            || !Number.isInteger(this.oomOptions['talents']['enlightenedJudgements'])) {
+          alert('Please input a valid value for Enlightened Judgements');
+          return;
+        }
+
+        if (!this.basicNumberValidation(this.oomOptions['glyphHolyLightHits'])) {
+          alert('Please enter a valid number for glyphHolyLightHits');
+          return;
+        }
+
+        if (this.oomOptions['glyphHolyLightHits'] < 0 || this.oomOptions['glyphHolyLightHits'] > 5 ||
+              !Number.isInteger(this.oomOptions['glyphHolyLightHits'])) {
+            alert('glyphHolyLightHits should be an integer between 0 and 5');
+            return; 
+        }
       }
+
 
       this.fetching = true;
       axios

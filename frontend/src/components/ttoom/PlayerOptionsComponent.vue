@@ -83,6 +83,44 @@
                 </div>
               </b-card-text></b-tab>
 
+              <!-- options that apply to specific classes; we use v-if to show the correct one -->
+              <b-tab v-if="playerClass === 'shaman'" title="Shaman"><b-card-text>
+                <div class="input-group mb-2" style="width: 100%">
+                  <span class="input-group-text" id="basic-addon1">Chain Heal CPM</span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['cpm']['CHAIN_HEAL']">
+                </div>
+<!--                 <div class="input-group mb-2" style="width: 100%">
+                  <span class="input-group-text" id="basic-addon1">FoL CPM</span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['cpm']['FLASH_OF_LIGHT']">
+                </div>
+                <div class="input-group mb-2" style="width: 100%">
+                  <span class="input-group-text" id="basic-addon1">HS CPM </span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['cpm']['HOLY_SHOCK']">
+                </div>
+                <div class="input-group mb-2" style="width: 100%">
+                  <span class="input-group-text" id="basic-addon1"
+                    v-b-tooltip.hover title="Integer from 0 to 5"># hits from glyph HL</span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['glyphHolyLightHits']">
+                </div>
+                <div class="input-group mb-2" style="width: 100%">
+                  <span class="input-group-text" id="basic-addon1"
+                    v-b-tooltip.hover title="Number of talent points in Enlightened Judgements (0 to 2)">#pts (Enl. Judgements)</span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['talents']['enlightenedJudgements']">
+                </div>
+
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="4pT7" v-model="oomOptions['4pT7']">
+                  <label class="form-check-label" for="4pT7"
+                    v-b-tooltip.hover title="The cost of your Holy Light is reduced by 5%.">4pT7</label>
+                </div> -->
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="2pT6" v-model="oomOptions['2pT6']">
+                  <label class="form-check-label" for="2pT6"
+                    v-b-tooltip.hover title="Your Chain Heal ability cost 10% less mana.">2pT6</label>
+                </div>
+              </b-card-text></b-tab>
+
+
               <!-- we first show trinkets that all healers are interested in, then show specific player class ones -->
               <b-tab title="Trinkets"><b-card-text>
                 <div class="form-check">

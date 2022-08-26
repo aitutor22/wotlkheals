@@ -27,6 +27,12 @@ const routes: Array<RouteConfig> = [
     props: {playerClass: 'paladin'},
   },
   {
+    path: '/shaman/ttoom/',
+    name: 'shaman-ttoom',
+    component: TTOOM,
+    props: {playerClass: 'shaman'},
+  },
+  {
     path: '/',
     name: 'home',
     component: PaladinCalculator
