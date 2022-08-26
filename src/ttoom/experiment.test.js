@@ -2,6 +2,7 @@ const Experiment = require('./experiment');
 const Paladin = require('../ttoom/paladin');
 const EventHeap = require('../ttoom/eventheap');
 const Utility = require('../common/utilities');
+const Logger = require('../common/logger');
 
 const DATA = require('../ttoom/gamevalues');
 
@@ -102,15 +103,18 @@ test('test MANA_TIDE_TOTEM subevent on handleOffGcdManaCooldown', () => {
 test('test creation of sacred shield on initializeHotEvents', () => {
     let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
     let experiment = new Experiment(options, 1);
+    experiment.logger = new Logger();
     let eventHeap = new EventHeap();
     let player = new Paladin(options, rng, thresholdItemsToCreate);
-    eventHeap.addEvent(2, 'INITIALIZE_HOT_EVENTS', 'SACRED_SHIELD');
-    let sacredShieldEvent = eventHeap.pop();
-    console.log(sacredShieldEvent);
+    eventHeap.addEvent(60, 'INITIALIZE_HOT_EVENTS', 'SACRED_SHIELD');
+    let sacredShieldCreationEvent = eventHeap.pop();
 
-    experiment.initializeHotEvents(sacredShieldEvent, player, eventHeap);
-//     // we code innervate to be 5 ticks of 5% mana
-//     expect(player._currentMana).toBe(10000 + 390);
+    experiment.initializeHotEvents(sacredShieldCreationEvent, player, eventHeap);
     // should expect 10 hot tick events to be added
     expect(eventHeap.priorityQueue.length).toBe(10);
+    let hotEvent = eventHeap.pop();
+    expect(hotEvent._timestamp).toBe(66);
+    expect(hotEvent._subEvent).toBe('SACRED_SHIELD');
+
+    experiment.handleHotTick(hotEvent, player, eventHeap, 1);
 });
