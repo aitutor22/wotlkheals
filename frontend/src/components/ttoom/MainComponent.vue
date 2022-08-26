@@ -27,17 +27,17 @@
 
     <hr>
     <div class="row" v-if="results">
-      <div class="col-7">
+      <div class="col-md-7">
         <p>Median Time to OOM: <b>{{ results['ttoom'] }}s ({{ formatNumber(results['hps']) }} HPS)</b></p>
         <p>
-          Batch Seed: {{ results['batchSeed'] }}
+          Batch Seed: <b>{{ results['batchSeed'] }}</b>
           <span v-if="oomOptions['seed'] !== '' && oomOptions['seed'] > 0 && oomOptions['seed'] === results['batchSeed']">(Seed currently fixed)</span>
         </p>
         <p><em>
           HPLD's ttoom has higher variance vs other healers due to Divine Plea breakpoints (amplified by using Darkmoon Card: Greatness).
         </em></p>
         <p>
-          <em>The bimodal distribution means a simple median/mean ttoom misses important context - you could have a high median ttoom but also be mana-screwed 30-40% of the time. The histogram (median in red) provides more context, and you can click on bars to see the log on the right.
+          <em>The bimodal distribution means a simple median ttoom misses important context - you could have a high median ttoom but also be mana-screwed 30-40% of the time. The histogram (median in red) provides more context, and you can click on bars to see the log on the right.
           </em>
         </p>
         <div>
@@ -53,19 +53,19 @@
             :chart-options="chartOptions"
             />
         </div>
-        <div class="col-5">
+        <div class="col-md-5">
           <textarea class="log" readonly="" v-model="logs"></textarea>  
         </div>
     </div>
 
     <div class="row gap-top" v-if="results">
       <br>
-      <div class="col-7">
+      <div class="col-md-7">
         <h5>Cast Profile</h5>
         <b-table striped hover :items="this.results['spellsCastedStatistics']"></b-table>
       </div>
 
-      <div class="col-5">
+      <div class="col-md-5">
         <h5>Mana Generation Breakdown</h5>
         <b-table striped hover :items="mp5Data"></b-table>
       </div>
@@ -78,7 +78,7 @@
     </div>
 
     <div v-if="results" class="row gap-top">
-      <h5>Implementation Assumptions & Known Issues</h5>
+      <h5>Assumptions & Known Issues</h5>
       <ol>
         <li>The following have NOT been implented yet: Divine Favour, FoL Infusion of Light (currently the system will automatically prioritise HL when Infusion of Light is up), and standalone gcds used for Beacon and Sacred Shield.</li>
         <li>
@@ -308,6 +308,7 @@ export default {
 .log {
   width: 100%;
   height: 100%;
+  min-height: 400px;
 }
 
 .pad-bottom {

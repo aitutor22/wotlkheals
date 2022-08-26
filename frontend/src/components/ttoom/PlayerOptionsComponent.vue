@@ -42,13 +42,13 @@
                 </div>
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
-                    v-b-tooltip.hover title="If you leave this blank, sim will use random numbers. If you wish to use a specific seed, input an integer">Seed (leave blank unless you want to specify a seed)</span>
-                  <input type="text" class="form-control" v-model.number="oomOptions['seed']">
+                    v-b-tooltip.hover title="If you leave this blank, sim will use random numbers. If you wish to use a specific seed, input an integer">Seed</span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['seed']" placeholder="Leave blank to use random seed">
                 </div>
               </b-card-text></b-tab>
 
               <!-- options that apply to specific classes; we use v-if to show the correct one -->
-              <b-tab v-if="playerClass === 'paladin'" title="Paladin Specific"><b-card-text>
+              <b-tab v-if="playerClass === 'paladin'" title="Paladin"><b-card-text>
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1">HL CPM</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['cpm']['HOLY_LIGHT']">
@@ -107,7 +107,7 @@
                 </div>
               </b-card-text></b-tab>
 
-              <b-tab title="Mana Options"><b-card-text>
+              <b-tab title="Mana"><b-card-text>
                 <!-- general options available to all classes -->
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1">Replenishment Uptime %</span>
