@@ -141,9 +141,7 @@ const data = {
                 mp5FromGearAndRaidBuffs: 300,
                 spellPower: 2400, // includes spellpower from holy guidance (though if dmcg procs, system will auto calculate)
                 critChance: 0.3, // from gear and raid buffs; does not include talents
-                manaCooldowns: [
-                    {key: 'RUNIC_MANA_POTION', minimumManaDeficit: 18000, minimumTimeElapsed: 0},
-                ],
+                manaCooldowns: [],
                 talents: {
                   enlightenedJudgements: 1,
                 },

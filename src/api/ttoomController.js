@@ -27,9 +27,12 @@ function createOptions(playerOptions) {
     // the order we push is important, as the first to be pushed will be evaluated first, assuming same mana deficit
     // to avoid a situation where mana tide totem is always trigged by dmcg, we set both a minimum mana and minimum time requirement for MTT
     if (playerOptions['manaOptions']['arcaneTorrent']) {
-        options['manaCooldowns'].push({key: 'ARCANE_TORRENT', minimumManaDeficit: 3000, minimumTimeElapsed: 0});
+        if (playerOptions['trinkets'].indexOf('dmcg') > -1 && playerOptions['manaOptions']['useArcaneTorrentWithDmcg']) {
+            options['manaCooldowns'].push({key: 'ARCANE_TORRENT', minimumManaDeficit: 3000, minimumTimeElapsed: 0, waitForBuff: 'dmcg'});
+        } else {
+            options['manaCooldowns'].push({key: 'ARCANE_TORRENT', minimumManaDeficit: 3000, minimumTimeElapsed: 0});
+        }
     }
-
 
     if (playerOptions['manaOptions']['divinePlea']) {
         options['manaCooldowns'].push({
@@ -57,6 +60,10 @@ function createOptions(playerOptions) {
         options['manaCooldowns'].push({key: 'INNERVATE', minimumManaDeficit: 18000, minimumTimeElapsed: 0});
     }
 
+    if (playerOptions['manaOptions']['manaPotion']) {
+        options['manaCooldowns'].push({key: 'RUNIC_MANA_POTION', minimumManaDeficit: 18000, minimumTimeElapsed: 0});
+    }
+
     if (playerOptions['manaOptions']['selfLoh']) {
         // use LoH when left 3k mana as it's last resort
         let manaDeficit = playerOptions['manaPool'] - 3000;
@@ -73,7 +80,7 @@ exports.paladinTtoom = (req, res) => {
     try {
         // second argument is where logs are sent - 0 for console.log, 1 to an arr that is returned to the client
         let experiment = new Experiment(options, 1);
-        let result = experiment.runBatch(400, batchSeed);
+        let result = experiment.runBatch(200, batchSeed);
         res.send(result);
     } catch (error) {
         console.log(error);

@@ -172,6 +172,30 @@ class BasePlayer {
         return (typeof this._buffs[buffKey] !== 'undefined') && this._buffs[buffKey]['active'];
     }
 
+    // checks if dmcg is available for use
+    // if it is, then checks if spell can proc dmcg
+    // if dmcg is activated, then also need to pass a dmcg expire event
+    handleDmcg(timestamp, spellIndex, logger) {
+        let eventsToCreate = [];
+        // if dmcg is worn, see if it can proc
+        if (typeof this._buffs['dmcg'] !== 'undefined') {
+            // NOTE -> while mana cooldowns availability are checked regularly (under useManaCooldown), dmcg isn't as it is not a mana cooldown
+            // hence we need to update it's availability
+            if (!this._buffs['dmcg']['availableForUse'] && (timestamp - this._buffs['dmcg']['lastUsed'] >= DATA['items']['dmcg']['proc']['icd'])) {
+                this._buffs['dmcg']['availableForUse'] = true;
+            }
+
+            if (this._buffs['dmcg']['availableForUse']) {
+                let isDmcg = this.checkProcHelper('dmcg', spellIndex, 1, DATA['items']['dmcg']['proc']['chance']);
+                if (isDmcg) {
+                    this.setBuffActive('dmcg', true, timestamp, false, logger);
+                    eventsToCreate.push({timestamp: timestamp + DATA['items']['dmcg']['proc']['duration'], eventType: 'BUFF_EXPIRE', subEvent: 'dmcg'});
+                }
+            }
+        }
+        return eventToCreate;
+    }
+
     // checks to see if currentMana has exceeded max mana at end of turn
     // e.g. when dmcg expires
     checkOverflowMana(timestamp) {
@@ -209,6 +233,7 @@ class BasePlayer {
             let entry = JSON.parse(JSON.stringify(DATA['manaCooldowns'][cd['key']]));
             entry['minimumManaDeficit'] = cd['minimumManaDeficit'];
             entry['minimumTimeElapsed'] = cd['minimumTimeElapsed'];
+            entry['waitForBuff'] = 'waitForBuff' in cd ? cd['waitForBuff'] : '';
             entry['lastUsed'] = -9999;
             this._manaCooldowns.push(entry);
         }
@@ -292,6 +317,11 @@ class BasePlayer {
 
             // if still not available, skip
             if (!cd['availableForUse'] || manaDeficit < cd['minimumManaDeficit'] || timestamp < cd['minimumTimeElapsed']) {
+                continue;
+            }
+
+            // e.g. if we want to only use arcane torrent when dmcg is active
+            if (cd['waitForBuff'] !== '' && !this.isBuffActive(cd['waitForBuff'])) {
                 continue;
             }
             cooldownSelected = cd;

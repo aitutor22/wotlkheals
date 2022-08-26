@@ -155,11 +155,19 @@ class Paladin extends BasePlayer {
         }
 
         // if dmcg is worn, see if it can proc
-        if ((typeof this._buffs['dmcg'] !== 'undefined') && this._buffs['dmcg']['availableForUse']) {
-            let isDmcg = this.checkProcHelper('dmcg', spellIndex, 1, DATA['items']['dmcg']['proc']['chance']);
-            if (isDmcg) {
-                this.setBuffActive('dmcg', true, timestamp, false, logger);
-                eventsToCreate.push({timestamp: timestamp + DATA['items']['dmcg']['proc']['duration'], eventType: 'BUFF_EXPIRE', subEvent: 'dmcg'});
+        if (typeof this._buffs['dmcg'] !== 'undefined') {
+            // NOTE -> while mana cooldowns availability are checked regularly (under useManaCooldown), dmcg isn't as it is not a mana cooldown
+            // hence we need to update it's avaialability
+            if (!this._buffs['dmcg']['availableForUse'] && (timestamp - this._buffs['dmcg']['lastUsed'] >= DATA['items']['dmcg']['proc']['icd'])) {
+                this._buffs['dmcg']['availableForUse'] = true;
+            }
+
+            if (this._buffs['dmcg']['availableForUse']) {
+                let isDmcg = this.checkProcHelper('dmcg', spellIndex, 1, DATA['items']['dmcg']['proc']['chance']);
+                if (isDmcg) {
+                    this.setBuffActive('dmcg', true, timestamp, false, logger);
+                    eventsToCreate.push({timestamp: timestamp + DATA['items']['dmcg']['proc']['duration'], eventType: 'BUFF_EXPIRE', subEvent: 'dmcg'});
+                }
             }
         }
 

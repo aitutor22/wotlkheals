@@ -30,7 +30,7 @@
       <div class="col-md-7">
         <p>Median Time to OOM: <b>{{ results['ttoom'] }}s ({{ formatNumber(results['hps']) }} HPS)</b></p>
         <p>
-          Batch Seed: <b>{{ results['batchSeed'] }}</b>
+          Batch Seed: <b>{{ results['batchSeed'] }} </b>
           <span v-if="oomOptions['seed'] !== '' && oomOptions['seed'] > 0 && oomOptions['seed'] === results['batchSeed']">(Seed currently fixed)</span>
         </p>
         <p><em>
@@ -95,6 +95,18 @@
           There are minor rounding issues which can slightly increase the CPM shown.
         </li>
       </ol>
+    </div>
+
+    <div v-if="results" class="row gap-top">
+      <h5>Change Log</h5>
+      <ul>
+        <li>
+          <p><b>26/08/22</b></p>
+          <p>
+            User can now input a seed to allow for better comparison. Added options to control how mana cooldowns are used. Fixed bug where DMCG would only be used once in some cases. Improved mobile responsiveness.
+          </p>
+        </li>
+      </ul>
     </div>
   </div>
 </template>

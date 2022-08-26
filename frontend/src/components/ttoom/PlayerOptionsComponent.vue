@@ -114,6 +114,10 @@
                   <input type="text" class="form-control" v-model.number="oomOptions['manaOptions']['replenishmentUptime']">
                 </div>
                 <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="manaPotion" v-model="oomOptions['manaOptions']['manaPotion']">
+                  <label class="form-check-label" for="manaPotion">Runic Mana Potion</label>
+                </div>
+                <div v-if="oomOptions['manaOptions']['manaPotion']" class="form-check">
                   <input class="form-check-input" type="checkbox" id="injector" v-model="oomOptions['manaOptions']['injector']">
                   <label class="form-check-label" for="injector"
                     v-b-tooltip.hover title="Engineers using mana injectors gain a +25% bonus to mana potion">Mana Injector</label>
@@ -129,6 +133,11 @@
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" id="arcaneTorrent" v-model="oomOptions['manaOptions']['arcaneTorrent']">
                   <label class="form-check-label" for="arcaneTorrent">Arcane Torrent</label>
+                </div>
+                <!-- only show if dmcg and arcane torrent are selected -->
+                <div v-if="hasDmcg && oomOptions['manaOptions']['arcaneTorrent']" class="form-check">
+                  <input class="form-check-input" type="checkbox" id="useArcaneTorrentWithDmcg" v-model="oomOptions['manaOptions']['useArcaneTorrentWithDmcg']">
+                  <label class="form-check-label" for="useArcaneTorrentWithDmcg">Use Arcane Torrent with DMCG</label>
                 </div>
 
                 <!-- class specific -->
@@ -177,6 +186,9 @@ export default {
   },
   computed: {
     ...mapState('ttoom', ['oomOptions']),
+    hasDmcg() {
+      return this.oomOptions['trinkets'].indexOf('dmcg') > -1;
+    }
   },
   data() {
     return {
