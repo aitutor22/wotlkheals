@@ -29,6 +29,10 @@
     <div class="row" v-if="results">
       <div class="col-7">
         <p>Median Time to OOM: <b>{{ results['ttoom'] }}s ({{ formatNumber(results['hps']) }} HPS)</b></p>
+        <p>
+          Batch Seed: {{ results['batchSeed'] }}
+          <span v-if="oomOptions['seed'] !== '' && oomOptions['seed'] > 0 && oomOptions['seed'] === results['batchSeed']">(Seed currently fixed)</span>
+        </p>
         <p><em>
           HPLD's ttoom has higher variance vs other healers due to Divine Plea breakpoints (amplified by using Darkmoon Card: Greatness).
         </em></p>

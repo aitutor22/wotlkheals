@@ -68,11 +68,12 @@ function createOptions(playerOptions) {
 
 exports.paladinTtoom = (req, res) => {
     let options = createOptions(req.body);
+    let batchSeed = 'seed' in options && options['seed'] > 0 ? options['seed'] : 0;
 
     try {
         // second argument is where logs are sent - 0 for console.log, 1 to an arr that is returned to the client
         let experiment = new Experiment(options, 1);
-        let result = experiment.runBatch(400);
+        let result = experiment.runBatch(400, batchSeed);
         res.send(result);
     } catch (error) {
         console.log(error);

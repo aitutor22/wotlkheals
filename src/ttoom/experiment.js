@@ -222,20 +222,21 @@ class Experiment {
         return {ttoom: lastCastTimestamp, statistics: statistics, logs: this.logger._resultArr, hps: hps};
     }
 
-    runBatch(batchSize=10, seed=0, logsLevel=0, numBins=30) {
+    runBatch(batchSize=10, batchSeed=0, logsLevel=0, numBins=30) {
         let timings = [], listOfHPS = [], manaGeneratedStatistics = [], spellsCastedStatistics = [], medianEntry, resultSingleLoop, binResults;
         // if seed is 0, we get a random number from 1 to 9999 and used it to seed
-        if (seed === 0) {
-            seed = Math.floor(Math.random() * 10000 + 1)
+        if (batchSeed === 0) {
+            batchSeed = Math.floor(Math.random() * 10000 + 1)
         }
+
         // this is because we want a seed value that can be used to generate the exact log later
         for (let i = 0; i < batchSize; i++) {
-            // passing seed == 0 into runSingleLoop will mean it's random
-            // thus, we multiply seed by i + 1 instead
-            resultSingleLoop = this.runSingleLoop(logsLevel, seed * (i + 1));
+            // passing batchSeed == 0 into runSingleLoop will mean it's random
+            // thus, we multiply batchSeed by i + 1 instead
+            resultSingleLoop = this.runSingleLoop(logsLevel, batchSeed * (i + 1));
             manaGeneratedStatistics.push(resultSingleLoop['statistics']['manaGenerated']);
             spellsCastedStatistics.push(resultSingleLoop['statistics']['spellsCasted']);
-            timings.push({ttoom: resultSingleLoop['ttoom'], seed: seed * (i + 1)});
+            timings.push({ttoom: resultSingleLoop['ttoom'], seed: batchSeed * (i + 1)});
             listOfHPS.push(resultSingleLoop['hps']);
         }
 
@@ -276,9 +277,11 @@ class Experiment {
 
         // we run a single iteration of the median seed to get log info
         // first argument is logLevel - 2 shows most details but ommits crti details
+        // note that medianEntry['seed'] refers to the specific seed of that run and not the batchSeed
         resultSingleLoop = this.runSingleLoop(3, medianEntry['seed']);
-        // console.log(resultSingleLoop['logs'])
+
         return {
+            batchSeed: batchSeed,
             ttoom: medianEntry['ttoom'],
             hps: Utility.median(listOfHPS),
             logs: resultSingleLoop['logs'],

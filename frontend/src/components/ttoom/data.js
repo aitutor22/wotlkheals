@@ -4,6 +4,7 @@ const data = {
         manaPool: 28000,
         spellPower: 2400,
         critChance: 30,
+        seed: '',
         cpm: {
           HOLY_LIGHT: 35,
           HOLY_SHOCK: 3,
