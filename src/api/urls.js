@@ -37,8 +37,8 @@ const wclController = require('../wcl/services');
 // wclController.pullData(JSON.stringify(payload))
 
 router.post('/ttoom/paladin/:seed', ttoomController.paladinTtoomSeed);
-
-router.post('/ttoom/paladin/', ttoomController.paladinTtoom);
+router.post('/ttoom/paladin/', ttoomController.ttoom);
+router.post('/ttoom/shaman/', ttoomController.ttoom);
 
 router.get('/', function(req, res) {
     res.send('Just a test');

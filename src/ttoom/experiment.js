@@ -99,10 +99,11 @@ class Experiment {
     }
 
     // seed === 0 means we don't use a seed
-    runSingleLoop(logsLevel=0, seed=0, maxMinsToOOM=10) {
+    runSingleLoop(logsLevel=0, seed=0, playerClass='paladin', maxMinsToOOM=10) {
         let rng = Utility.setSeed(seed);
         // console.log('using seed: ' + seed);
         this.logger = new Logger(logsLevel, this._loggerOutputLocation);
+        console.log(playerClass)
 
         // rather than saving player/eventHeap to experiement, we recreate it each time we run a loop
         // this ensures that we are always starting anew when we run a loop

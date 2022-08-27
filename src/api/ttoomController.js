@@ -73,8 +73,11 @@ function createOptions(playerOptions) {
     return options;
 }
 
-exports.paladinTtoom = (req, res) => {
-    let options = createOptions(req.body);
+exports.ttoom = (req, res) => {
+    let options = createOptions(req.body.options),
+        playerClass = req.body.playerClass;
+
+    console.log(playerClass);
     let batchSeed = 'seed' in options && options['seed'] > 0 ? options['seed'] : 0;
 
     try {

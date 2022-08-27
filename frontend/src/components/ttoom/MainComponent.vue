@@ -254,7 +254,6 @@ export default {
         }
       }
 
-
       // class specific validation
       if (this.playerClass === 'paladin') {
         if (!this.oomOptions['2pT7'] && this.oomOptions['4pT7']) {
@@ -280,10 +279,9 @@ export default {
         }
       }
 
-
       this.fetching = true;
       axios
-          .post('ttoom/paladin', this.oomOptions)
+          .post(`ttoom/${this.playerClass}`, {options: this.oomOptions, playerClass: this.playerClass})
           .then((response) => {
             this.fetching = false;
             this.showExplanation = false;
