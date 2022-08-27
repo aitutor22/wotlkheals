@@ -21,7 +21,8 @@ class Shaman extends BasePlayer {
         // if (!this._options['2pT7'] && this._options['4pT7']) {
         //     throw new Error('4PT7 was selected but not 2PT7');
         // }
-
+        // mp5_WS = WATER_SHIELD * WS_PPM / 12
+        console.log(options['manaOptions']['waterShieldProcsPerMinFromDamage'])
         this._otherMP5 = options['mp5FromGearAndRaidBuffs'];
         this._otherMultiplicativeTotal = 1;
         // tidalFocus reduces healing cost by 5%; note that we don't put 2pt6 here as it only affects CHAIN_HEAL
@@ -30,6 +31,20 @@ class Shaman extends BasePlayer {
    
         this.initialiseManaCooldowns(options['manaCooldowns']);
     }
+
+    // // converts mp5 to a mp2 tick value
+    // addManaRegenFromReplenishmentAndOtherMP5(logger=null, timestamp=null) {
+    //     // we could use a cached value, but DMCG increases max mana pool, so for time being, we recalculate each time we call this
+    //     const replenishmentTick = (this.maxMana * DATA['constants']['replenishment'] / 5 * 2 * this._options['manaOptions']['replenishmentUptime']);
+    //     const otherMP5Tick = (this._otherMP5 / 5 * 2);
+    //     const tickAmount = Math.floor(replenishmentTick + otherMP5Tick);
+    //     // since replenishment might tick outside spellcast, we print timestamp
+    //     if (logger) logger.log(`${timestamp}s: Gained ${tickAmount} from mana tick`, 2);
+
+    //     // we record the ticks from replenishment and othermp5 separately; need to ensure we don't lose values due to floor function
+    //     this.addManaHelper(Math.floor(replenishmentTick), 'Replenishment');
+    //     this.addManaHelper(tickAmount - Math.floor(replenishmentTick), 'otherMP5');
+    // }
 
     // majority of spell selection is done in basePlayer's selectSpellHelper
     // the only logic we want to add is if infusion of light is active, always cast Holy Light unless CPM is set to 0
@@ -154,7 +169,6 @@ class Shaman extends BasePlayer {
         // Chain Heal gets a further 10% discount on mana cost
         let otherMultiplicativeTotal = (spellKey === 'CHAIN_HEAL' && Utility.getKeyBoolean(this._options, '2pT6')) ?
             this._baseOtherMultiplicativeTotal - this.classInfo['manaCostModifiers']['2pT6'] : this._baseOtherMultiplicativeTotal;
-        console.log('subtract mana', otherMultiplicativeTotal);
 
         let baseCostAdditiveFactors = {};
         // // gonna assume that all hpals are wearing libramOfRenewal

@@ -523,7 +523,8 @@ class BasePlayer {
         return this._currentMana - oldMana;
     }
 
-    // converts mp5 to a mp2 tick value
+    // normally this function is in basePlayer
+    // but due to water shield being tricky behaviour, we override the function instead
     addManaRegenFromReplenishmentAndOtherMP5(logger=null, timestamp=null) {
         // we could use a cached value, but DMCG increases max mana pool, so for time being, we recalculate each time we call this
         const replenishmentTick = (this.maxMana * DATA['constants']['replenishment'] / 5 * 2 * this._options['manaOptions']['replenishmentUptime']);

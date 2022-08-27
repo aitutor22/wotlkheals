@@ -238,7 +238,6 @@ class Experiment {
 
         let statistics = player.calculate_statistics_after_sim_ends(lastCastTimestamp),
             hps = Math.floor(player._statistics['overall']['healing'] / lastCastTimestamp);
-        // console.log(statistics);
         return {ttoom: lastCastTimestamp, statistics: statistics, logs: this.logger._resultArr, hps: hps};
     }
 

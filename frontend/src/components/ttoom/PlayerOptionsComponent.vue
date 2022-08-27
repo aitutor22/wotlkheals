@@ -30,7 +30,12 @@
                     v-b-tooltip.hover title="Raid Buffed, including spellpower from Holy Guidance">Spellpower</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['spellPower']">
                 </div>
-                <div class="input-group mb-2" style="width: 100%">
+                <div v-if="playerClass === 'shaman'" class="input-group mb-2" style="width: 100%">
+                  <span class="input-group-text" id="basic-addon1"
+                    v-b-tooltip.hover title="Raid Buffed Mp5, excludes Water Shield">MP5 From Gear & Buffs (no Water Shield)</span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['mp5FromGearAndRaidBuffs']">
+                </div>
+                <div v-else class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
                     v-b-tooltip.hover title="Raid Buffed">MP5 From Gear & Buffs</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['mp5FromGearAndRaidBuffs']">
@@ -203,6 +208,17 @@
                   <label class="form-check-label" for="selfLoh"
                     v-b-tooltip.hover title="Is the HPLD using Glyph of Divinity and casting Lay on Hands on him/herself for additional mana?">Self LoH (Divinity)</label>
                 </div>
+
+                <!-- class specific -->
+                <div v-if="playerClass === 'shaman'">
+                  123
+                   <div class="input-group mb-2" style="width: 100%" v-if="'waterShieldProcsPerMinFromDamage' in oomOptions['manaOptions']">
+                    <span class="input-group-text" id="basic-addon1"
+                      v-b-tooltip.hover title="Water Shield PPM from taking damage">Water Shield PPM (taking damage)</span>
+                    <input type="text" class="form-control" v-model.number="oomOptions['manaOptions']['waterShieldProcsPerMinFromDamage']">
+                  </div>
+                </div>
+
               </b-card-text></b-tab>
             </b-tabs>
           </b-card>

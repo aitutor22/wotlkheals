@@ -38,7 +38,7 @@ const data = {
       oomOptions: {
         manaPool: 25000,
         spellPower: 2500,
-        critChance: 30,
+        critChance: 20,
         seed: '',
         cpm: {
           CHAIN_HEAL: 30,
@@ -52,9 +52,10 @@ const data = {
           injector: false,
           innervate: false,
           manaTideTotem: false,
+          waterShieldProcsPerMinFromDamage: 2.5,
         },
         trinkets: ['soup',],
-        mp5FromGearAndRaidBuffs: 300,
+        mp5FromGearAndRaidBuffs: 200,
         chainHealHits: 3,
         '2pT6': true,
       },

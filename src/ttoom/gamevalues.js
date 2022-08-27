@@ -214,6 +214,16 @@ const data = {
             },
             maxSoupHits: 6, //up to 6 for 
             spellPowerFromInt: 0.15, // nature's blessing
+            waterShield: {
+                baseMp5: 100, // unaffected by improved shields talent
+                procValue: 460, // whenever damaged or crit (requires proc chance), gains 460 mana back (after talents)
+                chance: {
+                    'HEALING_WAVE': 1,
+                    'RIPTIDE': 1,
+                    'LESSER_HEALING_WAVE': 0.6,
+                    'CHAIN_HEAL': 0.3, // 30% per hit, note that each hit can proc water shield independently, so can theoretically get 4 hits of CH
+                },
+            },
             defaultValues: {
                 playerClass: 'shaman',
                 '2pT6': true, // +10% cost reduction to chain heal
