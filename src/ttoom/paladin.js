@@ -59,16 +59,24 @@ class Paladin extends BasePlayer {
         } else if (spellKey === 'FLASH_OF_LIGHT' || spellKey === 'HOLY_SHOCK') {
             multiplicativeFactors = [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1}];
         } else if (spellKey === 'SACRED_SHIELD') {
-            multiplicativeFactors = [{'divinity': 0.05}, {'divineGuardian': 0.2}];
+            multiplicativeFactors = [{'divineGuardian': 0.2}];
         }
         else {
             throw new Error('Unknown spellkey: ' + spellKey);
         }
-        if (isDivinePleaActive) {
+
+        // sacred shield is unaffected by plea
+        if (isDivinePleaActive && spellKey !== 'SACRED_SHIELD') {
             // calculateHealingHelper does  amount x (1 + val); so for divine plea, we need to pay in -0.5
             multiplicativeFactors.push({'divinePlea': -DATA['manaCooldowns']['DIVINE_PLEA']['healingPenalty']})
         }
         return Math.floor(this.calculateHealingHelper(spellKey, {}, multiplicativeFactors, isCrit));
+    }
+
+    calculateHoT(spellKey, timestamp, logger) {
+        let amountHealed = this.calculateHealing(spellKey, false, this.isBuffActive('divinePlea'));
+        let msg = `${timestamp}s: ${spellKey} ticked for ${amountHealed}`;
+        logger.log(msg, 2);
     }
 
     // selectSpell and castSpell work differently
@@ -163,8 +171,8 @@ class Paladin extends BasePlayer {
 
         eventsToCreate = eventsToCreate.concat(this.handleDmcg(timestamp, spellIndex, logger));
 
-        // checks if sow proc from holy shock
-        if (spellKey === 'HOLY_SHOCK') this.checkForAndHandleSoWProc(timestamp, spellIndex, logger, 'normal');
+        // checks if sow proc (instants lke holy shock or sacred shield)
+        if (spellInfo['instant']) this.checkForAndHandleSoWProc(timestamp, spellIndex, logger, 'normal');
 
         return [status, errorMessage, offset, eventsToCreate];
     }

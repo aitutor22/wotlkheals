@@ -71,31 +71,7 @@ class Experiment {
         let currentTime = nextEvent._timestamp,
             hotSource = nextEvent._subEvent;
 
-        // if (manaSource === 'replenishment') {
-        //     player.addManaRegenFromReplenishmentAndOtherMP5(this.logger, currentTime);
-        //     // assume replenishment ticks every 2s
-        //     eventHeap.addEvent(currentTime + 2, 'MANA_TICK', 'replenishment');
-        // } 
-        // // code here is for the standalone events for sacred shield and judgement that we created
-        // // because we haven't introduced it in system yet
-        // // makeshift code that willl replaced eventually
-        // // chanceForSealOfWisdomProc_normal or chanceForSealOfWisdomProc_judgment
-        // else if (manaSource.startsWith('chanceForSealOfWisdomProc')) {
-        //     let procKind = nextEvent._subEvent.split('_')[1];
-        //     this.logger.log(`${currentTime}s: Chance for SoW from misc instant spell`, 2);
-
-        //     player.checkForAndHandleSoWProc(currentTime, spellIndex, this.logger);
-        // }
-        // // divine plea/mana_tide or innervate
-        // else {
-        //     // nextEvent._subEvent is INNERVATE, DIVINE_PLEA, etc
-        //     let cooldownInfo = DATA['manaCooldowns'][nextEvent._subEvent];
-        //     if (cooldownInfo['subCategory'] === 'percentageManaPool') {
-        //         player.addManaRegenPercentageOfManaPool(currentTime, DATA['manaCooldowns'][manaSource]['percentageManaPool'], manaSource, this.logger);
-        //     } if (cooldownInfo['subCategory'] === 'fixed') {
-        //         player.addManaHelper(DATA['manaCooldowns'][manaSource]['tickAmount'], manaSource, this.logger, currentTime);
-        //     }
-        // }
+        player.calculateHoT(hotSource, currentTime, this.logger);
     }
 
     // seed === 0 means we don't use a seed
@@ -127,11 +103,13 @@ class Experiment {
         // assume first mana tick in 2s
         eventHeap.addEvent(2, 'MANA_TICK', 'replenishment');
 
+
+        // check that ss can proc sow
+
         // temporary measure -  we set up SoW chances
-        // 1 Sacred Shield, 2 from judgement (Beacon doesnt proc SoW since it resets, and divine plea/HS SoW is calculated separately)
+        // 2 from judgement (Beacon doesnt proc SoW since it resets, and divine plea/HS SoW is calculated separately)
         // assumption: first judgement doesnt restore mana since it's our first cast as we are running in
         // and thus even if sow hits, mana pool is still full
-        // meanwhile sacred shield is already precasted and refreshed 60s later
         // thus, we begin our SoW checks only 60s into the fight
         // technically, judgement and the melee have different hit chance and judgement can't be blocked
         // for now, disregard
@@ -139,14 +117,14 @@ class Experiment {
         if (player._playerClass === 'paladin') {
             let t = 0;
             while (t <= maxMinsToOOM * 60) {
-                // sacred shield
-                eventHeap.addEvent(t + 59.5, 'MANA_TICK', 'chanceForSealOfWisdomProc_normal');
                 // judgement
                 eventHeap.addEvent(t + 61, 'MANA_TICK', 'chanceForSealOfWisdomProc_normal');
                 eventHeap.addEvent(t + 61, 'MANA_TICK', 'chanceForSealOfWisdomProc_judgment');
 
                 t += 60;
             }
+            // manually added (should improve code) sacred shield as it is precasted
+            eventHeap.addEvent(0, 'INITIALIZE_HOT_EVENTS', 'SACRED_SHIELD');
         }
 
         while (eventHeap.hasElements() && currentTime <= maxMinsToOOM * 60) {

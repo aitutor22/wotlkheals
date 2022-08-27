@@ -82,7 +82,7 @@
       <ol>
         <li>The following have NOT been implented yet: Divine Favour, FoL Infusion of Light (currently the system will automatically prioritise HL when Infusion of Light is up), and standalone gcds used for Beacon and Sacred Shield.</li>
         <li>
-          Sacred Shield, Beacon of Light and Judgement are not casted in the sim, but an expected value for SoW procs is automatically calculated based on 4 hits a min (Judgement counts as 2 hits) and added to MP5.
+          Judgement is not casted in the sim, but two SoW procs is automatically calculated every 60s (Judgement counts as 2 hits).
         </li>
         <li>
           Soup and EoG procs are directly subtracted from the spell that procced it rather than the following spell. This is both for implemention simplicity and also to reflect that spells with multiple chances to proc soup will have lower blended mana cost.

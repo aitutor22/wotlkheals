@@ -137,7 +137,8 @@
                 </div>
                 <div v-if="playerClass === 'paladin'" class="form-check">
                   <input class="form-check-input" type="checkbox" id="owl" v-model="oomOptions['trinkets']" value="owl">
-                  <label class="form-check-label" for="owl">Figurine - Sapphire Owl</label>
+                  <label class="form-check-label" for="owl"
+                    v-b-tooltip.hover title="Note that Owl is 5 min cooldown, so using it on shorter fights overestimates its value">Figurine - Sapphire Owl</label>
                 </div>
                 <div v-if="playerClass === 'paladin'" class="form-check">
                   <input class="form-check-input" type="checkbox" id="eog" v-model="oomOptions['trinkets']" value="eog">
