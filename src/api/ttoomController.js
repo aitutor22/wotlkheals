@@ -77,13 +77,12 @@ exports.ttoom = (req, res) => {
     let options = createOptions(req.body.options),
         playerClass = req.body.playerClass;
 
-    console.log(playerClass);
     let batchSeed = 'seed' in options && options['seed'] > 0 ? options['seed'] : 0;
 
     try {
         // second argument is where logs are sent - 0 for console.log, 1 to an arr that is returned to the client
         let experiment = new Experiment(options, 1);
-        let result = experiment.runBatch(400, batchSeed);
+        let result = experiment.runBatch(3, batchSeed, playerClass);
         res.send(result);
     } catch (error) {
         console.log(error);
@@ -91,15 +90,16 @@ exports.ttoom = (req, res) => {
     }
 };
 
-exports.paladinTtoomSeed = (req, res) => {
-    let options = createOptions(req.body);
+exports.ttoomSeed = (req, res) => {
+    let options = createOptions(req.body.options),
+        playerClass = req.body.playerClass;
 
     try {
         // second argument is where logs are sent - 0 for console.log, 1 to an arr that is returned to the client
         let experiment = new Experiment(options, 1);
         // console.log(options);
         // first argument is logLevel - 2 shows most details but ommits crti details
-        let result = experiment.runSingleLoop(3, req.params.seed);
+        let result = experiment.runSingleLoop(3, req.params.seed, playerClass);
         res.send(result['logs']);
     } catch (error) {
         console.log(error);

@@ -1,5 +1,6 @@
 const EventHeap = require('../ttoom/eventheap');
 const Paladin = require('../ttoom/paladin');
+const Shaman = require('../ttoom/shaman');
 const DATA = require('../ttoom/gamevalues');
 const Utility = require('../common/utilities');
 const Logger = require('../common/logger');
@@ -74,19 +75,40 @@ class Experiment {
         player.calculateHoT(hotSource, currentTime, this.logger);
     }
 
+    createPlayer(playerClass, playerOptions, rng, maxMinsToOOM) {
+        let mapPlayerClass = {
+            'paladin': Paladin,
+            'shaman': Shaman,
+        }
+        // makes a copy of playerOptions to avoid bugs where we override the original options
+        let copiedOptions = JSON.parse(JSON.stringify(playerOptions));
+        let thresholds = ['crit'];
+
+        // class specific rng like seal of wisdom
+        if (playerClass === 'paladin') {
+            thresholds.push('sow');
+        }
+
+        // these trinkets have rng effects - if player has selected them, then add
+        for (let key of ['soup', 'eog', 'dmcg']) {
+            if (playerOptions.trinkets.indexOf(key) > -1) {
+                thresholds.push(key);
+            }
+        }
+        console.log(playerClass)
+        return new mapPlayerClass[playerClass](copiedOptions, rng, thresholds, maxMinsToOOM);
+    }
+
     // seed === 0 means we don't use a seed
     runSingleLoop(logsLevel=0, seed=0, playerClass='paladin', maxMinsToOOM=10) {
         let rng = Utility.setSeed(seed);
         // console.log('using seed: ' + seed);
         this.logger = new Logger(logsLevel, this._loggerOutputLocation);
-        console.log(playerClass)
 
         // rather than saving player/eventHeap to experiement, we recreate it each time we run a loop
         // this ensures that we are always starting anew when we run a loop
-        // makes a copy of playerOptions to avoid bugs where we override the original options
-        let copiedOptions = JSON.parse(JSON.stringify(this._playerOptions));
-        // KIV -> think about if this is extendable for other classes. sow (seal of wisdom is a pally only thing for instance)
-        let player = new Paladin(copiedOptions, rng, ['crit', 'soup', 'eog', 'sow', 'dmcg'], maxMinsToOOM);
+        let player = this.createPlayer(playerClass, this._playerOptions, rng, maxMinsToOOM);
+
         let eventHeap = new EventHeap();
         let currentTime = 0,
             lastCastTimestamp = 0,
@@ -222,7 +244,7 @@ class Experiment {
         return {ttoom: lastCastTimestamp, statistics: statistics, logs: this.logger._resultArr, hps: hps};
     }
 
-    runBatch(batchSize=10, batchSeed=0, logsLevel=0, numBins=30) {
+    runBatch(batchSize=10, batchSeed=0, playerClass='paladin', logsLevel=0, numBins=30) {
         let timings = [], listOfHPS = [], manaGeneratedStatistics = [], spellsCastedStatistics = [], medianEntry, resultSingleLoop, binResults;
         // if seed is 0, we get a random number from 1 to 9999 and used it to seed
         if (batchSeed === 0) {
@@ -233,7 +255,7 @@ class Experiment {
         for (let i = 0; i < batchSize; i++) {
             // passing batchSeed == 0 into runSingleLoop will mean it's random
             // thus, we multiply batchSeed by i + 1 instead
-            resultSingleLoop = this.runSingleLoop(logsLevel, batchSeed * (i + 1));
+            resultSingleLoop = this.runSingleLoop(logsLevel, batchSeed * (i + 1), playerClass);
             manaGeneratedStatistics.push(resultSingleLoop['statistics']['manaGenerated']);
             spellsCastedStatistics.push(resultSingleLoop['statistics']['spellsCasted']);
             timings.push({ttoom: resultSingleLoop['ttoom'], seed: batchSeed * (i + 1)});
@@ -278,7 +300,7 @@ class Experiment {
         // we run a single iteration of the median seed to get log info
         // first argument is logLevel - 2 shows most details but ommits crti details
         // note that medianEntry['seed'] refers to the specific seed of that run and not the batchSeed
-        resultSingleLoop = this.runSingleLoop(3, medianEntry['seed']);
+        resultSingleLoop = this.runSingleLoop(3, medianEntry['seed'], playerClass);
 
         return {
             batchSeed: batchSeed,

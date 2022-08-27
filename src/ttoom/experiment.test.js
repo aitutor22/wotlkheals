@@ -118,3 +118,39 @@ test('test creation of sacred shield on initializeHotEvents', () => {
 
     experiment.handleHotTick(hotEvent, player, eventHeap, 1);
 });
+
+test('test createPlayer should create a paladin', () => {
+    let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
+    let experiment = new Experiment(options, 1);
+    let player = experiment.createPlayer('paladin', options, rng, 10)
+    expect(player._options.playerClass).toEqual('paladin');
+    expect('crit' in player._rngThresholds).toBe(true);
+    expect('sow' in player._rngThresholds).toBe(true);
+    expect('eog' in player._rngThresholds).toBe(true);
+    expect('soup' in player._rngThresholds).toBe(true);
+    expect('dmcg' in player._rngThresholds).toBe(false);
+
+
+    options['trinkets'] = ['dmcg', 'eog']
+    experiment = new Experiment(options, 1);
+    player = experiment.createPlayer('paladin', options, rng, 10)
+    expect(player._options.playerClass).toEqual('paladin');
+    expect('crit' in player._rngThresholds).toBe(true);
+    expect('sow' in player._rngThresholds).toBe(true);
+    expect('eog' in player._rngThresholds).toBe(true);
+    expect('soup' in player._rngThresholds).toBe(false);
+    expect('dmcg' in player._rngThresholds).toBe(true);
+});
+
+test('test createPlayer should create a shaman', () => {
+    let options = JSON.parse(JSON.stringify(DATA['classes']['shaman']['defaultValues']));
+    options['trinkets'] = ['dmcg', 'soup']
+    let experiment = new Experiment(options, 1);
+    let player = experiment.createPlayer('shaman', options, rng, 10)
+    expect(player._options.playerClass).toEqual('shaman');
+    expect('crit' in player._rngThresholds).toBe(true);
+    expect('sow' in player._rngThresholds).toBe(false);
+    expect('eog' in player._rngThresholds).toBe(false);
+    expect('soup' in player._rngThresholds).toBe(true);
+    expect('dmcg' in player._rngThresholds).toBe(true);
+});

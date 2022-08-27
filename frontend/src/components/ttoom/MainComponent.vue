@@ -300,12 +300,11 @@ export default {
     getLogOfClickedBar(data) {
       let index = data['index'],
         entry = this.results['chartDetails']['exampleEntries'][index];
-      console.log(entry);
       if (this.fetching) return;
       this.fetching = true;
 
       axios
-          .post(`ttoom/paladin/${entry.seed}`, this.oomOptions)
+          .post(`ttoom/paladin/${entry.seed}`, {options: this.oomOptions, playerClass: this.playerClass})
           .then((response) => {
             this.fetching = false;
             this.selectedLog = response.data;

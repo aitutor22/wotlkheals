@@ -181,7 +181,7 @@ const data = {
             // when we calculate hasteFactor, we also need to consider the number of spells that
             // are not healing spells (e.g. divine plea) but are casted
             // otherwise we will undercount the haste factor
-            numGcdsPerMinNotCountedUnderSpells: 0, // 
+            numGcdsPerMinNotCountedUnderSpells: 0,
             intModifier: 1.1 * 1.1, // ancestral intellect, blessing of kings
             baseCritChanceModifier: 0.14, // 5% additional crit chance from thundering strikes, 5% from tidal mastery, 4% from blessing of elements
             spells: [
@@ -208,43 +208,31 @@ const data = {
             },
             ],
             manaCostModifiers: {
-                '4pT7': 0.05, // 5% mana discount on HL
-                'glyphSOW': 0.05, // 5% mana discount on all spells
-                'libramOfRenewal': 113, // subtracts 113
+                'tidalFocus': 0.05, // 5% mana discount on all spells,
+                '2PT6': 0.1, // 10% mana discount on chain heal
             },
-            maxSoupHits: 7, //up to 7 for HL
-            spellPowerFromInt: 0.2, // holy guidance
+            maxSoupHits: 6, //up to 6 for 
+            spellPowerFromInt: 0.15, // nature's blessing
             defaultValues: {
-                playerClass: 'paladin',
-                glyphSOW: true,
-                '2pT7': true, // +10% crit chance to holy shock
-                '4pT7': true, // 5% reduction to HL mana cost
-                trinkets: ['soup', 'eog'],
+                playerClass: 'shaman',
+                // glyphSOW: true,
+                // '2pT7': true, // +10% crit chance to holy shock
+                // '4pT7': true, // 5% reduction to HL mana cost
+                trinkets: ['soup', 'owl'],
                 cpm: {
-                  HOLY_LIGHT: 30,
-                  HOLY_SHOCK: 3,
-                  FLASH_OF_LIGHT: 0,
+                  CHAIN_HEAL: 15,
                 },
                 gcd: 1.5,
-                firstSpell: 'HOLY_LIGHT', // fix which is the first spell we want to cast
-                glyphHolyLightHits: 4, 
-                manaPool: 29000,
+                firstSpell: 'CHAIN_HEAL', // fix which is the first spell we want to cast
+                manaPool: 25000,
                 mp5FromGearAndRaidBuffs: 300,
-                spellPower: 2400, // includes spellpower from holy guidance (though if dmcg procs, system will auto calculate)
+                spellPower: 2500, // includes spellpower from holy guidance (though if dmcg procs, system will auto calculate)
                 critChance: 0.3, // from gear and raid buffs; does not include talents
-                manaCooldowns: [
-                    {key: 'DIVINE_PLEA', minimumManaDeficit: 8000, minimumTimeElapsed: 0},
-                    {key: 'DIVINE_ILLUMINATION', minimumManaDeficit: 9000, minimumTimeElapsed: 0},
-                    {key: 'RUNIC_MANA_POTION', minimumManaDeficit: 18000, minimumTimeElapsed: 0},
-                ],
+                manaCooldowns: [],
                 talents: {
-                  enlightenedJudgements: 1,
                 },
                 manaOptions: {
                   replenishmentUptime: 0.90,
-                  divineIllumination: true,
-                  canSoW: true,
-                  selfLoh: false,
                   injector: false,
                   innervate: false,
                   manaTideTotem: false,
