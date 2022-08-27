@@ -89,18 +89,13 @@ class Paladin extends BasePlayer {
 
         let originalMana = this._currentMana;
 
-        // player.add_spellcast_to_statistics(event._name, event._is_crit, event._is_soup_proc, event._is_eog_proc)
         let procs = {},
             eventsToCreate = [];
         let status, manaUsed, currentMana, errorMessage, offset, isCrit, msg, modifiedCritChance, sanctifiedLightCritChance, amountHealed;
 
         // checks for soup, and eog procs
         // holy light has more hits; all other spells have 2 hits (due to beacon)
-        for (let _key of ['soup', 'eog']) {
-            if (this._options['trinkets'].indexOf(_key) > -1) {
-                procs[_key] = this.isSoupEogProc(_key === 'soup', spellIndex, spellKey === 'HOLY_LIGHT' ? this._numHitsPerHolyLight : 2);
-            };
-        }
+        procs = this.getSoupEogProcs(spellIndex, spellKey === 'HOLY_LIGHT' ? this._numHitsPerHolyLight : 2);
 
         // 6% crit bonus from sanctified light for HL and HS only
         sanctifiedLightCritChance = ['HOLY_LIGHT', 'HOLY_SHOCK'].indexOf(spellKey) > -1 ? this.classInfo['sanctifiedLightCritChanceModifier'] : 0;

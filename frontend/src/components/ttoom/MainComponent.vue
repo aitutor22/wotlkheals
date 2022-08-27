@@ -142,6 +142,11 @@ export default {
     BarChart,
     PlayerOptions,
   },
+  watch: {
+    $route (to, from){
+      this.reset();
+    },
+  },
   computed: {
     ...mapState('ttoom', ['oomOptions']),
     optionsComponent() {
@@ -231,6 +236,11 @@ export default {
       }
       return true;
     },
+    // passes a copy to avoid dirtying data
+    reset() {
+      let _data = JSON.parse(JSON.stringify(data[this.playerClass]['oomOptions']));
+      this.setOomOptions(_data);
+    },
     runSim() {
       if (this.fetching) return;
       // validation
@@ -316,9 +326,7 @@ export default {
     }
   },
   mounted() {
-    // passes a copy to avoid dirtying data
-    let _data = JSON.parse(JSON.stringify(data[this.playerClass]['oomOptions']));
-    this.setOomOptions(_data);
+    this.reset();
   },
 }
 </script>

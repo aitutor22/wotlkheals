@@ -36,14 +36,15 @@ const data = {
     },
     shaman: {
       oomOptions: {
-        manaPool: 28000,
-        spellPower: 2400,
+        manaPool: 25000,
+        spellPower: 2500,
         critChance: 30,
         seed: '',
         cpm: {
-          CHAIN_HEAL: 35,
+          CHAIN_HEAL: 30,
         },
         talents: {
+          tidalFocus: true,
         },
         manaOptions: {
           replenishmentUptime: 90,
@@ -51,11 +52,10 @@ const data = {
           injector: false,
           innervate: false,
           manaTideTotem: false,
-          arcaneTorrent: false,
-          useArcaneTorrentWithDmcg: false,
         },
-        trinkets: ['soup', ],
+        trinkets: ['soup',],
         mp5FromGearAndRaidBuffs: 300,
+        chainHealHits: 3,
         '2pT6': true,
       },
     }

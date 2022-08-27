@@ -104,7 +104,7 @@ const data = {
                 'baseCastTime': 0,
                 'baseManaCost': 527.28,
                 baseHeal: 500,
-                coefficient: 0.75, // tested by currelius, before talents
+                coefficient: 0.7515, // tested by currelius, before talents
                 // following are hot only options
                 category: 'hot',
                 precasted: true, //should be casted at start of fight
@@ -209,14 +209,14 @@ const data = {
             ],
             manaCostModifiers: {
                 'tidalFocus': 0.05, // 5% mana discount on all spells,
-                '2PT6': 0.1, // 10% mana discount on chain heal
+                '2pT6': 0.1, // 10% mana discount on chain heal
+                'totemOfForestGrowth': 78, // subtracts 78 mana only for chain heal
             },
             maxSoupHits: 6, //up to 6 for 
             spellPowerFromInt: 0.15, // nature's blessing
             defaultValues: {
                 playerClass: 'shaman',
-                // glyphSOW: true,
-                // '2pT7': true, // +10% crit chance to holy shock
+                '2pT6': true, // +10% cost reduction to chain heal
                 // '4pT7': true, // 5% reduction to HL mana cost
                 trinkets: ['soup', 'owl'],
                 cpm: {
@@ -230,6 +230,7 @@ const data = {
                 critChance: 0.3, // from gear and raid buffs; does not include talents
                 manaCooldowns: [],
                 talents: {
+                    tidalFocus: true,
                 },
                 manaOptions: {
                   replenishmentUptime: 0.90,

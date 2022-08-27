@@ -169,7 +169,7 @@
                   <input class="form-check-input" type="checkbox" id="manaTideTotem" v-model="oomOptions['manaOptions']['manaTideTotem']">
                   <label class="form-check-label" for="manaTideTotem">Mana Tide Totem</label>
                 </div>
-                <div class="form-check">
+                <div class="form-check" v-if="typeof oomOptions['manaOptions']['arcaneTorrent'] !== 'undefined'">
                   <input class="form-check-input" type="checkbox" id="arcaneTorrent" v-model="oomOptions['manaOptions']['arcaneTorrent']">
                   <label class="form-check-label" for="arcaneTorrent">Arcane Torrent</label>
                 </div>

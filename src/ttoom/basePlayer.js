@@ -567,6 +567,16 @@ class BasePlayer {
         this._statistics['overall']['spellsCasted']++;
     }
 
+    getSoupEogProcs(spellIndex, numHits) {
+        let procs = {};
+        for (let _key of ['soup', 'eog']) {
+            if (this._options['trinkets'].indexOf(_key) > -1) {
+                procs[_key] = this.isSoupEogProc(_key === 'soup', spellIndex, numHits);
+            };
+        }
+        return procs;
+    }
+
     calculate_statistics_after_sim_ends(total_time) {
         // for spell in self._statistics['spells']:
         //     this._statistics['spells'][spell]['hps'] = this._statistics['spells'][spell]['total_healing'] / total_time

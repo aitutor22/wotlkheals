@@ -95,14 +95,12 @@ class Experiment {
                 thresholds.push(key);
             }
         }
-        console.log(playerClass)
         return new mapPlayerClass[playerClass](copiedOptions, rng, thresholds, maxMinsToOOM);
     }
 
     // seed === 0 means we don't use a seed
     runSingleLoop(logsLevel=0, seed=0, playerClass='paladin', maxMinsToOOM=10) {
         let rng = Utility.setSeed(seed);
-        // console.log('using seed: ' + seed);
         this.logger = new Logger(logsLevel, this._loggerOutputLocation);
 
         // rather than saving player/eventHeap to experiement, we recreate it each time we run a loop

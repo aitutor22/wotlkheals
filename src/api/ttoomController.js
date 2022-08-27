@@ -5,13 +5,13 @@ const DATA = require('../ttoom/gamevalues');
 // helper function that combines playerOptions passed from client to create
 // a set of options that is passed to experiment
 // ONE KEY DIFFERENCE - use critChance is in % (e.g 30), so we need to convert it to probability (0.3) by dividing by 100
-function createOptions(playerOptions) {
+function createOptions(playerClass, playerOptions) {
     // https://code.tutsplus.com/articles/the-best-way-to-deep-copy-an-object-in-javascript--cms-39655
     // WARNING: Object.assign doesn't do a full deep copy - this was the cause of some bugs originally
     // doing let options = Object.assign({}, defaultOptions);
     // and modifiying options['manaCooldowns'] affected source as well
     // use the following method instead (not that this doesnt work if there are functions in the source object)
-    let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
+    let options = JSON.parse(JSON.stringify(DATA['classes'][playerClass]['defaultValues']));
     for (let key in playerOptions) {
         if (key === 'critChance') {
             options[key] = playerOptions[key] / 100;    
@@ -74,8 +74,8 @@ function createOptions(playerOptions) {
 }
 
 exports.ttoom = (req, res) => {
-    let options = createOptions(req.body.options),
-        playerClass = req.body.playerClass;
+    let playerClass = req.body.playerClass,
+        options = createOptions(playerClass, req.body.options);
 
     let batchSeed = 'seed' in options && options['seed'] > 0 ? options['seed'] : 0;
 
@@ -91,8 +91,8 @@ exports.ttoom = (req, res) => {
 };
 
 exports.ttoomSeed = (req, res) => {
-    let options = createOptions(req.body.options),
-        playerClass = req.body.playerClass;
+    let playerClass = req.body.playerClass,
+        options = createOptions(playerClass, req.body.options);
 
     try {
         // second argument is where logs are sent - 0 for console.log, 1 to an arr that is returned to the client
