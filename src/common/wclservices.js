@@ -54,13 +54,13 @@ const helperFunctions = {
     getFightDetail(wclCode, fightId) {
         return this.getFightTimes(wclCode)
             .then((data) => {
+                console.log(data);
                 // for last fight, id isn't passed, and instead the string 'last' is used instead
                 if (fightId === 'last') fightId = data['lastFightId'];
                 return data.fightsMap[fightId];
             })
             .catch((error) => {
                 console.log('error');
-                console.log(data);
                 console.log(error.message);
             });
     }
