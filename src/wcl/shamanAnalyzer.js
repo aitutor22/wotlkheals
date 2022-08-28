@@ -104,8 +104,7 @@ class Analyzer {
                 medianOverhealing: overhealingCounter[key].length > 0 ? Utility.median(overhealingCounter[key]) : 0,
             })
         }
-        // console.log(castBreakdown);
-        return {counter: counter, totalCasts: totalCasts, castBreakdown: castBreakdown};
+        return {counter: counter, totalCasts: totalCasts, castBreakdown: castBreakdown, overhealingCounter: overhealingCounter};
     }
 }
 
