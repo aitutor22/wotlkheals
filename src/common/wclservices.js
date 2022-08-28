@@ -8,7 +8,7 @@ const helperFunctions = {
             'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`
         }
         url = 'https://classic.warcraftlogs.com/api/v2/client';
-
+        console.log(headers);
 
         return axios({
           url: url,
