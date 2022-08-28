@@ -8,7 +8,6 @@ const helperFunctions = {
             'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`
         }
         url = 'https://classic.warcraftlogs.com/api/v2/client';
-        console.log(headers);
 
         return axios({
           url: url,
@@ -37,7 +36,6 @@ const helperFunctions = {
             `,
         };
         let toReturn = {fightsMap: {}, lastFightId: 0};
-        console.log(body)
         return this.pullData(body)
             .then((response) => {
                 data = response.data['data']['reportData']['report']['fights'];
@@ -52,10 +50,10 @@ const helperFunctions = {
                 console.log(error.message);
             });
     },
+    // use this to get the details for a specfic fight
     getFightDetail(wclCode, fightId) {
         return this.getFightTimes(wclCode)
             .then((data) => {
-                console.log(data);
                 // for last fight, id isn't passed, and instead the string 'last' is used instead
                 if (fightId === 'last') fightId = data['lastFightId'];
                 return data.fightsMap[fightId];
@@ -68,28 +66,3 @@ const helperFunctions = {
 }
 
 module.exports = helperFunctions;
-
-
-
-// def get_list_of_boss_fight_times(wcl_code):
-//     query = f'''{{
-//         reportData {{
-//             report(code: "{wcl_code}") {{
-//                 fights {{
-//                     id,
-//                     encounterID,
-//                     name,
-//                     startTime, endTime,
-//                 }}
-//             }}
-//         }}
-//     }}'''
-//     try:
-//         temp = pull_data(query)
-//         # print(temp)
-//         data = temp['data']['reportData']['report']
-//         return {fight['id']: fight for fight in data['fights']}
-//     except Exception as e:
-//         print('error getting list of boss fight times')
-//         print(e)
-//         raise e

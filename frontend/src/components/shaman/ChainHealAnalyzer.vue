@@ -15,7 +15,8 @@
       <h3>Cast Breakdown</h3>
       <ul>
         <li v-for="(entry, index) in results['castBreakdown']" :key="index">
-          {{ entry['targetsHit'] }} hit: {{ entry['amount'] }} ({{ Math.floor(entry['percentage'] * 100)}} %)
+          {{ entry['targetsHit'] }} target: {{ entry['amount'] }} casts ({{ Math.floor(entry['percentage'] * 100)}}%)
+          <p>Median Overhealing %: {{ Math.floor(entry['medianOverhealing'] * 100)}}%</p>
       </li>
       </ul>
     </div>
@@ -42,6 +43,11 @@ export default {
   methods: {
     run() {
       if (this.fetching) return;
+      if (this.wclLink.indexOf('source=') === -1 || this.wclLink.indexOf('fight=') === -1) {
+          alert("Invalid URL link - make sure 'source=xx' and 'fight=yy' are in the link");
+          return;
+      }
+
       this.fetching = true;
       this.results = null;
       axios
@@ -52,7 +58,7 @@ export default {
             this.results = response.data;
           })
           .catch((error)  => {
-            console.log(error);
+            alert(error.response.data.message);
             this.fetching = false;
           });
     }

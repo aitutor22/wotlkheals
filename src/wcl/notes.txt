@@ -1,0 +1,1 @@
+for healing, hitType: 1 means normal hit, hitType: 2 means crit heal

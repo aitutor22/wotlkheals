@@ -80,8 +80,8 @@ const testData = {
                             "abilityGameID": 25422,
                             "fight": 16,
                             "hitType": 1,
-                            "amount": 1366,
-                            "overheal": 561
+                            "amount": 520,
+                            "overheal": 200,
                         },
                     ]
                 },
