@@ -37,6 +37,7 @@ const helperFunctions = {
             `,
         };
         let toReturn = {fightsMap: {}, lastFightId: 0};
+        console.log(body)
         return this.pullData(body)
             .then((response) => {
                 data = response.data['data']['reportData']['report']['fights'];
