@@ -58,6 +58,11 @@ const helperFunctions = {
                 if (fightId === 'last') fightId = data['lastFightId'];
                 return data.fightsMap[fightId];
             })
+            .catch((error) => {
+                console.log('error');
+                console.log(data);
+                console.log(error.message);
+            });
     }
 }
 
