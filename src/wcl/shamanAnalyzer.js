@@ -16,7 +16,8 @@ class Analyzer {
             counter = {}, // tracks the total counts for 1, 2, 3, hits (or 4 for WOTLK)
             currentHits = 0,
             totalCasts = 0,
-            currentTimestamp = 0;
+            currentTimestamp = 0,
+            castBreakdown = [];
         // we sort all data first as it's possible that timestamps are jumbled up
         // looking at logs, NS will always come before the spell it is used on, so don't need a second sort condition
         combined.sort((a, b) => a['timestamp'] - b['timestamp']);
@@ -59,7 +60,15 @@ class Analyzer {
         if (currentHits > 0) {
             counter[currentHits]++;
         }
-        return {counter: counter, totalCasts: totalCasts};
+
+        for (let key in counter) {
+            castBreakdown.push({
+                targetsHit: key,
+                amount: counter[key],
+                percentage: counter[key] / totalCasts,
+            })
+        }
+        return {counter: counter, totalCasts: totalCasts, castBreakdown: castBreakdown};
     }
 }
 

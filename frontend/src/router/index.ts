@@ -10,6 +10,9 @@ import TTOOM from
 import PaladinStatWeights from
   '../components/paladin/StatWeights.vue';
 
+import ShamanChainHealAnalyzer from
+  '../components/shaman/ChainHealAnalyzer.vue';
+
 Vue.use(VueRouter);
 
 
@@ -31,6 +34,11 @@ const routes: Array<RouteConfig> = [
     name: 'shaman-ttoom',
     component: TTOOM,
     props: {playerClass: 'shaman'},
+  },
+  {
+    path: '/shaman/analyzer/chainheal/',
+    name: 'shaman-chainheal-analyzer',
+    component: ShamanChainHealAnalyzer,
   },
   {
     path: '/',
