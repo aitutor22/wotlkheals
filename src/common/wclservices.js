@@ -41,8 +41,13 @@ const helperFunctions = {
                 data = response.data['data']['reportData']['report']['fights'];
                 for (let entry of data) {
                     toReturn['fightsMap'][entry['id']] = entry;
+
+                    // for last fight, id isn't passed, and instead the string 'last' is used instead
+                    // # NOTE: last refers to LAST BOSS FIGHT (trash not included)
+                    if (entry['encounterID'] > 0) {
+                        toReturn['lastFightId'] = entry['id'];
+                    }
                 }
-                toReturn['lastFightId'] = data[data.length - 1]['id'];
                 return toReturn;
             })
             .catch((error) => {
@@ -54,7 +59,6 @@ const helperFunctions = {
     getFightDetail(wclCode, fightId) {
         return this.getFightTimes(wclCode)
             .then((data) => {
-                // for last fight, id isn't passed, and instead the string 'last' is used instead
                 if (fightId === 'last') fightId = data['lastFightId'];
                 return data.fightsMap[fightId];
             })

@@ -16,7 +16,6 @@
       <ul>
         <li v-for="(entry, index) in results['castBreakdown']" :key="index">
           {{ entry['targetsHit'] }} target: {{ entry['amount'] }} casts ({{ Math.floor(entry['percentage'] * 100)}}%)
-          <p>Median Overhealing %: {{ Math.floor(entry['medianOverhealing'] * 100)}}%</p>
       </li>
       </ul>
     </div>
@@ -24,7 +23,7 @@
       <h3>Median Overhealing% of Chain Heal Hit</h3>
       <ul>
         <li v-for="(entry, index) in results['castBreakdown']" :key="index">
-          Hit {{ entry['targetsHit'] }}: {{ Math.floor(entry['medianOverhealing'] * 100)}}%
+          Hit {{ entry['targetsHit'] }}: {{ Math.floor(entry['overhealingPercent'] * 100)}}%
       </li>
       </ul>
     </div>

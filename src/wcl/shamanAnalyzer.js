@@ -15,15 +15,19 @@ class Analyzer {
     }
 
     // given a list of heals (should be 1-4, each representing hits from a single CH cast)
-    // determine which heal corresponds to which hit, and calculate overhealing percentage and updates in overhealingCounter
+    // determine which heal corresponds to which hit, and calculate overhealing updates in overhealingCounter
+    // originall did median of overhealing %, but that gave poor accuracy
+    // don't want to mean overhealing% as that's inaccurate too
+    // instead just sum overhealing and divide by sum of raw heal
     static calculateOverhealing(healingEvents, overhealingCounter) {
         // using timestamp to determine which is the first hit and third hit doesn't work if they use the same timestamp
         // a better way is to rank based on healing amount (but need to consider crit)
         for (let entry of healingEvents) {
             // in WCL, overheal doesn't show up if it's 0
-            let overheal = 'overheal' in entry ? entry['overheal'] : 0;
-            entry['rawHeal'] = entry['amount'] + overheal;
-            entry['overhealingPercent'] = overheal / entry['rawHeal'];
+            if (!('overheal' in entry)) {
+                entry['overheal'] = 0
+            }
+            entry['rawHeal'] = entry['amount'] + entry['overheal'];
             // if we want to rank based on healing amount, we need consider only uncrit heal
             entry['uncritRawHeal'] = entry['rawHeal'] / (entry['hitType'] === 2 ? 1.5 : 1);
         }
@@ -32,7 +36,8 @@ class Analyzer {
         healingEvents.sort((a, b) => b['uncritRawHeal'] - a['uncritRawHeal']);
         
         for (let i = 0; i < healingEvents.length; i++) {
-            overhealingCounter[i + 1].push(healingEvents[i]['overhealingPercent']);
+            overhealingCounter[i + 1]['rawHeal'] += healingEvents[i]['rawHeal'];
+            overhealingCounter[i + 1]['overheal'] += healingEvents[i]['overheal']; 
         }
         return overhealingCounter;
     }
@@ -44,13 +49,12 @@ class Analyzer {
             totalCasts = 0,
             currentTimestamp = 0,
             castBreakdown = [],
-            overhealingCounter = {1: [], 2: [], 3: [], 4: []},
+            overhealingCounter = {1: {rawHeal: 0, overheal: 0}, 2: {rawHeal: 0, overheal: 0}, 3: {rawHeal: 0, overheal: 0}, 4: {rawHeal: 0, overheal: 0}},
             currentCastHealingEvents = [];
         // we sort all data first as it's possible that timestamps are jumbled up
         // looking at logs, NS will always come before the spell it is used on, so don't need a second sort condition
         combined.sort((a, b) => a['timestamp'] - b['timestamp']);
 
-        // console.log(this._healingData.length)
 
         // initializes the counter to track the num of chain heals
         for (let i = 1; i <= maxNumChainHealHits; i++) {
@@ -101,7 +105,8 @@ class Analyzer {
                 targetsHit: key,
                 amount: counter[key],
                 percentage: counter[key] / totalCasts,
-                medianOverhealing: overhealingCounter[key].length > 0 ? Utility.median(overhealingCounter[key]) : 0,
+                overhealingPercent: overhealingCounter[key]['rawHeal'] > 0 ?
+                    overhealingCounter[key]['overheal'] / overhealingCounter[key]['rawHeal'] : 0,
             })
         }
         return {counter: counter, totalCasts: totalCasts, castBreakdown: castBreakdown, overhealingCounter: overhealingCounter};
