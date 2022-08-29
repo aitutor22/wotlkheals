@@ -90,7 +90,7 @@ exports.ttoom = (req, res) => {
         // // comparisonSim.runComparison(['soup', 'eog'])
         // comparisonSim.run();
     }
-    console.log('Time taken: ' + (new Date() - time) / 1000);
+    // console.log('Time taken: ' + (new Date() - time) / 1000);
     try {
         // second argument is where logs are sent - 0 for console.log, 1 to an arr that is returned to the client
         let experiment = new Experiment(options, 1);

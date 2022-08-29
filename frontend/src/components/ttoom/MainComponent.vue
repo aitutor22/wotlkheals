@@ -17,12 +17,12 @@
             {{ fetching ? 'Loading...' : 'Run Simulation' }}
           </button>
       </div>
-      <div class="col-md-6">
+<!--       <div class="col-md-6">
         <b-form-checkbox v-model="isNormalMode" true-value="yes" false-value="no" switch class="mr-n2">
           <span v-if="isNormalMode"><b>Normal Comparison</b></span>
           <span v-if="!isNormalMode"><b>Trinket Comparison</b></span>
         </b-form-checkbox>
-      </div>
+      </div> -->
     </div>
 
     <player-options
