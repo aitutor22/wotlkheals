@@ -12,7 +12,8 @@
       <p>Total Casts: {{ results['totalCasts'] }}</p>
     </div>
     <div v-if="results">
-      <h3>Cast Breakdown (breaks down what % of Chain Heal hits 1 target vs 2 targets, etc</h3>
+      <h3>Cast Breakdown</h3>
+      <p>Breaks down what % of Chain Heal hits 1 target vs 2 targets, etc</p>
       <ul>
         <li v-for="(entry, index) in results['castBreakdown']" :key="index">
           {{ entry['targetsHit'] }} target: {{ entry['amount'] }} casts ({{ Math.floor(entry['percentage'] * 100)}}%)
