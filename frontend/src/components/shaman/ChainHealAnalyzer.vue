@@ -12,7 +12,7 @@
       <p>Total Casts: {{ results['totalCasts'] }}</p>
     </div>
     <div v-if="results">
-      <h3>Cast Breakdown (% breakdown of CH casts based on hits)</h3>
+      <h3>Cast Breakdown (breaks down what % of Chain Heal hits 1 target vs 2 targets, etc</h3>
       <ul>
         <li v-for="(entry, index) in results['castBreakdown']" :key="index">
           {{ entry['targetsHit'] }} target: {{ entry['amount'] }} casts ({{ Math.floor(entry['percentage'] * 100)}}%)
@@ -20,7 +20,8 @@
       </ul>
     </div>
     <div v-if="results">
-      <h3>Median Overhealing% of Chain Heal Hit</h3>
+      <h3>Overhealing % of Chain Heal Hit</h3>
+      <p>If 2 hit overhealing % is 20%, this means that the the second hit (aka first CH bounce) tends to overheal by 20%.</p>
       <ul>
         <li v-for="(entry, index) in results['castBreakdown']" :key="index">
           Hit {{ entry['targetsHit'] }}: {{ Math.floor(entry['overhealingPercent'] * 100)}}%
