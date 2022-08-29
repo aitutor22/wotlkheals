@@ -248,7 +248,9 @@ class BasePlayer {
             entry['minimumManaDeficit'] = cd['minimumManaDeficit'];
             entry['minimumTimeElapsed'] = cd['minimumTimeElapsed'];
             entry['waitForBuff'] = 'waitForBuff' in cd ? cd['waitForBuff'] : '';
+            entry['maxNumUsesPerFight'] = 'maxNumUsesPerFight' in cd ? cd['maxNumUsesPerFight'] : 999; // high number means no limit
             entry['lastUsed'] = -9999;
+            entry['numTimesUsed'] = 0; // could be useful for stuff like divine plea, when we want to cap the number of times we use it per fight
             this._manaCooldowns.push(entry);
         }
     }
@@ -338,6 +340,11 @@ class BasePlayer {
             if (cd['waitForBuff'] !== '' && !this.isBuffActive(cd['waitForBuff'])) {
                 continue;
             }
+
+            // e.g. if we want to limit the number of uses in a fight
+            if (cd['maxNumUsesPerFight'] !== '' && cd['numTimesUsed'] >= cd['maxNumUsesPerFight']) {
+                continue;
+            }
             cooldownSelected = cd;
         }
 
@@ -361,6 +368,7 @@ class BasePlayer {
         }
         cooldownSelected['lastUsed'] = timestamp;
         cooldownSelected['availableForUse'] = false;
+        cooldownSelected['numTimesUsed']++;
 
         // adds a buff
         // assumes that manacooldowns are instant and not on gcd??

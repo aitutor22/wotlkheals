@@ -199,6 +199,12 @@
                     v-b-tooltip.hover title="This controls when to use Divine Plea - if you would like to delay Divine Plea, set this to a higher value.">Mana Deficit to use Divine Plea</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['manaOptions']['divinePleaMinimumManaDeficit']">
                 </div>
+                <div class="input-group mb-2" style="width: 100%" v-if="oomOptions['manaOptions']['divinePlea']">
+                  <span class="input-group-text" id="basic-addon1"
+                    v-b-tooltip.hover title="This controls the max number of pleas used in a fight; used when we want to increase throughput by pleain less">Maximum number of Divine Pleas in a fight</span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['manaOptions']['maxNumDivinePleaUsesPerFight']">
+                </div>
+
                 <div v-if="playerClass === 'paladin'" class="form-check">
                   <input class="form-check-input" type="checkbox" id="divineIllumination" v-model="oomOptions['manaOptions']['divineIllumination']">
                   <label class="form-check-label" for="divineIllumination">Divine Illumination</label>

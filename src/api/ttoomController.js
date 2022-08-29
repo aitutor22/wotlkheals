@@ -39,7 +39,8 @@ function createOptions(playerClass, playerOptions) {
         options['manaCooldowns'].push({
             key: 'DIVINE_PLEA',
             minimumManaDeficit: playerOptions['manaOptions']['divinePleaMinimumManaDeficit'],
-            minimumTimeElapsed: 0
+            minimumTimeElapsed: 0,
+            maxNumUsesPerFight: playerOptions['manaOptions']['maxNumDivinePleaUsesPerFight'],
         });
     }
 
@@ -85,15 +86,15 @@ exports.ttoom = (req, res) => {
 
 
     if (!isNormalMode) {
-        let comparisonSim = new BaseTrinketComparisonSim(playerClass, options, batchSeed);
-        // comparisonSim.runComparison(['soup', 'eog'])
-        comparisonSim.run();
+        // let comparisonSim = new BaseTrinketComparisonSim(playerClass, options, batchSeed);
+        // // comparisonSim.runComparison(['soup', 'eog'])
+        // comparisonSim.run();
     }
     console.log('Time taken: ' + (new Date() - time) / 1000);
     try {
         // second argument is where logs are sent - 0 for console.log, 1 to an arr that is returned to the client
         let experiment = new Experiment(options, 1);
-        let result = experiment.runBatch(5, batchSeed, playerClass);
+        let result = experiment.runBatch(400, batchSeed, playerClass);
         // console.log('Time taken: ' + (new Date() - time) / 1000);
         res.send(result);
     } catch (error) {

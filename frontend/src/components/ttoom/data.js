@@ -17,6 +17,7 @@ const data = {
           replenishmentUptime: 90,
           divineIllumination: true,
           divinePlea: true,
+          maxNumDivinePleaUsesPerFight: 99,
           divinePleaMinimumManaDeficit: 8000,
           canSoW: true,
           selfLoh: false,
