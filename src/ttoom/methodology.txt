@@ -1,0 +1,17 @@
+how to compare
+-> generate a set of sims?
+-> how to ensure trinket thresholds are the same
+
+
+**Pseudo-code**
+1. Fix first trinket to be x, and look for the second trinket y that produces the maximum hps while satisfying ttoom constraint. (x, y) is the optimal trinket combination given x is fixed
+2. Now fix y and look for optimal trinket z.
+3. If z == x, this implies that x, y is the optimal trinket combination for the problem; if not, repeat step 2, but this time with z as fixed trinket
+4. when (x, y) -> (y, z), where z == x, we have a solution
+
+How many computations? For 10 trinkets, 9 + 8 + 7 = 24 if it requires 3 rounds
+
+
+100 -> 150
+
+A >> B

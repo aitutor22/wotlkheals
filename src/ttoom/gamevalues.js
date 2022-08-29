@@ -58,6 +58,12 @@ const data = {
             },
         },
     },
+    // if a trinket is strictly overshadowed (e.g eog is worse than soup)
+    // then we do not need to consider it in simulations, except when together (e.g. soup + eog)
+    strictlyOvershadowedTrinkets: {
+        'eog': ['soup'],
+        'pendantVioletEye': ['meteroiteCrystal'],
+    },
     constants: {
         manaFromOneInt: 15,
         baseGCD: 1.5,

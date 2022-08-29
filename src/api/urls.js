@@ -5,9 +5,11 @@ const ttoomController = require('./ttoomController');
 const wclController = require('./shamanAnalyzerController');
 
 
-
+// seed routes are when we pass in a single log seed, and it returns the results just for 1 run
 router.post('/ttoom/paladin/:seed', ttoomController.ttoomSeed);
 router.post('/ttoom/shaman/:seed', ttoomController.ttoomSeed);
+
+// general ttoom functions
 router.post('/ttoom/paladin/', ttoomController.ttoom);
 router.post('/ttoom/shaman/', ttoomController.ttoom);
 

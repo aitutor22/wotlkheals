@@ -11,11 +11,17 @@
     
 
     <div class="row">
-      <div>
-        <button class="btn btn-warning" @click="showOptionsModal = true">Edit Options</button>
-        <button class="btn btn-primary" @click="runSim">
-          {{ fetching ? 'Loading...' : 'Run Simulation' }}
-        </button>
+      <div class="col-md-4">
+          <button class="btn btn-warning" @click="showOptionsModal = true">Edit Options</button>
+          <button class="btn btn-primary" @click="runSim">
+            {{ fetching ? 'Loading...' : 'Run Simulation' }}
+          </button>
+      </div>
+      <div class="col-md-6">
+        <b-form-checkbox v-model="isNormalMode" true-value="yes" false-value="no" switch class="mr-n2">
+          <span v-if="isNormalMode"><b>Normal Comparison</b></span>
+          <span v-if="!isNormalMode"><b>Trinket Comparison</b></span>
+        </b-form-checkbox>
       </div>
     </div>
 
@@ -129,6 +135,7 @@ export default {
   data() {
     return {
       fetching: false,
+      isNormalMode: true, // can be either normal mode (run sim for inputted options) or trinket comparison mode
       showExplanation: true,
       showOptionsModal: false,
       results: null,
@@ -291,7 +298,7 @@ export default {
 
       this.fetching = true;
       axios
-          .post(`ttoom/${this.playerClass}`, {options: this.oomOptions, playerClass: this.playerClass})
+          .post(`ttoom/${this.playerClass}`, {options: this.oomOptions, playerClass: this.playerClass, isNormalMode: this.isNormalMode})
           .then((response) => {
             this.fetching = false;
             this.showExplanation = false;
