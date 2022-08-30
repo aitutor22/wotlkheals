@@ -73,8 +73,8 @@ export default {
   methods: {
     run() {
       if (this.fetching) return;
-      if (this.wclLink.indexOf('source=') === -1 || this.wclLink.indexOf('fight=') === -1) {
-          alert("Invalid URL link - make sure 'source=xx' and 'fight=yy' are in the link");
+      if (this.wclLink.indexOf('source=') === -1) {
+          alert("Invalid URL link - make sure 'source=xx' is in the link");
           return;
       }
 

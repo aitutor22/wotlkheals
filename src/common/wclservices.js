@@ -24,6 +24,7 @@ const helperFunctions = {
                 query {
                     reportData {
                         report(code: "${wclCode}") {
+                            startTime, endTime,
                             fights {
                                 id,
                                 encounterID,
@@ -38,7 +39,8 @@ const helperFunctions = {
         let toReturn = {fightsMap: {}, lastFightId: 0};
         return this.pullData(body)
             .then((response) => {
-                data = response.data['data']['reportData']['report']['fights'];
+                let report = response.data['data']['reportData']['report'];
+                data = report['fights'];
                 for (let entry of data) {
                     toReturn['fightsMap'][entry['id']] = entry;
 
@@ -48,6 +50,11 @@ const helperFunctions = {
                         toReturn['lastFightId'] = entry['id'];
                     }
                 }
+                // note that startTime and endTime for the whole report is in unix timestamp format
+                // while startTime and endTime for specific fights start counting from the start of the fight
+                // aka the first encounter starts at 0; hence we need to zero out the startTime/endTime of the report
+                toReturn['startTime'] = 0;
+                toReturn['endTime'] = report['endTime'] - report['startTime'];
                 return toReturn;
             })
             .catch((error) => {
@@ -59,6 +66,13 @@ const helperFunctions = {
     getFightDetail(wclCode, fightId) {
         return this.getFightTimes(wclCode)
             .then((data) => {
+                // when user wants to pull the whole report
+                if (fightId === 'all') {
+                    return {
+                        startTime: data['startTime'],
+                        endTime: data['endTime'],
+                    }
+                }
                 if (fightId === 'last') fightId = data['lastFightId'];
                 return data.fightsMap[fightId];
             })

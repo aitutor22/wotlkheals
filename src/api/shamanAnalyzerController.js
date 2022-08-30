@@ -53,10 +53,11 @@ exports.chainheal = (req, res) => {
     }
 };
 
-
+// doesn't support pagination currently, need to add
 exports.overhealing = (req, res) => {
     const link = req.body.wclLink;
-    if (link.indexOf('source=') === -1 || link.indexOf('fight=') === -1) {
+    // if (link.indexOf('source=') === -1 || link.indexOf('fight=') === -1) {
+    if (link.indexOf('source=') === -1) {
         return res.status(400).send({message: 'Invalid url link'});
     }
 
@@ -67,12 +68,15 @@ exports.overhealing = (req, res) => {
         const wclCode = found[2];
         const sourceId = found[3];
 
-        let fightId; // fightId needs to be found separately because it's possbile that user passes in last
-        if (link.indexOf('fight=last') > -1) {
-            fightId = 'last'
+        // fightId needs to be found separately because it's possbile that user passes in "last" as a value
+        let fightId;
+        if (link.indexOf('fight=') === -1) {
+            fightId = 'all'; // search whole report
+        } else if (link.indexOf('fight=last') > -1) {
+            fightId = 'last';
         } else {
-            let sourceIdFound = link.match(/.*fight=(\d+).*/)
-            fightId = sourceIdFound[1];
+            let fightIdFound = link.match(/.*fight=(\d+).*/)
+            fightId = fightIdFound[1];
         }
 
         // gets start, end time of fight
@@ -91,6 +95,7 @@ exports.overhealing = (req, res) => {
                 };
                 return WclService.pullData(body)
                     .then((wclResponse) => {
+                        let healingEvents = wclResponse.data.data.reportData.report.healing.data;
                         let analyzer = new PaladinOverhealingAnalyzer(wclResponse.data);
                         let results = analyzer.run();
                         res.send(results)
