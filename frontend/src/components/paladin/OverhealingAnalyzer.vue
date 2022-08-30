@@ -1,10 +1,10 @@
 <template>
   <div class="container">
     <p>
-      This tool aims to determine a more accurate spellpower value by accounting for overhealing. Consider an extreme situation where every spell a HPLD casts is overhealing by just 1%. This means spellpower has 0 value since adding more spellpower results in 0 extra nett healing.
+      This tool aims to determine a more accurate spellpower value by accounting for overhealing. Consider an extreme situation where every spell a HPLD casts is overhealing by just 1%. Despite the low overhealing %, spellpower actually has 0 value in this case since every spell is already overhealing.
     </p>
     <p>
-      This tool loops through each healing event to determine the real value of spellpower, and to use, please paste a specific fight with a specific HPLD selected. Assumptions: 1) modifications have been made with Sacred Shield to avoid overcounting small hits, 2) spells like JoL, LoH, FoL HOT and GotN are not considered. Inspired by <b>Holypalaswe</b>.
+      This tool loops through each healing event to determine the real value of spellpower, and to use, please paste a specific fight with your HPLD selected. Note: 1) assumptions have been made with Sacred Shield to avoid overcounting small hits, 2) spells like JoL, LoH, FoL HoT and GotN are not considered. Inspired by <b>Holypalaswe</b>.
     </p>
 
     <div class="row">
@@ -17,14 +17,15 @@
 
     <div class="row" v-if="results">
       <ul>
+        <p>What is the marginal increase in healing for a whole fight from adding +1 spell power?</p>
         <li>
           Total hits: {{ results['overall']['hitsTotal'] }} ({{ results['overall']['hitsOverHeal'] }} overhealed)
         </li>
         <li>
-          Total healing from +1 spellpower for whole fight: +{{ Math.floor(results['overall']['nettAdditionalHealAmount']) }} net healing (+{{ Math.floor(results['overall']['rawAdditionalHealAmount']) }} raw healing)
+          Additional Healing: +{{ Math.floor(results['overall']['nettAdditionalHealAmount']) }} net healing (+{{ Math.floor(results['overall']['rawAdditionalHealAmount']) }} raw healing)
         </li>
         <li>
-          Useful spellpower %: {{ Math.floor(results['overall']['usefulSpellpowerPercentage'] * 100) }}% 
+          Useful spellpower: {{ Math.floor(results['overall']['usefulSpellpowerPercentage'] * 100) }}% 
         </li>
       </ul>
     </div>
@@ -37,10 +38,10 @@
             Total hits: {{ entry['hitsTotal'] }} ({{ entry['hitsOverHeal'] }} overhealed)
           </li>
           <li>
-            Total healing from +1 spellpower for whole fight: +{{ Math.floor(entry['nettAdditionalHealAmount']) }} net healing (+{{ Math.floor(entry['rawAdditionalHealAmount']) }} raw healing)
+            Additional Healing: +{{ Math.floor(entry['nettAdditionalHealAmount']) }} net healing (+{{ Math.floor(entry['rawAdditionalHealAmount']) }} raw healing)
           </li>
           <li>
-            Useful spellpower %: {{ Math.floor(entry['usefulSpellpowerPercentage'] * 100) }}% 
+            Useful spellpower: {{ Math.floor(entry['usefulSpellpowerPercentage'] * 100) }}% 
           </li>
       </ul>
       </div>
