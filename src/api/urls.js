@@ -14,6 +14,8 @@ router.post('/ttoom/paladin/', ttoomController.ttoom);
 router.post('/ttoom/shaman/', ttoomController.ttoom);
 
 router.post('/analyzer/shaman/chainheal/', wclController.chainheal);
+router.post('/analyzer/paladin/overhealing/', wclController.overhealing);
+
 
 router.get('/', function(req, res) {
     res.send('Just a test');
