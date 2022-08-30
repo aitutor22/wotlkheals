@@ -8,14 +8,14 @@ const MIN_AMOUNT_OF_HEALING_TO_COUNT_AS_SACRED_SHIELD_HIT = 2000;
 // then usefulSpellpowerPercentage is 0.2
 
 const mapAbilityIdToCoefficient = {
-    48785: {'coefficient': 1.009 * 1.12 * 1.05, 'name': 'FoL'}, // flash of light, , with healing light & divinity talents
-    53653: {'coefficient': 1.009 * 1.12 * 1.05, 'name': 'FoL (Beacon)'}, // beacon (flash of light)
-    48782: {'coefficient': 1.679 * 1.12 * 1.05, 'name': 'HL'}, // holy light, with healing light & divinity talents
-    53652: {'coefficient': 1.679 * 1.12 * 1.05, 'name': 'HL (Beacon)'}, // beacon (holy light)
-    54968: {'coefficient': 1.679 * 1.12 * 1.05 * 0.1, 'name': 'HL (Glyph)'}, // glyph of holy light
-    58597: {'coefficient': 0.75 * 1.2, 'name': 'Sacred Shield'}, // sacred shield, divine guardian
-    48821: {'coefficient': 0.807 * 1.12 * 1.05, 'name': 'HS'}, // holy shock
-    53654: {'coefficient': 0.807 * 1.12 * 1.05, 'name': 'HS (Beacon)'}, // beacon (holy shock)
+    48782: {'coefficient': 1.679 * 1.12 * 1.05, 'name': 'Holy Light', index: 0}, // holy light, with healing light & divinity talents
+    53652: {'coefficient': 1.679 * 1.12 * 1.05, 'name': 'Holy Light (Beacon)', index: 1}, // beacon (holy light)
+    54968: {'coefficient': 1.679 * 1.12 * 1.05 * 0.1, 'name': 'Holy Light (Glyph)', index: 2}, // glyph of holy light
+    48785: {'coefficient': 1.009 * 1.12 * 1.05, 'name': 'Flash of Light', index: 3}, // flash of light, , with healing light & divinity talents
+    53653: {'coefficient': 1.009 * 1.12 * 1.05, 'name': 'Flash of Light (Beacon)', index: 4}, // beacon (flash of light)
+    58597: {'coefficient': 0.75 * 1.2, 'name': 'Sacred Shield', index: 7}, // sacred shield, divine guardian
+    48821: {'coefficient': 0.807 * 1.12 * 1.05, 'name': 'Holy Shock', index: 5}, // holy shock
+    53654: {'coefficient': 0.807 * 1.12 * 1.05, 'name': 'Holy Shock (Beacon)', index: 6}, // beacon (holy shock)
 }
 
 // to ensure system works with downranked spells
@@ -72,6 +72,12 @@ class Analyzer {
         // rawAdditionalHeal tracks how much more healing +1 spell power generated if we DON'T consider overhealing
         let counter = {'overall': {hitsOverHeal: 0, hitsTotal: 0, rawAdditionalHealAmount: 0, nettAdditionalHealAmount: 0}, spells: {}},
             sacredShieldHealing = 0; // tracks cumulative amount of sacred shield healing
+
+        let sortedNames = Object.values(mapAbilityIdToCoefficient).sort((a, b) => a.index - b.index).map((entry) => entry.name);
+        for (let abilityName of sortedNames) {
+            counter['spells'][abilityName] = {key: abilityName, hitsOverHeal: 0, hitsTotal: 0, rawAdditionalHealAmount: 0, nettAdditionalHealAmount: 0}
+        }
+
         for (let entry of this._healingData) {
             if (!('hitType' in entry)) entry['hitType'] = 1; //. hittype ==1 means noncrit
             if (entry['abilityGameID'] in mapDownRankSpellsToMaxRank) {
@@ -79,9 +85,6 @@ class Analyzer {
             }
 
             let spellKey = mapAbilityIdToCoefficient[entry['abilityGameID']]['name'];
-            if (!(spellKey in counter['spells'])) {
-                counter['spells'][spellKey] = {key: spellKey, hitsOverHeal: 0, hitsTotal: 0, rawAdditionalHealAmount: 0, nettAdditionalHealAmount: 0}
-            }
 
             // handle sacred shield separately - assume it never overheals
             // if a player is being hit by multiple mobs for small amount, we don't want to consider each hit as adding 1 spellpower to sacred shield
@@ -123,6 +126,7 @@ class Analyzer {
             counter['spells'][key]['usefulSpellpowerPercentage'] = counter['spells'][key]['rawAdditionalHealAmount'] > 0 ?
                 counter['spells'][key]['nettAdditionalHealAmount'] / counter['spells'][key]['rawAdditionalHealAmount'] : 0;
         }
+        // counter['spells'].sort((a, b) => a.index - b.index);
         counter['overall']['hitsOverhealPercentage'] = counter['overall']['hitsOverHeal'] / counter['overall']['hitsTotal'];
         counter['overall']['usefulSpellpowerPercentage'] = counter['overall']['nettAdditionalHealAmount'] / counter['overall']['rawAdditionalHealAmount'];
         return counter;
