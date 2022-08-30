@@ -18,6 +18,48 @@ const mapAbilityIdToCoefficient = {
     53654: {'coefficient': 0.807 * 1.12 * 1.05, 'name': 'HS (Beacon)'}, // beacon (holy shock)
 }
 
+// to ensure system works with downranked spells
+const mapDownRankSpellsToMaxRank = {
+    // fol
+    19750: 48785,
+    19939: 48785,
+    19940: 48785,
+    19941: 48785,
+    19942: 48785,
+    19943: 48785,
+    27137: 48785,
+    48784: 48785,
+
+    // hl
+    635: 48782,
+    639: 48782,
+    647: 48782,
+    1026: 48782,
+    1042: 48782,
+    3472: 48782,
+    10328: 48782,
+    10329: 48782,
+    25292: 48782,
+    27135: 48782,
+    27136: 48782,
+    48781: 48782,
+
+    // hs
+    25912: 48821,
+    25914: 48821,
+    25911: 48821,
+    25913: 48821,
+    25902: 48821,
+    25903: 48821,
+    27175: 48821,
+    27176: 48821,
+    33073: 48821,
+    33074: 48821,
+    48820: 48821,
+    48822: 48821,
+    48823: 48821,
+}
+
 class Analyzer {
     constructor(data) {
         // be careful not to mutate the passed in object
@@ -32,6 +74,9 @@ class Analyzer {
             sacredShieldHealing = 0; // tracks cumulative amount of sacred shield healing
         for (let entry of this._healingData) {
             if (!('hitType' in entry)) entry['hitType'] = 1; //. hittype ==1 means noncrit
+            if (entry['abilityGameID'] in mapDownRankSpellsToMaxRank) {
+                entry['abilityGameID'] = mapDownRankSpellsToMaxRank[entry['abilityGameID']];
+            }
 
             let spellKey = mapAbilityIdToCoefficient[entry['abilityGameID']]['name'];
             if (!(spellKey in counter['spells'])) {
