@@ -80,6 +80,8 @@ exports.overhealing = (req, res) => {
         }
 
         // gets start, end time of fight
+        // 66922 refers to FoL hot - exclude that
+        // 54968 is glyph of HL - for some reason, using .name doesnt work for it
         WclService.getFightDetail(wclCode, fightId)
             .then((fightTime) => {
                 let body =  { 

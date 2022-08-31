@@ -13,17 +13,65 @@
           </button>
         </div>
       </div>
+      {{ intBeforeTrinkets }}
 
       <div class="row" v-if="oomOptions">
         <div class="col-12">
           <b-card no-body>
             <b-tabs pills card>
-              <!-- general options that apply to all healers -->
-              <b-tab title="General" active><b-card-text>
+
+              <!-- paladin gear -->
+              <b-tab v-if="playerClass === 'paladin'" title="Gear" active><b-card-text>
+                <!-- tier options -->
+                <h6>Tier Sets</h6>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="2pT7" v-model="oomOptions['2pT7']">
+                  <label class="form-check-label" for="2pT7"
+                    v-b-tooltip.hover title="Your Holy Shock gains an additional 10% chance to critically strike.">2PT7</label>
+                </div>
+                <div class="form-check form-check-inline ml-4">
+                  <input class="form-check-input" type="checkbox" id="4pT7" v-model="oomOptions['4pT7']">
+                  <label class="form-check-label" for="4pT7"
+                    v-b-tooltip.hover title="The cost of your Holy Light is reduced by 5%.">4PT7</label>
+                </div>
+                <hr>
+
+                <!-- we first show trinkets that all healers are interested in, then show specific player class ones -->
+                <h6>Trinkets</h6>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="soup" v-model="oomOptions['trinkets']" value="soup">
+                  <label class="form-check-label" for="soup">Soul Preserver</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="dmcg" v-model="oomOptions['trinkets']" value="dmcg">
+                  <label class="form-check-label" for="dmcg">Darkmoon Card: Greatness</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="illustration" v-model="oomOptions['trinkets']" value="illustration">
+                  <label class="form-check-label" for="illustration">Illustration</label>
+                </div>
+                <div v-if="playerClass === 'paladin'" class="form-check">
+                  <input class="form-check-input" type="checkbox" id="owl" v-model="oomOptions['trinkets']" value="owl">
+                  <label class="form-check-label" for="owl"
+                    v-b-tooltip.hover title="Note that Owl is 5 min cooldown, so using it on shorter fights overestimates its value">Figurine - Sapphire Owl</label>
+                </div>
+                <div v-if="playerClass === 'paladin'" class="form-check">
+                  <input class="form-check-input" type="checkbox" id="eog" v-model="oomOptions['trinkets']" value="eog">
+                  <label class="form-check-label" for="eog">Eye of Gruul</label>
+                </div>
+
+                <hr>
+                <!-- general options that apply to all healers -->
+                <h6>Stats</h6>
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
                     v-b-tooltip.hover title="Raid Buffed">Mana Pool</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['manaPool']">
+                </div>
+                <div class="input-group mb-2" style="width: 100%">
+                  <span class="input-group-text" id="basic-addon1"
+                    v-b-tooltip.hover title="Unbuffed Int from gear as taken from 80 upgrades; already includes +10% additional int from Divine Intellect Talent">Unbuffed Int</span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['charSheetInt']">
                 </div>
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
@@ -52,8 +100,9 @@
                 </div>
               </b-card-text></b-tab>
 
+
               <!-- options that apply to specific classes; we use v-if to show the correct one -->
-              <b-tab v-if="playerClass === 'paladin'" title="Paladin"><b-card-text>
+              <b-tab v-if="playerClass === 'paladin'" title="Spells"><b-card-text>
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1">HL CPM</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['cpm']['HOLY_LIGHT']">
@@ -75,16 +124,6 @@
                   <span class="input-group-text" id="basic-addon1"
                     v-b-tooltip.hover title="Number of talent points in Enlightened Judgements (0 to 2)">#pts (Enl. Judgements)</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['talents']['enlightenedJudgements']">
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="2pT7" v-model="oomOptions['2pT7']">
-                  <label class="form-check-label" for="2pT7"
-                    v-b-tooltip.hover title="Your Holy Shock gains an additional 10% chance to critically strike.">2pT7</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="4pT7" v-model="oomOptions['4pT7']">
-                  <label class="form-check-label" for="4pT7"
-                    v-b-tooltip.hover title="The cost of your Holy Light is reduced by 5%.">4pT7</label>
                 </div>
               </b-card-text></b-tab>
 
@@ -125,31 +164,6 @@
                 </div>
               </b-card-text></b-tab>
 
-
-              <!-- we first show trinkets that all healers are interested in, then show specific player class ones -->
-              <b-tab title="Trinkets"><b-card-text>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="soup" v-model="oomOptions['trinkets']" value="soup">
-                  <label class="form-check-label" for="soup">Soul Preserver</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="dmcg" v-model="oomOptions['trinkets']" value="dmcg">
-                  <label class="form-check-label" for="dmcg">Darkmoon Card: Greatness</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="illustration" v-model="oomOptions['trinkets']" value="illustration">
-                  <label class="form-check-label" for="illustration">Illustration</label>
-                </div>
-                <div v-if="playerClass === 'paladin'" class="form-check">
-                  <input class="form-check-input" type="checkbox" id="owl" v-model="oomOptions['trinkets']" value="owl">
-                  <label class="form-check-label" for="owl"
-                    v-b-tooltip.hover title="Note that Owl is 5 min cooldown, so using it on shorter fights overestimates its value">Figurine - Sapphire Owl</label>
-                </div>
-                <div v-if="playerClass === 'paladin'" class="form-check">
-                  <input class="form-check-input" type="checkbox" id="eog" v-model="oomOptions['trinkets']" value="eog">
-                  <label class="form-check-label" for="eog">Eye of Gruul</label>
-                </div>
-              </b-card-text></b-tab>
 
               <b-tab title="Mana"><b-card-text>
                 <!-- general options available to all classes -->
@@ -237,7 +251,8 @@
 
 <script>
 
-import {mapState} from 'vuex';
+import {mapState, mapMutations} from 'vuex';
+import data from './data';
 
 export default {
   name: 'TtoomOptions',
@@ -253,9 +268,48 @@ export default {
   },
   data() {
     return {
+      intBeforeTrinkets: 0,
     };
   },
+  watch: {
+    // whenever user selects or unselects trinkets, we will use intBeforeTrinkets and the selected trinket to calculate charSheetInt
+    '$store.state.ttoom.oomOptions.trinkets': function(newValue, oldValue) {
+      // when we first initialize, we want to find the unbuffed int value for the paladin, without trinkets
+      if (typeof oldValue === 'undefined') {
+        this.updateIntBeforeTrinkets();
+        return;
+      }
+      let newInt = this.intBeforeTrinkets;
+      for (let trinket of newValue) {
+        if ('int' in data['items'][trinket]['base']) {
+          newInt += data['items'][trinket]['base']['int'] *
+            data[this.playerClass]['intSheetConversionFactor'];
+        }
+      }
+      newInt = Math.round(newInt);
+      this.setCharSheetInt(newInt);
+    },
+    // everytime user manually changes int, we need to update intBeforeTrinkets
+    '$store.state.ttoom.oomOptions.charSheetInt': function(newValue, oldValue) {
+      if (typeof oldValue === 'undefined') return;
+      this.updateIntBeforeTrinkets();
+    },
+  },
   methods: {
+    ...mapMutations('ttoom', ['setCharSheetInt']),
+    // intBeforeTrinkets is the amount of int excluding trinkets
+    // note this includes int talents
+    updateIntBeforeTrinkets() {
+        this.intBeforeTrinkets = this.oomOptions['charSheetInt'];
+        // loops through selected trinkets, and subtracts from charSheetInt
+        for (let trinket of this.oomOptions['trinkets']) {
+          if ('int' in data['items'][trinket]['base']) {
+            this.intBeforeTrinkets -= data['items'][trinket]['base']['int'] *
+              data[this.playerClass]['intSheetConversionFactor'];
+          }
+        }
+        this.intBeforeTrinkets = Math.round(this.intBeforeTrinkets);
+    },
     close() {
       this.$emit('close');
     },

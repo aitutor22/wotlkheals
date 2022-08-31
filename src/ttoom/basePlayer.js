@@ -29,6 +29,10 @@ class BasePlayer {
         this._gcd = options['gcd'];
         this._intModifier = this.classInfo['intModifier']; // different classes have different int modifiers
         
+        this._unbuffedInt = options['unbuffedInt'];
+        let intAfterRaidBuffs = options['unbuffedInt'] + DATA['constants']['intRaidBuffs']
+        this._buffedInt = intAfterRaidBuffs * this.classInfo['intModifier'];
+
         // when there is dmc: greatness proc, we increase mana_pool, so need baseMaxMana as a reference
         this._baseMaxMana = options['manaPool'];
         this._baseCritChance = options['critChance'] + this.classInfo['baseCritChanceModifier'];

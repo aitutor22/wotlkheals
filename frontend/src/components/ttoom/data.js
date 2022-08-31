@@ -1,7 +1,15 @@
+const GEM_VALUES = {
+    int: 16, // 2 gem slots, assume we insert 2x 16 int gems
+}
+
 const data = {
     paladin: {
+      // most users will input int taken from 80 upgrades, which will already have a 10% boost to talents
+      // so need to convert accordingly
+      intSheetConversionFactor: 1.1,
       oomOptions: {
         manaPool: 28000,
+        charSheetInt: 1322, // this includes the 10% int talent
         spellPower: 2400,
         critChance: 30,
         seed: '',
@@ -28,7 +36,7 @@ const data = {
           arcaneTorrent: false,
           useArcaneTorrentWithDmcg: false,
         },
-        trinkets: ['soup', 'eog'],
+        trinkets: ['soup', 'dmcg'],
         glyphHolyLightHits: 4,
         mp5FromGearAndRaidBuffs: 300,
         '2pT7': true,
@@ -60,7 +68,46 @@ const data = {
         chainHealHits: 3,
         '2pT6': true,
       },
-    }
+    },
+    items: {
+        // increase int by 300 for 15s
+        dmcg: {
+            name: 'Darkmoon Card: Greatness',
+            itemType: 'trinket',
+            base: {
+                int: 90,
+            },
+        },
+        soup: {
+            name: 'Soul Preserver',
+            itemType: 'trinket',
+            base: {
+                spellpower: 75,
+            },
+        },
+        eog: {
+            name: 'Eye of Gruul',
+            itemType: 'trinket',
+            base: {
+                spellpower: 23,
+            },
+        },
+        owl: {
+            name: 'Figurine - Sapphire Owl',
+            itemType: 'trinket',
+            base: {
+                int: 42 + 2 * GEM_VALUES['int'],
+            },
+        },
+        // assume we prestack illustration before entering the fight
+        illustration: {
+            name: 'Illustration of the Dragon Soul',
+            itemType: 'trinket',
+            base: {
+                spellpower: 200,
+            },
+        },
+    },
 }
 
 module.exports = data;

@@ -69,7 +69,8 @@ const data = {
         baseGCD: 1.5,
         // 166.667 points of Intellect equals 1% of Spell Critical; divide by 100 to convert to decimal points
         critChanceFromOneInt: 1 / 16666.7,
-        replenishment: 0.01, //returns 1% of mana pool every 5s
+        replenishment: 0.01, // returns 1% of mana pool every 5s
+        intRaidBuffs: 60 + 51, // arcane intellect and mark of the wild
     },
     classes: {
         paladin: {
@@ -77,7 +78,7 @@ const data = {
             // are not healing spells (e.g. divine plea) but are casted
             // otherwise we will undercount the haste factor
             numGcdsPerMinNotCountedUnderSpells: 2, // divine plea + sacred shield
-            intModifier: 1.1 * 1.1, //blessing of kings and divine intellect
+            intModifier: 1.1 * 1.1, // blessing of kings and divine intellect
             baseCritChanceModifier: 0.05, // 5% additional crit chance from holy power
             sanctifiedLightCritChanceModifier: 0.06, // 6% additional crit chance for holy shock and holy light
             glyphHolyLightHitHealingPercentage: 0.1, // each hit heals for 10%

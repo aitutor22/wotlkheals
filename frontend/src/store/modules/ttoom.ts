@@ -24,6 +24,9 @@ export const ttoom = {
     setOomOptions(state: object, value: object) {
       Vue.set(state, 'oomOptions', value);
     },
+    setCharSheetInt(state: any, value: number) {
+      Vue.set(state.oomOptions, 'charSheetInt', value);
+    },
   },
   actions: {
   },
