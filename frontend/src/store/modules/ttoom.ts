@@ -24,8 +24,11 @@ export const ttoom = {
     setOomOptions(state: object, value: object) {
       Vue.set(state, 'oomOptions', value);
     },
-    setCharSheetInt(state: any, value: number) {
-      Vue.set(state.oomOptions, 'charSheetInt', value);
+    setCharSheetStats(state: any, payLoad: any) {
+      Vue.set(state.oomOptions.charSheetStats, payLoad['key'], payLoad['value']);
+    },
+    setStatsBeforeTrinket(state: any, payLoad: any) {
+      Vue.set(state.oomOptions.statsBeforeTrinket, payLoad['key'], payLoad['value']);
     },
   },
   actions: {

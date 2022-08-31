@@ -6,10 +6,25 @@ const data = {
     paladin: {
       // most users will input int taken from 80 upgrades, which will already have a 10% boost to talents
       // so need to convert accordingly
-      intSheetConversionFactor: 1.1,
+      statsConversionFactor: {
+        int: 1.1,
+      },
       oomOptions: {
         manaPool: 28000,
-        charSheetInt: 1322, // this includes the 10% int talent
+        // these are the values that user inputs, which include the trinket stats as they are taken from 80 upgrades
+        // this isn't actually passed to the backend
+        charSheetStats: {
+          int: 1322, // this includes the 10% int talent
+          spellpower: 2400,
+          critRating: 500,
+        },
+        // we store player stats before trinkets
+        // these are the real values that are passed to the backend
+        statsBeforeTrinket: {
+          int: 0,
+          critRating: 0,
+          spellpower: 0,
+        },
         spellPower: 2400,
         critChance: 30,
         seed: '',

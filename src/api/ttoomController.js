@@ -21,6 +21,11 @@ function createOptions(playerClass, playerOptions) {
         }
     }
 
+    // client will pass statsBeforeTrinket: { int: 1223, critRating: 500, spellpower: 2200 }
+    // we will convert this to spellPower, etc
+    // we prefer to let the backend do the addition of trinket stats
+    options['spellPower'] = playerOptions['statsBeforeTrinket']['spellpower'];
+
     options['manaOptions']['replenishmentUptime'] = options['manaOptions']['replenishmentUptime'] / 100;
 
     // start handling of mana options

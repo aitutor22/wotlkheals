@@ -264,12 +264,12 @@ export default {
         }
       }
 
-      for (let otherField of ['manaPool', 'critChance']) {
-        if (!this.basicNumberValidation(this.oomOptions[otherField])) {
-          alert('Please enter a valid number for : ' + otherField);
-          return;
-        }
-      }
+      // for (let otherField of ['manaPool', 'critChance']) {
+      //   if (!this.basicNumberValidation(this.oomOptions[otherField])) {
+      //     alert('Please enter a valid number for : ' + otherField);
+      //     return;
+      //   }
+      // }
 
       // class specific validation
       if (this.playerClass === 'paladin') {

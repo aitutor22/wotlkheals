@@ -13,7 +13,6 @@
           </button>
         </div>
       </div>
-      {{ intBeforeTrinkets }}
 
       <div class="row" v-if="oomOptions">
         <div class="col-12">
@@ -71,12 +70,12 @@
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
                     v-b-tooltip.hover title="Unbuffed Int from gear as taken from 80 upgrades; already includes +10% additional int from Divine Intellect Talent">Unbuffed Int</span>
-                  <input type="text" class="form-control" v-model.number="oomOptions['charSheetInt']">
+                  <input type="text" class="form-control" v-model.number="oomOptions['charSheetStats']['int']">
                 </div>
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
                     v-b-tooltip.hover title="Raid Buffed, including spellpower from Holy Guidance">Spellpower</span>
-                  <input type="text" class="form-control" v-model.number="oomOptions['spellPower']">
+                  <input type="text" class="form-control" v-model.number="oomOptions['charSheetStats']['spellpower']">
                 </div>
                 <div v-if="playerClass === 'shaman'" class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
@@ -268,47 +267,65 @@ export default {
   },
   data() {
     return {
-      intBeforeTrinkets: 0,
     };
   },
   watch: {
-    // whenever user selects or unselects trinkets, we will use intBeforeTrinkets and the selected trinket to calculate charSheetInt
     '$store.state.ttoom.oomOptions.trinkets': function(newValue, oldValue) {
       // when we first initialize, we want to find the unbuffed int value for the paladin, without trinkets
+      // basically subtract trinket stats from charSheetStats to get statsBeforeTrinket
       if (typeof oldValue === 'undefined') {
-        this.updateIntBeforeTrinkets();
+        this.loopThroughTrinkets(this.oomOptions['charSheetStats'], true, (stat, newValue) => {
+          this.setStatsBeforeTrinket({key: stat, value: newValue});
+        });
         return;
       }
-      let newInt = this.intBeforeTrinkets;
-      for (let trinket of newValue) {
-        if ('int' in data['items'][trinket]['base']) {
-          newInt += data['items'][trinket]['base']['int'] *
-            data[this.playerClass]['intSheetConversionFactor'];
-        }
-      }
-      newInt = Math.round(newInt);
-      this.setCharSheetInt(newInt);
+      
+      // whenever user selects or unselects trinkets, we will use statsBeforeTrinket and the selected trinket to calculate set charsheetstats
+      // basically add trinket stats to statsBeforeTrinket resulting in charSheetStats
+      this.loopThroughTrinkets(this.oomOptions['statsBeforeTrinket'], false, (stat, newValue) => {
+        this.setCharSheetStats({key: stat, value: newValue});
+      });
     },
-    // everytime user manually changes int, we need to update intBeforeTrinkets
-    '$store.state.ttoom.oomOptions.charSheetInt': function(newValue, oldValue) {
-      if (typeof oldValue === 'undefined') return;
-      this.updateIntBeforeTrinkets();
+    // everytime user manually changes a stat value, we need to update statsBeforeTrinket
+    // need to use a deep watcher here since it's watching the whole object
+    '$store.state.ttoom.oomOptions.charSheetStats': {
+      handler: function(newValue, oldValue) {
+        if (typeof oldValue === 'undefined') return;
+        this.loopThroughTrinkets(this.oomOptions['charSheetStats'], true, (stat, newValue) => {
+          this.setStatsBeforeTrinket({key: stat, value: newValue});
+        });
+      },
+      deep: true,
     },
   },
   methods: {
-    ...mapMutations('ttoom', ['setCharSheetInt']),
-    // intBeforeTrinkets is the amount of int excluding trinkets
-    // note this includes int talents
-    updateIntBeforeTrinkets() {
-        this.intBeforeTrinkets = this.oomOptions['charSheetInt'];
-        // loops through selected trinkets, and subtracts from charSheetInt
+    ...mapMutations('ttoom', ['setCharSheetStats', 'setStatsBeforeTrinket']),
+    loopThroughTrinkets(originalValues, subtractTrinketValuesFromCharSheetStats, callback) {
+      function addOrSubtract(a, b, subtract) {
+        if (subtract) return a - b;
+        return a + b;
+      }
+
+      for (let stat of ['int', 'spellpower', 'critRating']) {
+        let newValue = originalValues[stat];
+        // loops through selected trinkets, and subtracts from the appropraite stat
         for (let trinket of this.oomOptions['trinkets']) {
-          if ('int' in data['items'][trinket]['base']) {
-            this.intBeforeTrinkets -= data['items'][trinket]['base']['int'] *
-              data[this.playerClass]['intSheetConversionFactor'];
+          if (stat in data['items'][trinket]['base']) {
+            if (stat === 'int') {
+              // for int, we need to consider the statsConversionFactor
+              // for instance, whatever stats user passes in from 80upgrades will already have a 10% buff from talents
+              newValue = addOrSubtract(newValue,
+                  data['items'][trinket]['base'][stat] * data[this.playerClass]['statsConversionFactor'][stat],
+                  subtractTrinketValuesFromCharSheetStats);
+              } else {
+                newValue = addOrSubtract(newValue,
+                  data['items'][trinket]['base'][stat], 
+                  subtractTrinketValuesFromCharSheetStats);
+              }
           }
         }
-        this.intBeforeTrinkets = Math.round(this.intBeforeTrinkets);
+        callback(stat, Math.round(newValue));
+      }
     },
     close() {
       this.$emit('close');
