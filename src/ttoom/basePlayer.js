@@ -28,17 +28,22 @@ class BasePlayer {
         this._playerClass = playerClass;
         this._gcd = options['gcd'];
         this._intModifier = this.classInfo['intModifier']; // different classes have different int modifiers
-        
+
+        // adds buffs and consumes to int
         this._unbuffedInt = options['unbuffedInt'];
-        let intAfterRaidBuffs = options['unbuffedInt'] + DATA['constants']['intRaidBuffs']
-        this._buffedInt = intAfterRaidBuffs * this.classInfo['intModifier'];
+        let intAfterRaidBuffs = options['unbuffedInt'] + DATA['constants']['intRaidBuffs'] +
+            DATA['battleConsumables']['flaskDistilled']['base']['int'];
+        this._buffedInt = Math.floor(intAfterRaidBuffs * this.classInfo['intModifier']);
+
+        // first 20 points of int gives 1 mana, 15 mana thereafter (note that we already multiplifed by int modifier above)
+        let baseMaxMana = Math.floor(this.classInfo['baseMana'] + (this._buffedInt - 20) * DATA['constants']['manaFromOneInt'] + 20 );
 
         // when there is dmc: greatness proc, we increase mana_pool, so need baseMaxMana as a reference
-        this._baseMaxMana = options['manaPool'];
+        this._baseMaxMana = baseMaxMana;
         this._baseCritChance = options['critChance'] + this.classInfo['baseCritChanceModifier'];
         this._baseSpellPower = options['spellPower'];
 
-        // loops through the trinkets selected, and adds base stat values - currently only supports int and spellpower
+        // loops through the trinkets selected, and adds base stat values - currently only supports int and spellpower and crit
         for (let key of this._options['trinkets']) {
             let item = DATA['items'][key];
             if (typeof item['base']['int'] !== 'undefined') {

@@ -61,7 +61,7 @@
 
                 <hr>
                 <!-- general options that apply to all healers -->
-                <h6>Stats</h6>
+                <h6>Stats from 80 Upgrades</h6>
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
                     v-b-tooltip.hover title="Raid Buffed">Mana Pool</span>

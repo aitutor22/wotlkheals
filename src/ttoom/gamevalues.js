@@ -58,6 +58,15 @@ const data = {
             },
         },
     },
+    battleConsumables: {
+        flaskDistilled: {
+            name: 'Flask of Distilled Wisdom',
+            itemType: 'consumable',
+            base: {
+                int: 65,
+            },
+        },
+    },
     // if a trinket is strictly overshadowed (e.g eog is worse than soup)
     // then we do not need to consider it in simulations, except when together (e.g. soup + eog)
     strictlyOvershadowedTrinkets: {
@@ -74,6 +83,7 @@ const data = {
     },
     classes: {
         paladin: {
+            baseMana: 4394,
             // when we calculate hasteFactor, we also need to consider the number of spells that
             // are not healing spells (e.g. divine plea) but are casted
             // otherwise we will undercount the haste factor
