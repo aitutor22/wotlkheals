@@ -78,12 +78,16 @@ const data = {
         baseGCD: 1.5,
         // 166.667 points of Intellect equals 1% of Spell Critical; divide by 100 to convert to decimal points
         critChanceFromOneInt: 1 / 16666.7,
+        critRatingConversion: 45.91,
         replenishment: 0.01, // returns 1% of mana pool every 5s
         intRaidBuffs: 60 + 51, // arcane intellect and mark of the wild
+        critChanceRaidBuffs: 0.05, // moonkin aura
         spellPowerRaidBuffs: 280 + 46, // totem of wrath and spellpower food
     },
     classes: {
         paladin: {
+            // https://wowwiki-archive.fandom.com/wiki/Spell_critical_strike
+            baseCritChance: 0.03336,
             baseMana: 4394,
             // when we calculate hasteFactor, we also need to consider the number of spells that
             // are not healing spells (e.g. divine plea) but are casted

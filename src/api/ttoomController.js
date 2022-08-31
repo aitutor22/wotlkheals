@@ -5,7 +5,6 @@ const DATA = require('../ttoom/gamevalues');
 
 // helper function that combines playerOptions passed from client to create
 // a set of options that is passed to experiment
-// ONE KEY DIFFERENCE - use critChance is in % (e.g 30), so we need to convert it to probability (0.3) by dividing by 100
 function createOptions(playerClass, playerOptions) {
     // https://code.tutsplus.com/articles/the-best-way-to-deep-copy-an-object-in-javascript--cms-39655
     // WARNING: Object.assign doesn't do a full deep copy - this was the cause of some bugs originally
@@ -14,11 +13,7 @@ function createOptions(playerClass, playerOptions) {
     // use the following method instead (not that this doesnt work if there are functions in the source object)
     let options = JSON.parse(JSON.stringify(DATA['classes'][playerClass]['defaultValues']));
     for (let key in playerOptions) {
-        if (key === 'critChance') {
-            options[key] = playerOptions[key] / 100;    
-        } else {
-            options[key] = playerOptions[key];
-        }
+        options[key] = playerOptions[key];
     }
 
     // client will pass statsBeforeTrinket: { int: 1223, critRating: 500, spellpower: 2200 }
@@ -28,6 +23,9 @@ function createOptions(playerClass, playerOptions) {
     options['unbuffedSpellPower'] = playerOptions['statsBeforeTrinket']['spellpower'];
     // the values we get from client is inflated by 10% int talent; need to divide it out
     options['unbuffedInt'] = Math.floor(playerOptions['statsBeforeTrinket']['int'] / DATA['classes'][playerClass]['eightyUpgradesIntConversionFactor']);
+    
+    options['critChance'] = (options['statsBeforeTrinket']['critRating'] / DATA['constants']['critRatingConversion']) / 100;
+    console.log(options['critChance'])
     options['manaOptions']['replenishmentUptime'] = options['manaOptions']['replenishmentUptime'] / 100;
 
     // start handling of mana options

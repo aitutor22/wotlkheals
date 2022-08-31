@@ -11,13 +11,12 @@ const data = {
         spellPowerFromInt: 0.2, // holy guidance
       },
       oomOptions: {
-        manaPool: 28000,
         // these are the values that user inputs, which include the trinket stats as they are taken from 80 upgrades
         // this isn't actually passed to the backend
         charSheetStats: {
-          int: 1322, // this includes the 10% int talent
+          int: 1425, // this includes the 10% int talent
           spellpower: 2035,
-          critRating: 500,
+          critRating: 425,
         },
         // we store player stats before trinkets
         // these are the real values that are passed to the backend

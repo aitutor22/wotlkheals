@@ -64,11 +64,6 @@
                 <h6>Stats from 80 Upgrades</h6>
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
-                    v-b-tooltip.hover title="Raid Buffed">Mana Pool</span>
-                  <input type="text" class="form-control" v-model.number="oomOptions['manaPool']">
-                </div>
-                <div class="input-group mb-2" style="width: 100%">
-                  <span class="input-group-text" id="basic-addon1"
                     v-b-tooltip.hover title="Unbuffed Int from gear as taken from 80 upgrades; already includes +10% additional int from Divine Intellect Talent">Unbuffed Int</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['charSheetStats']['int']">
                 </div>
@@ -89,8 +84,8 @@
                 </div>
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
-                    v-b-tooltip.hover title="Raid Buffed, DO NOT include values from Holy Power and Sanctified Light talents as system will automatically add">Crit Chance %</span>
-                  <input type="text" class="form-control" v-model.number="oomOptions['critChance']">
+                    v-b-tooltip.hover title="Crit Rating from gear">Crit Rating</span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['charSheetStats']['critRating']">
                 </div>
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
