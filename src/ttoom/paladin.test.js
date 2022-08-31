@@ -8,8 +8,8 @@ let rng = Utility.setSeed(0);
 const defaultOptions = {
     mp5FromGearAndRaidBuffs: 300,
     unbuffedInt: 1201,
-    spellPower: 2400,
     critChance: 0.3,
+    unbuffedSpellPower: 1741,
     trinkets: [],
     cpm: {
         HOLY_LIGHT: 2,
@@ -32,8 +32,8 @@ const defaultOptions = {
 
 const dmcgOptions = {
     unbuffedInt: 1201,
+    unbuffedSpellPower: 1741,
     mp5FromGearAndRaidBuffs: 300,
-    spellPower: 2400,
     critChance: 0.3,
     trinkets: ['dmcg'],
     cpm: {
@@ -68,6 +68,14 @@ test('buffed int', () => {
     let player = new Paladin(defaultOptions, rng, thresholdItemsToCreate);
     expect(player._unbuffedInt).toBe(1201);
     expect(player._buffedInt).toBe(1666);
+})
+
+test('spellpower', () => {
+let options = Object.assign({}, defaultOptions);
+    options['unbuffedInt'] = 1201
+    options['unbuffedSpellPower'] = 1798
+    let player = new Paladin(options, rng, thresholdItemsToCreate);
+    expect(player.spellPower).toBe(2457);
 })
 
 test('setBuffActive should create a buff entry if not currently present', () => {
@@ -115,9 +123,10 @@ test('spellPowerIncreaseFromInt for a paladin should use 1.1 x 1.1 modifier', ()
 test('calculateHealingHelper', () => {
     let options = Object.assign({}, defaultOptions);
     options['critChance'] = 0.25;
-    options['spellPower'] = 2400;
     options['glyphHolyLightHits'] = 5;
     let player = new Paladin(options, rng, thresholdItemsToCreate);
+    expect(player._baseSpellPower).toBe(2400)
+
     let uncritAmount = player.calculateHealing('HOLY_LIGHT', false);
         critAmount = player.calculateHealing('HOLY_LIGHT', true);
     expect(Math.floor(uncritAmount)).toBe(27035); //double checked againstr currelius' sheet
@@ -159,14 +168,13 @@ test('calculateHealingHelper', () => {
 // comparing values against currelius' sheet
 test('calculateHealingHelper for SacredShield', () => {
     let options = Object.assign({}, defaultOptions);
-    options['spellPower'] = 2458;
     let player = new Paladin(options, rng, thresholdItemsToCreate);
     let amount = player.calculateHealing('SACRED_SHIELD', false);
-    expect(Math.floor(amount)).toBe(2816); //double checked againstr currelius' sheet
+    expect(Math.floor(amount)).toBe(2764); //double checked againstr currelius' sheet
 
     // divine plea does not affect sacred shield
     let amountWithPlea = player.calculateHealing('SACRED_SHIELD', false, true);
-    expect(Math.floor(amountWithPlea)).toBe(2816); //double checked againstr currelius' sheet
+    expect(Math.floor(amountWithPlea)).toBe(2764); //double checked againstr currelius' sheet
 });
 
 

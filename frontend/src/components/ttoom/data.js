@@ -8,6 +8,7 @@ const data = {
       // so need to convert accordingly
       statsConversionFactor: {
         int: 1.1,
+        spellPowerFromInt: 0.2, // holy guidance
       },
       oomOptions: {
         manaPool: 28000,
@@ -15,7 +16,7 @@ const data = {
         // this isn't actually passed to the backend
         charSheetStats: {
           int: 1322, // this includes the 10% int talent
-          spellpower: 2400,
+          spellpower: 2035,
           critRating: 500,
         },
         // we store player stats before trinkets
@@ -51,7 +52,7 @@ const data = {
           arcaneTorrent: false,
           useArcaneTorrentWithDmcg: false,
         },
-        trinkets: ['soup', 'dmcg'],
+        trinkets: [],
         glyphHolyLightHits: 4,
         mp5FromGearAndRaidBuffs: 300,
         '2pT7': true,

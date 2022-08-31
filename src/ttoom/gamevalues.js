@@ -80,6 +80,7 @@ const data = {
         critChanceFromOneInt: 1 / 16666.7,
         replenishment: 0.01, // returns 1% of mana pool every 5s
         intRaidBuffs: 60 + 51, // arcane intellect and mark of the wild
+        spellPowerRaidBuffs: 280 + 46, // totem of wrath and spellpower food
     },
     classes: {
         paladin: {
@@ -88,6 +89,7 @@ const data = {
             // are not healing spells (e.g. divine plea) but are casted
             // otherwise we will undercount the haste factor
             numGcdsPerMinNotCountedUnderSpells: 2, // divine plea + sacred shield
+            eightyUpgradesIntConversionFactor: 1.1, // 80upgrades character screen includes divine intellect; so we need to divide it out
             intModifier: 1.1 * 1.1, // blessing of kings and divine intellect
             baseCritChanceModifier: 0.05, // 5% additional crit chance from holy power
             sanctifiedLightCritChanceModifier: 0.06, // 6% additional crit chance for holy shock and holy light
@@ -173,9 +175,7 @@ const data = {
                 gcd: 1.5,
                 firstSpell: 'HOLY_LIGHT', // fix which is the first spell we want to cast
                 glyphHolyLightHits: 4, 
-                manaPool: 29000,
                 mp5FromGearAndRaidBuffs: 300,
-                spellPower: 2400, // includes spellpower from holy guidance (though if dmcg procs, system will auto calculate)
                 critChance: 0.3, // from gear and raid buffs; does not include talents
                 manaCooldowns: [],
                 talents: {

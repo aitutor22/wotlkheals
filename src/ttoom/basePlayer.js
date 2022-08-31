@@ -41,7 +41,7 @@ class BasePlayer {
         // when there is dmc: greatness proc, we increase mana_pool, so need baseMaxMana as a reference
         this._baseMaxMana = baseMaxMana;
         this._baseCritChance = options['critChance'] + this.classInfo['baseCritChanceModifier'];
-        this._baseSpellPower = options['spellPower'];
+        this._baseSpellPower = Math.floor(options['unbuffedSpellPower'] + this._buffedInt * this.classInfo['spellPowerFromInt'] + DATA['constants']['spellPowerRaidBuffs']);
 
         // loops through the trinkets selected, and adds base stat values - currently only supports int and spellpower and crit
         for (let key of this._options['trinkets']) {

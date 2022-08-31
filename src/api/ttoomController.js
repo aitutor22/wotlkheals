@@ -24,8 +24,10 @@ function createOptions(playerClass, playerOptions) {
     // client will pass statsBeforeTrinket: { int: 1223, critRating: 500, spellpower: 2200 }
     // we will convert this to spellPower, etc
     // we prefer to let the backend do the addition of trinket stats
-    options['spellPower'] = playerOptions['statsBeforeTrinket']['spellpower'];
-
+    // effects like divine guidance already subtracted out
+    options['unbuffedSpellPower'] = playerOptions['statsBeforeTrinket']['spellpower'];
+    // the values we get from client is inflated by 10% int talent; need to divide it out
+    options['unbuffedInt'] = Math.floor(playerOptions['statsBeforeTrinket']['int'] / DATA['classes'][playerClass]['eightyUpgradesIntConversionFactor']);
     options['manaOptions']['replenishmentUptime'] = options['manaOptions']['replenishmentUptime'] / 100;
 
     // start handling of mana options

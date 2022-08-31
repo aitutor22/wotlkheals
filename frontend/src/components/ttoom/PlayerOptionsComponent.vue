@@ -132,6 +132,7 @@
                   <span class="input-group-text" id="basic-addon1">Chain Heal CPM</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['cpm']['CHAIN_HEAL']">
                 </div>
+    }
 <!--                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1">FoL CPM</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['cpm']['FLASH_OF_LIGHT']">
@@ -317,13 +318,21 @@ export default {
               newValue = addOrSubtract(newValue,
                   data['items'][trinket]['base'][stat] * data[this.playerClass]['statsConversionFactor'][stat],
                   subtractTrinketValuesFromCharSheetStats);
-              } else {
-                newValue = addOrSubtract(newValue,
-                  data['items'][trinket]['base'][stat], 
-                  subtractTrinketValuesFromCharSheetStats);
-              }
+            } else {
+              newValue = addOrSubtract(newValue,
+                data['items'][trinket]['base'][stat], 
+                subtractTrinketValuesFromCharSheetStats);
+            }
           }
         }
+
+        // need to add/subtract the spellpower portion of int
+        if (stat === 'spellpower') {
+          let spellpowerFromInt = data[this.playerClass]['statsConversionFactor']['spellPowerFromInt'] *
+            this.oomOptions['charSheetStats']['int'];
+          newValue = addOrSubtract(newValue, spellpowerFromInt, subtractTrinketValuesFromCharSheetStats);
+        }
+
         callback(stat, Math.round(newValue));
       }
     },
