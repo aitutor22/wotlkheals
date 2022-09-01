@@ -226,7 +226,7 @@ class Experiment {
                 spellIndex += 1
             } else if (nextEvent._eventType === 'BUFF_EXPIRE') {
                 // code here sets availableForUse to false; this is fine, as we have other code that checks for availability on next spellcast
-                player.setBuffActive(nextEvent._subEvent, false, currentTime, false, this.logger);
+                player.setBuffActive(nextEvent._subEvent, false, currentTime, this.logger);
             } else if (nextEvent._eventType === 'MANA_TICK') {
                 this.handleManaTick(nextEvent, player, eventHeap, spellIndex);
             } else if (nextEvent._eventType === 'INITIALIZE_HOT_EVENTS') {

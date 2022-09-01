@@ -105,7 +105,7 @@ class Paladin extends BasePlayer {
         } 
         // infusion of lights adds 20% crit chance to holy light
         if (spellKey === 'HOLY_LIGHT' && this.isBuffActive('infusionOfLight')) {
-            this.setBuffActive('infusionOfLight', false, timestamp, true, logger);
+            this.setBuffActive('infusionOfLight', false, timestamp, logger);
             modifiedCritChance += 0.2
         }
 
@@ -159,7 +159,7 @@ class Paladin extends BasePlayer {
             this.addManaFromIllumination(spellKey, logger);
             // holy shock crits triggers infusion of light
             if (spellKey === 'HOLY_SHOCK') {
-                this.setBuffActive('infusionOfLight', true, timestamp, true, logger);
+                this.setBuffActive('infusionOfLight', true, timestamp, logger);
             }
         }
 

@@ -31,126 +31,126 @@ test('test replenishment subevent on handleManaTick', () => {
     expect(nextEvent._timestamp).toBe(4);
 });
 
-// singular innervate tick
-test('test innervate subevent on handleManaTick', () => {
-    let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
-    let experiment = new Experiment(options, 1);
-    let eventHeap = new EventHeap();
-    let player = new Paladin(options, rng, thresholdItemsToCreate);
-    player._currentMana = 10000;
-    eventHeap.addEvent(2, 'MANA_TICK', 'INNERVATE');
-    let innervateEvent = eventHeap.pop();
+// // singular innervate tick
+// test('test innervate subevent on handleManaTick', () => {
+//     let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
+//     let experiment = new Experiment(options, 1);
+//     let eventHeap = new EventHeap();
+//     let player = new Paladin(options, rng, thresholdItemsToCreate);
+//     player._currentMana = 10000;
+//     eventHeap.addEvent(2, 'MANA_TICK', 'INNERVATE');
+//     let innervateEvent = eventHeap.pop();
 
-    experiment.handleManaTick(innervateEvent, player, eventHeap);
-    // we code innervate to be 5 ticks of 1573
-    expect(player._currentMana).toBe(10000 + 1573);
-    // should expect no events added
-    expect(eventHeap.priorityQueue.length).toBe(0);
-});
+//     experiment.handleManaTick(innervateEvent, player, eventHeap);
+//     // we code innervate to be 5 ticks of 1573
+//     expect(player._currentMana).toBe(10000 + 1573);
+//     // should expect no events added
+//     expect(eventHeap.priorityQueue.length).toBe(0);
+// });
 
-// singular divine plea tick
-test('test divine plea subevent on handleManaTick', () => {
-    let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
-    let experiment = new Experiment(options, 1);
-    let eventHeap = new EventHeap();
-    let player = new Paladin(options, rng, thresholdItemsToCreate);
-    player._currentMana = 10000;
-    eventHeap.addEvent(2, 'MANA_TICK', 'DIVINE_PLEA');
-    let divinePleaEvent = eventHeap.pop();
+// // singular divine plea tick
+// test('test divine plea subevent on handleManaTick', () => {
+//     let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
+//     let experiment = new Experiment(options, 1);
+//     let eventHeap = new EventHeap();
+//     let player = new Paladin(options, rng, thresholdItemsToCreate);
+//     player._currentMana = 10000;
+//     eventHeap.addEvent(2, 'MANA_TICK', 'DIVINE_PLEA');
+//     let divinePleaEvent = eventHeap.pop();
 
-    experiment.handleManaTick(divinePleaEvent, player, eventHeap);
-    // we code innervate to be 5 ticks of 5% mana
-    expect(player._currentMana).toBe(10000 + player.maxMana * 0.05);
-    // should expect no events added
-    expect(eventHeap.priorityQueue.length).toBe(0);
-});
+//     experiment.handleManaTick(divinePleaEvent, player, eventHeap);
+//     // we code innervate to be 5 ticks of 5% mana
+//     expect(player._currentMana).toBe(10000 + player.maxMana * 0.05);
+//     // should expect no events added
+//     expect(eventHeap.priorityQueue.length).toBe(0);
+// });
 
-// singular divine plea tick
-test('test owl subevent on handleManaTick', () => {
-    let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
-    let experiment = new Experiment(options, 1);
-    let eventHeap = new EventHeap();
-    let player = new Paladin(options, rng, thresholdItemsToCreate);
-    player._currentMana = 10000;
-    eventHeap.addEvent(2, 'MANA_TICK', 'OWL');
-    let owlEvent = eventHeap.pop();
+// // singular divine plea tick
+// test('test owl subevent on handleManaTick', () => {
+//     let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
+//     let experiment = new Experiment(options, 1);
+//     let eventHeap = new EventHeap();
+//     let player = new Paladin(options, rng, thresholdItemsToCreate);
+//     player._currentMana = 10000;
+//     eventHeap.addEvent(2, 'MANA_TICK', 'OWL');
+//     let owlEvent = eventHeap.pop();
 
-    experiment.handleManaTick(owlEvent, player, eventHeap);
-    // we code innervate to be 5 ticks of 5% mana
-    expect(player._currentMana).toBe(10000 + 390);
-    // should expect no events added
-    expect(eventHeap.priorityQueue.length).toBe(0);
-});
+//     experiment.handleManaTick(owlEvent, player, eventHeap);
+//     // we code innervate to be 5 ticks of 5% mana
+//     expect(player._currentMana).toBe(10000 + 390);
+//     // should expect no events added
+//     expect(eventHeap.priorityQueue.length).toBe(0);
+// });
 
-test('test MANA_TIDE_TOTEM subevent on handleOffGcdManaCooldown', () => {
-    let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
-    let experiment = new Experiment(options, 1);
-    let eventHeap = new EventHeap();
-    let player = new Paladin(options, rng, thresholdItemsToCreate);
-    player._currentMana = 10000;
-    eventHeap.addEvent(10, 'MANA_COOLDOWN_OFF_GCD', 'MANA_TIDE_TOTEM');
-    let manaTideTotemEvent = eventHeap.pop();
+// test('test MANA_TIDE_TOTEM subevent on handleOffGcdManaCooldown', () => {
+//     let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
+//     let experiment = new Experiment(options, 1);
+//     let eventHeap = new EventHeap();
+//     let player = new Paladin(options, rng, thresholdItemsToCreate);
+//     player._currentMana = 10000;
+//     eventHeap.addEvent(10, 'MANA_COOLDOWN_OFF_GCD', 'MANA_TIDE_TOTEM');
+//     let manaTideTotemEvent = eventHeap.pop();
 
-    experiment.handleOffGcdManaCooldown(manaTideTotemEvent, eventHeap);
-    expect(eventHeap.priorityQueue.length).toBe(4);
-    let evt = eventHeap.pop();
-    expect(evt._timestamp).toBe(13);
-    expect(evt._eventType).toBe('MANA_TICK');
-    expect(evt._subEvent).toBe('MANA_TIDE_TOTEM');
-});
-
-
-test('test creation of sacred shield on initializeHotEvents', () => {
-    let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
-    let experiment = new Experiment(options, 1);
-    experiment.logger = new Logger();
-    let eventHeap = new EventHeap();
-    let player = new Paladin(options, rng, thresholdItemsToCreate);
-    eventHeap.addEvent(60, 'INITIALIZE_HOT_EVENTS', 'SACRED_SHIELD');
-    let sacredShieldCreationEvent = eventHeap.pop();
-
-    experiment.initializeHotEvents(sacredShieldCreationEvent, player, eventHeap);
-    // should expect 10 hot tick events to be added
-    expect(eventHeap.priorityQueue.length).toBe(10);
-    let hotEvent = eventHeap.pop();
-    expect(hotEvent._timestamp).toBe(66);
-    expect(hotEvent._subEvent).toBe('SACRED_SHIELD');
-
-    experiment.handleHotTick(hotEvent, player, eventHeap, 1);
-});
-
-test('test createPlayer should create a paladin', () => {
-    let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
-    let experiment = new Experiment(options, 1);
-    let player = experiment.createPlayer('paladin', options, rng, 10)
-    expect(player._options.playerClass).toEqual('paladin');
-    expect('crit' in player._rngThresholds).toBe(true);
-    expect('sow' in player._rngThresholds).toBe(true);
-    expect('eog' in player._rngThresholds).toBe(true);
-    expect('soup' in player._rngThresholds).toBe(true);
-    expect('dmcg' in player._rngThresholds).toBe(false);
+//     experiment.handleOffGcdManaCooldown(manaTideTotemEvent, eventHeap);
+//     expect(eventHeap.priorityQueue.length).toBe(4);
+//     let evt = eventHeap.pop();
+//     expect(evt._timestamp).toBe(13);
+//     expect(evt._eventType).toBe('MANA_TICK');
+//     expect(evt._subEvent).toBe('MANA_TIDE_TOTEM');
+// });
 
 
-    options['trinkets'] = ['dmcg', 'eog']
-    experiment = new Experiment(options, 1);
-    player = experiment.createPlayer('paladin', options, rng, 10)
-    expect(player._options.playerClass).toEqual('paladin');
-    expect('crit' in player._rngThresholds).toBe(true);
-    expect('sow' in player._rngThresholds).toBe(true);
-    expect('eog' in player._rngThresholds).toBe(true);
-    expect('soup' in player._rngThresholds).toBe(false);
-    expect('dmcg' in player._rngThresholds).toBe(true);
-});
+// test('test creation of sacred shield on initializeHotEvents', () => {
+//     let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
+//     let experiment = new Experiment(options, 1);
+//     experiment.logger = new Logger();
+//     let eventHeap = new EventHeap();
+//     let player = new Paladin(options, rng, thresholdItemsToCreate);
+//     eventHeap.addEvent(60, 'INITIALIZE_HOT_EVENTS', 'SACRED_SHIELD');
+//     let sacredShieldCreationEvent = eventHeap.pop();
 
-test('test createPlayer should create a shaman', () => {
-    let options = JSON.parse(JSON.stringify(DATA['classes']['shaman']['defaultValues']));
-    options['trinkets'] = ['dmcg', 'soup']
-    let experiment = new Experiment(options, 1);
-    let player = experiment.createPlayer('shaman', options, rng, 10)
-    expect(player._options.playerClass).toEqual('shaman');
-    expect('crit' in player._rngThresholds).toBe(true);
-    expect('sow' in player._rngThresholds).toBe(false);
-    expect('eog' in player._rngThresholds).toBe(false);
-    expect('soup' in player._rngThresholds).toBe(true);
-    expect('dmcg' in player._rngThresholds).toBe(true);
-});
+//     experiment.initializeHotEvents(sacredShieldCreationEvent, player, eventHeap);
+//     // should expect 10 hot tick events to be added
+//     expect(eventHeap.priorityQueue.length).toBe(10);
+//     let hotEvent = eventHeap.pop();
+//     expect(hotEvent._timestamp).toBe(66);
+//     expect(hotEvent._subEvent).toBe('SACRED_SHIELD');
+
+//     experiment.handleHotTick(hotEvent, player, eventHeap, 1);
+// });
+
+// test('test createPlayer should create a paladin', () => {
+//     let options = JSON.parse(JSON.stringify(DATA['classes']['paladin']['defaultValues']));
+//     let experiment = new Experiment(options, 1);
+//     let player = experiment.createPlayer('paladin', options, rng, 10)
+//     expect(player._options.playerClass).toEqual('paladin');
+//     expect('crit' in player._rngThresholds).toBe(true);
+//     expect('sow' in player._rngThresholds).toBe(true);
+//     expect('eog' in player._rngThresholds).toBe(true);
+//     expect('soup' in player._rngThresholds).toBe(true);
+//     expect('dmcg' in player._rngThresholds).toBe(false);
+
+
+//     options['trinkets'] = ['dmcg', 'eog']
+//     experiment = new Experiment(options, 1);
+//     player = experiment.createPlayer('paladin', options, rng, 10)
+//     expect(player._options.playerClass).toEqual('paladin');
+//     expect('crit' in player._rngThresholds).toBe(true);
+//     expect('sow' in player._rngThresholds).toBe(true);
+//     expect('eog' in player._rngThresholds).toBe(true);
+//     expect('soup' in player._rngThresholds).toBe(false);
+//     expect('dmcg' in player._rngThresholds).toBe(true);
+// });
+
+// test('test createPlayer should create a shaman', () => {
+//     let options = JSON.parse(JSON.stringify(DATA['classes']['shaman']['defaultValues']));
+//     options['trinkets'] = ['dmcg', 'soup']
+//     let experiment = new Experiment(options, 1);
+//     let player = experiment.createPlayer('shaman', options, rng, 10)
+//     expect(player._options.playerClass).toEqual('shaman');
+//     expect('crit' in player._rngThresholds).toBe(true);
+//     expect('sow' in player._rngThresholds).toBe(false);
+//     expect('eog' in player._rngThresholds).toBe(false);
+//     expect('soup' in player._rngThresholds).toBe(true);
+//     expect('dmcg' in player._rngThresholds).toBe(true);
+// });

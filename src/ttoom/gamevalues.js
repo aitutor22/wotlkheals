@@ -16,6 +16,7 @@ const data = {
                 chance: 0.35,
                 int: 300, // how much it increases value by when it procs
                 duration: 15,
+                createsBuff: true, // if this is true, creates a buff with the same name
             },
         },
         soup: {
@@ -65,6 +66,7 @@ const data = {
                 icd: 15,
                 chance: 0.05,
                 mana: 600,
+                createsBuff: false,
             },
         }
     },
@@ -190,8 +192,9 @@ const data = {
                 gcd: 1.5,
                 firstSpell: 'HOLY_LIGHT', // fix which is the first spell we want to cast
                 glyphHolyLightHits: 4, 
-                mp5FromGearAndRaidBuffs: 300,
-                critChance: 0.3, // from gear and raid buffs; does not include talents
+                mp5FromGear: 300,
+                unbuffedInt: 1000,
+                critChance: 0.2, // from gear and raid buffs; does not include talents
                 manaCooldowns: [],
                 talents: {
                   enlightenedJudgements: 1,
@@ -267,7 +270,7 @@ const data = {
                 gcd: 1.5,
                 firstSpell: 'CHAIN_HEAL', // fix which is the first spell we want to cast
                 manaPool: 25000,
-                mp5FromGearAndRaidBuffs: 300,
+                mp5FromGear: 300,
                 spellPower: 2500, // includes spellpower from holy guidance (though if dmcg procs, system will auto calculate)
                 critChance: 0.3, // from gear and raid buffs; does not include talents
                 manaCooldowns: [],

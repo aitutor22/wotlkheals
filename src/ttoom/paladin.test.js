@@ -78,28 +78,21 @@ let options = Object.assign({}, defaultOptions);
     expect(player.spellPower).toBe(2457);
 })
 
-// test('setBuffActive should create a buff entry if not currently present', () => {
-//     let player = new Paladin(defaultOptions, rng, thresholdItemsToCreate);
-//     // expect(Object.keys(player._buffs).length).toBe(0);
+test('setBuffActive should create a buff entry if not currently present', () => {
+    let player = new Paladin(defaultOptions, rng, thresholdItemsToCreate);
+    // expect(Object.keys(player._buffs).length).toBe(0);
 
-//     player.setBuffActive('dmcg', true, 2);
-//     expect(Object.keys(player._buffs).length).toBe(1);
-// });
+    player.setBuffActive('dmcg', true, 2);
+    expect(Object.keys(player._buffs).length).toBe(1);
+});
 
 test('setBuffActive', () => {
     let player = new Paladin(defaultOptions, rng, thresholdItemsToCreate);
     player.setBuffActive('dmcg', true, 2);
     expect(player._buffs['dmcg']['active']).toBe(true);
-    expect(player._buffs['dmcg']['availableForUse']).toBe(false);
-    expect(player._buffs['dmcg']['lastUsed']).toBe(2);
-
     player.setBuffActive('dmcg', false, 16);
     expect(player._buffs['dmcg']['active']).toBe(false);
-    expect(player._buffs['dmcg']['availableForUse']).toBe(false);
-    // lastUsed is updated when active is set to true not when set to false
-    expect(player._buffs['dmcg']['lastUsed']).toBe(2);
 });
-
 
 test('getManaIncreaseFromInt for a paladin should use 1.1 x 1.1 modifier', () => {
     let player = new Paladin(defaultOptions, rng, thresholdItemsToCreate);
@@ -212,17 +205,13 @@ test('testing setting dmcg to true', () => {
     let player = new Paladin(dmcgOptions, rng, thresholdItemsToCreate);
     player.setBuffActive('dmcg', true, 2);
     expect(player._buffs['dmcg']['active']).toBe(true);
-    expect(player._buffs['dmcg']['availableForUse']).toBe(false);
-    expect(player._buffs['dmcg']['lastUsed']).toBe(2);
 });
 
-test('setting dmcg to true', () => {
+test('setting dmcg to true 2', () => {
     let player = new Paladin(dmcgOptions, rng, thresholdItemsToCreate);
     player.setBuffActive('dmcg', true, 2);
     player.setBuffActive('dmcg', false, 17);
     expect(player._buffs['dmcg']['active']).toBe(false);
-    expect(player._buffs['dmcg']['availableForUse']).toBe(false);
-    expect(player._buffs['dmcg']['lastUsed']).toBe(2);
 });
 
 test('testing isBuffActive', () => {

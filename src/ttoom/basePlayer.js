@@ -67,12 +67,12 @@ class BasePlayer {
         this._buffs = {};
         // tracks icds like ied and also dmcg (the 45s cooldown)
         this._icds = {};
-        // dmcg is a unique case where we want to initialise it at the start under _buffs
-        // this is because it can be procced by every spell cast
+        // assume all healers are using IED
+        this._procsToCheck = ['ied'];
+        // checks if player is using dmcg
         if (this._options['trinkets'].indexOf('dmcg') > -1) {
-            this.setBuffActive('dmcg', false, 0, true);
-        }
-        this.setBuffActive('ied', false, 0, true); 
+            this._procsToCheck.push('dmcg');
+        }        
 
         this._manaCooldowns = [];
         this._rngThresholds = {};
@@ -166,48 +166,21 @@ class BasePlayer {
     // and set back to active in another function.
     // exceptions to these include initialising dmcg (where we want active to be false, but have it still be availableForUse)
     // takes an optional logger if we want to log when buff is activated or deactivated
-    setBuffActive(buffKey, isActive, timestamp, availableForUse=false, logger=null) {
+    setBuffActive(buffKey, isActive, timestamp, logger=null) {
         if (typeof this._buffs[buffKey] === 'undefined') {
             this._buffs[buffKey] = {
                 active: false, // is it currently active
-                availableForUse: true, // can it be used
-                lastUsed: -9999, // timestamp of last usage
             }
         }
 
         this._buffs[buffKey]['active'] = isActive;
         if (isActive) {
-            this._buffs[buffKey]['availableForUse'] = availableForUse;
-            this._buffs[buffKey]['lastUsed'] = timestamp;
             if (logger) logger.log(`${timestamp}s: ${buffKey} activated`, 2);
         } else {
-           this._buffs[buffKey]['availableForUse'] = availableForUse;
            if (logger) logger.log(`${timestamp}s: ${buffKey} expired`, 2);
         }
     }
-
-    // // a copy of setBuffActive
-    // setIcdActive(icdKey, isActive, timestamp, availableForUse=false) {
-    //     if (typeof this._buffs[buffKey] === 'undefined') {
-    //         this._buffs[buffKey] = {
-    //             active: false, // is it currently active
-    //             availableForUse: true, // can it be used
-    //             lastUsed: -9999, // timestamp of last usage
-    //         }
-    //     }
-
-    //     this._buffs[buffKey]['active'] = isActive;
-    //     if (isActive) {
-    //         this._buffs[buffKey]['availableForUse'] = availableForUse;
-    //         this._buffs[buffKey]['lastUsed'] = timestamp;
-    //         if (logger) logger.log(`${timestamp}s: ${buffKey} activated`, 2);
-    //     } else {
-    //        this._buffs[buffKey]['availableForUse'] = availableForUse;
-    //        if (logger) logger.log(`${timestamp}s: ${buffKey} expired`, 2);
-    //     }
-    // }
     // end setters
-
 
 
     isBuffActive(buffKey) {
@@ -244,36 +217,38 @@ class BasePlayer {
     // and then for each proc, we have a specific effect
     // after a proc, we then return a list of expire buff events (for stuff like dmcg)
     checkHandleProcsWithICD(timestamp, spellIndex, logger) {
-        let procsToCheck = ['ied']
         let eventsToCreate = [];
-        for (let procName of procsToCheck) {
+        for (let procName of this._procsToCheck) {
             let info = DATA['items'][procName]['proc'];
 
-            // NOTE -> while mana cooldowns availability are checked regularly (under useManaCooldown), stuff like ied and dmcg aren't as it is not a mana cooldown
-            // hence we need to update it's availability
-            if (!this._buffs[procName]['availableForUse'] && (timestamp - this._buffs[procName]['lastUsed'] >= info['icd'])) {
-                this._buffs[procName]['availableForUse'] = true;
+            if (typeof this._icds[procName] === 'undefined') {
+                this._icds[procName] = {
+                    availableForUse: true, // can it be used
+                    lastUsed: -9999, // timestamp of last usage
+                }
             }
 
-            if (this._buffs[procName]['availableForUse']) {
+
+            if (!this._icds[procName]['availableForUse'] && (timestamp - this._icds[procName]['lastUsed'] >= info['icd'])) {
+                this._icds[procName]['availableForUse'] = true;
+            }
+
+            if (this._icds[procName]['availableForUse']) {
                 let isProc = this.checkProcHelper(procName, spellIndex, 1, info['chance']);
                 if (isProc) {
-                    // even for stuff like ied when it technically doesnt create a buff
-                    // we use setBuffActive to track when the cooldown falls off
-                    this.setBuffActive(procName, true, timestamp, false, logger);
                     // if proc leads to a direct mana gain like ied, call addManaHelper
                     if ('mana' in info) {
                         this.addManaHelper(info['mana'], procName, logger);
                     }
 
-                    if ('duration' in info) {
+                    // if proc results in creation of a buff, we call setBuffActive and also returns a buff_expire event
+                    if ('createsBuff' in info) {
+                        this.setBuffActive(procName, true, timestamp, logger);
                         eventsToCreate.push({timestamp: timestamp + info['duration'], eventType: 'BUFF_EXPIRE', subEvent: procName});
                     }
-                    console.log(eventsToCreate)
                 }
             }
         }
-
         return eventsToCreate;
     }
 
