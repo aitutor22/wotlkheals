@@ -52,7 +52,7 @@ const data = {
           arcaneTorrent: false,
           useArcaneTorrentWithDmcg: false,
         },
-        trinkets: [],
+        trinkets: ['soup', 'eog'],
         glyphHolyLightHits: 4,
         mp5FromGearAndRaidBuffs: 300,
         '2pT7': true,

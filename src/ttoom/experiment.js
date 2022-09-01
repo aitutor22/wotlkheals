@@ -171,7 +171,8 @@ class Experiment {
                     }
                 }
 
-                player.checkForAndHandleIEDProc(spellIndex, this.logger);
+                // player.checkForAndHandleIEDProc(spellIndex, this.logger);
+                player.checkHandleProcsWithICD(currentTime, spellIndex, this.logger);
 
                 // continues with next spell in simulation
                 // NOTE: we use player._gcd as this is reduced by hastefactor
@@ -219,7 +220,8 @@ class Experiment {
 
                 // this.logger.log(`${player._statistics['overall']['spellsCasted'] / currentTime * 60}`, 3)
                 // this.logger.log(`${player._statistics['overall']['spellsCasted']}`, 3)
-                player.checkForAndHandleIEDProc(spellIndex, this.logger);
+                // player.checkForAndHandleIEDProc(spellIndex, this.logger);
+                player.checkHandleProcsWithICD(currentTime, spellIndex, this.logger);
 
                 spellIndex += 1
             } else if (nextEvent._eventType === 'BUFF_EXPIRE') {

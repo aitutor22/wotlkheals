@@ -63,13 +63,16 @@ class BasePlayer {
         this._otherMP5 = options['mp5FromGear'] + DATA['constants']['mp5RaidBuffs']; 
         this._currentMana = this._baseMaxMana;
 
-        // tracks potential buffs like dmcg
+        // tracks potential buffs like dmcg (15s duration)
         this._buffs = {};
+        // tracks icds like ied and also dmcg (the 45s cooldown)
+        this._icds = {};
         // dmcg is a unique case where we want to initialise it at the start under _buffs
         // this is because it can be procced by every spell cast
         if (this._options['trinkets'].indexOf('dmcg') > -1) {
             this.setBuffActive('dmcg', false, 0, true);
         }
+        this.setBuffActive('ied', false, 0, true); 
 
         this._manaCooldowns = [];
         this._rngThresholds = {};
@@ -152,6 +155,12 @@ class BasePlayer {
 
     // end getters
 
+
+    // NEED TO DO MORE WORK HERE WITH UNIT TESTS
+    // -> should split 
+    // buffs are just simple active, or not active and will reply on BUFF_EXPIRE
+    // ICDs are more complex and need to be constantly checked
+
     // start setters
     // typically, we don't pass in availableForUse, as usually it will be set to false here
     // and set back to active in another function.
@@ -176,6 +185,27 @@ class BasePlayer {
            if (logger) logger.log(`${timestamp}s: ${buffKey} expired`, 2);
         }
     }
+
+    // // a copy of setBuffActive
+    // setIcdActive(icdKey, isActive, timestamp, availableForUse=false) {
+    //     if (typeof this._buffs[buffKey] === 'undefined') {
+    //         this._buffs[buffKey] = {
+    //             active: false, // is it currently active
+    //             availableForUse: true, // can it be used
+    //             lastUsed: -9999, // timestamp of last usage
+    //         }
+    //     }
+
+    //     this._buffs[buffKey]['active'] = isActive;
+    //     if (isActive) {
+    //         this._buffs[buffKey]['availableForUse'] = availableForUse;
+    //         this._buffs[buffKey]['lastUsed'] = timestamp;
+    //         if (logger) logger.log(`${timestamp}s: ${buffKey} activated`, 2);
+    //     } else {
+    //        this._buffs[buffKey]['availableForUse'] = availableForUse;
+    //        if (logger) logger.log(`${timestamp}s: ${buffKey} expired`, 2);
+    //     }
+    // }
     // end setters
 
 
@@ -205,6 +235,45 @@ class BasePlayer {
                 }
             }
         }
+        return eventsToCreate;
+    }
+
+    // will run through a list of procs with internal cooldown that can trigger after a spell cast
+    // we need to first check if the proc is off cooldown
+    // then we check if it procs
+    // and then for each proc, we have a specific effect
+    // after a proc, we then return a list of expire buff events (for stuff like dmcg)
+    checkHandleProcsWithICD(timestamp, spellIndex, logger) {
+        let procsToCheck = ['ied']
+        let eventsToCreate = [];
+        for (let procName of procsToCheck) {
+            let info = DATA['items'][procName]['proc'];
+
+            // NOTE -> while mana cooldowns availability are checked regularly (under useManaCooldown), stuff like ied and dmcg aren't as it is not a mana cooldown
+            // hence we need to update it's availability
+            if (!this._buffs[procName]['availableForUse'] && (timestamp - this._buffs[procName]['lastUsed'] >= info['icd'])) {
+                this._buffs[procName]['availableForUse'] = true;
+            }
+
+            if (this._buffs[procName]['availableForUse']) {
+                let isProc = this.checkProcHelper(procName, spellIndex, 1, info['chance']);
+                if (isProc) {
+                    // even for stuff like ied when it technically doesnt create a buff
+                    // we use setBuffActive to track when the cooldown falls off
+                    this.setBuffActive(procName, true, timestamp, false, logger);
+                    // if proc leads to a direct mana gain like ied, call addManaHelper
+                    if ('mana' in info) {
+                        this.addManaHelper(info['mana'], procName, logger);
+                    }
+
+                    if ('duration' in info) {
+                        eventsToCreate.push({timestamp: timestamp + info['duration'], eventType: 'BUFF_EXPIRE', subEvent: procName});
+                    }
+                    console.log(eventsToCreate)
+                }
+            }
+        }
+
         return eventsToCreate;
     }
 
