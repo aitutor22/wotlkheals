@@ -57,6 +57,16 @@ const data = {
                 spellpower: 200,
             },
         },
+        // we don't consider the base value of IED since that's included in the 80 upgrades gear sheet
+        ied: {
+            name: 'Insightful Earthsiege Diamond',
+            itemType: 'gem',
+            proc: {
+                icd: 15,
+                chance: 0.05,
+                mana: 600,
+            },
+        }
     },
     battleConsumables: {
         flaskDistilled: {
@@ -83,6 +93,7 @@ const data = {
         intRaidBuffs: 60 + 51, // arcane intellect and mark of the wild
         critChanceRaidBuffs: 0.05, // moonkin aura
         spellPowerRaidBuffs: 280 + 46, // totem of wrath and spellpower food
+        mp5RaidBuffs: 109, // blessing of wisdom 
     },
     classes: {
         paladin: {
@@ -383,6 +394,7 @@ const data = {
         'RUNIC_MANA_POTION': 'Mana Potion',
         'sow': 'Seal of Wisdom',
         'eog': 'EoG',
+        'ied': 'IED',
         'OWL': 'Sapphire Owl',
         'LAY_ON_HANDS': 'Lay on Hands',
         'INNERVATE': 'Innervate',

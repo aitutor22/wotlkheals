@@ -150,6 +150,15 @@ const helperFunctions = {
     getKeyBoolean(obj, key) {
         return (obj && typeof obj[key] !== 'undefined') && obj[key];
     },
+
+    // game play functions
+    calculateProcBasedMp5(procValue, procICD, procChance, castTime) {
+      // what is expected amount of time to get 1 proc? internal_cooldown + cast_time * expected_number_of_casts_required
+      // expected_number_of_casts_required is 1 / proc_chance
+      // so expected time = internal_cooldown + cast_time / proc_chance
+      // we then calculate expected_mp5 by value / expected_time * 5
+      return Math.floor(procValue / (procICD + castTime / procChance) * 5);
+    },
 }
 
 module.exports = helperFunctions;

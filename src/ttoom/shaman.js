@@ -23,7 +23,6 @@ class Shaman extends BasePlayer {
         // }
         // mp5_WS = WATER_SHIELD * WS_PPM / 12
         console.log(options['manaOptions']['waterShieldProcsPerMinFromDamage'])
-        this._otherMP5 = options['mp5FromGearAndRaidBuffs'];
         this._otherMultiplicativeTotal = 1;
         // tidalFocus reduces healing cost by 5%; note that we don't put 2pt6 here as it only affects CHAIN_HEAL
         this._baseOtherMultiplicativeTotal = Utility.getKeyBoolean(this._options['talents'], 'tidalFocus') ? (1 - this.classInfo['manaCostModifiers']['tidalFocus']) : 1;

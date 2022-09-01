@@ -61,32 +61,33 @@
 
                 <hr>
                 <!-- general options that apply to all healers -->
-                <h6>Stats from 80 Upgrades</h6>
+                <h6>Unbuffed Stats from 80 Upgrades</h6>
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
-                    v-b-tooltip.hover title="Unbuffed Int from gear as taken from 80 upgrades; already includes +10% additional int from Divine Intellect Talent">Unbuffed Int</span>
+                    v-b-tooltip.hover title="Unbuffed Int from gear as taken from 80 upgrades; already includes +10% additional int from Divine Intellect Talent">Int</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['charSheetStats']['int']">
                 </div>
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
-                    v-b-tooltip.hover title="Raid Buffed, including spellpower from Holy Guidance">Spellpower</span>
+                    v-b-tooltip.hover title="Unbuffed, including spellpower from Holy Guidance">Spellpower</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['charSheetStats']['spellpower']">
                 </div>
                 <div v-if="playerClass === 'shaman'" class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
-                    v-b-tooltip.hover title="Raid Buffed Mp5, excludes Water Shield">MP5 From Gear & Buffs (no Water Shield)</span>
-                  <input type="text" class="form-control" v-model.number="oomOptions['mp5FromGearAndRaidBuffs']">
+                    v-b-tooltip.hover title="Mp5, excludes Water Shield">MP5 From Gear (no Water Shield)</span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['charSheetStats']['mp5FromGear']">
                 </div>
                 <div v-else class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
-                    v-b-tooltip.hover title="Raid Buffed">MP5 From Gear & Buffs</span>
-                  <input type="text" class="form-control" v-model.number="oomOptions['mp5FromGearAndRaidBuffs']">
+                    v-b-tooltip.hover title="Unbuffed MP5 from gear, not including IED">MP5 From Gear</span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['charSheetStats']['mp5FromGear']">
                 </div>
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
                     v-b-tooltip.hover title="Crit Rating from gear">Crit Rating</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['charSheetStats']['critRating']">
                 </div>
+                <hr>
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
                     v-b-tooltip.hover title="If you leave this blank, sim will use random numbers. If you wish to use a specific seed, input an integer">Seed</span>
@@ -302,7 +303,7 @@ export default {
         return a + b;
       }
 
-      for (let stat of ['int', 'spellpower', 'critRating']) {
+      for (let stat of ['int', 'spellpower', 'critRating', 'mp5FromGear']) {
         let newValue = originalValues[stat];
         // loops through selected trinkets, and subtracts from the appropraite stat
         for (let trinket of this.oomOptions['trinkets']) {

@@ -30,7 +30,6 @@ class Paladin extends BasePlayer {
             'judgement': this.classInfo['sow']['chance'] * judgementHitRate,
         }
 
-        this._otherMP5 = options['mp5FromGearAndRaidBuffs'];
         this._otherMultiplicativeTotal = 1;
         // glyph of SOW reduces healing cost by 5%; note that we don't put 4pt7 here as it only affects HL
         this._baseOtherMultiplicativeTotal = Utility.getKeyBoolean(this._options, 'glyphSOW') ? (1 - this.classInfo['manaCostModifiers']['glyphSOW']) : 1;
@@ -168,7 +167,6 @@ class Paladin extends BasePlayer {
 
         // checks if sow proc (instants lke holy shock or sacred shield)
         if (spellInfo['instant']) this.checkForAndHandleSoWProc(timestamp, spellIndex, logger, 'normal');
-
         return [status, errorMessage, offset, eventsToCreate];
     }
 

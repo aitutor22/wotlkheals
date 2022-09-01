@@ -17,6 +17,7 @@ const data = {
           int: 1425, // this includes the 10% int talent
           spellpower: 2035,
           critRating: 425,
+          mp5FromGear: 117,
         },
         // we store player stats before trinkets
         // these are the real values that are passed to the backend

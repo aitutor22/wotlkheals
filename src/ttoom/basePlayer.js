@@ -60,7 +60,7 @@ class BasePlayer {
             }
         }
 
-        this._otherMP5 = options['mp5FromGearAndRaidBuffs'];
+        this._otherMP5 = options['mp5FromGear'] + DATA['constants']['mp5RaidBuffs']; 
         this._currentMana = this._baseMaxMana;
 
         // tracks potential buffs like dmcg
@@ -206,6 +206,19 @@ class BasePlayer {
             }
         }
         return eventsToCreate;
+    }
+
+    // checks if there is IED proc - if there is add mana
+    // if we do use IED, then we need to set a "ied_on_coolodown" buff expire
+    // this to ensure we don't use IED while it is on CD
+    // HANDLE THIS AFTER WORK - merge dmcg and ied together
+    checkForAndHandleIEDProc(spellIndex, logger) {
+        let procChance = DATA['items']['ied']['proc']['chance'],
+            isProc = this.checkProcHelper('ied', spellIndex, 1, procChance);
+
+        if (isProc) {
+            this.addManaHelper(DATA['items']['ied']['proc']['mana'], 'ied', logger);
+        }
     }
 
     // checks to see if currentMana has exceeded max mana at end of turn
