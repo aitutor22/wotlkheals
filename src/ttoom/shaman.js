@@ -155,7 +155,7 @@ class Shaman extends BasePlayer {
             // }
         }
 
-        eventsToCreate = eventsToCreate.concat(this.handleDmcg(timestamp, spellIndex, logger));
+        // eventsToCreate = eventsToCreate.concat(this.handleDmcg(timestamp, spellIndex, logger));
 
         return [status, errorMessage, offset, eventsToCreate];
     }

@@ -1,3 +1,5 @@
+// NEED TO FIX DMCG -> buff expire is nto being called
+
 const EventHeap = require('../ttoom/eventheap');
 const Paladin = require('../ttoom/paladin');
 const Shaman = require('../ttoom/shaman');
@@ -98,6 +100,12 @@ class Experiment {
         return new mapPlayerClass[playerClass](copiedOptions, rng, thresholds, maxMinsToOOM);
     }
 
+    addEventsToEventHeap(eventHeap, eventsToCreate) {
+        for (let evt of eventsToCreate) {
+            eventHeap.addEvent(evt['timestamp'], evt['eventType'], evt['subEvent']);
+        }
+    }
+
     // seed === 0 means we don't use a seed
     runSingleLoop(logsLevel=0, seed=0, playerClass='paladin', maxMinsToOOM=10) {
         let rng = Utility.setSeed(seed);
@@ -171,8 +179,9 @@ class Experiment {
                     }
                 }
 
-                // player.checkForAndHandleIEDProc(spellIndex, this.logger);
-                player.checkHandleProcsWithICD(currentTime, spellIndex, this.logger);
+                // shouldn't actually produce events here, but just in case
+                eventsToCreate = player.checkHandleProcsWithICD(currentTime, spellIndex, this.logger);
+                this.addEventsToEventHeap(eventHeap, eventsToCreate);
 
                 // continues with next spell in simulation
                 // NOTE: we use player._gcd as this is reduced by hastefactor
@@ -193,11 +202,13 @@ class Experiment {
                 }
 
                 lastCastTimestamp = currentTime;
-                // e.g. set a BUFF_EXPIRE event
-                for (let evt of eventsToCreate) {
-                    eventHeap.addEvent(evt['timestamp'], evt['eventType'], evt['subEvent']);
-                }
-                eventsToCreate = [];
+                // castSpell passes HoT creation events, etc
+                this.addEventsToEventHeap(eventHeap, eventsToCreate);
+                // for (let evt of eventsToCreate) {
+                //     console.log('creating event');
+                //     console.log(evt);
+                //     eventHeap.addEvent(evt['timestamp'], evt['eventType'], evt['subEvent']);
+                // }
 
                 // not oom, so continue the simulation
                 // before casting, check if we can use a mana cooldown
@@ -220,8 +231,8 @@ class Experiment {
 
                 // this.logger.log(`${player._statistics['overall']['spellsCasted'] / currentTime * 60}`, 3)
                 // this.logger.log(`${player._statistics['overall']['spellsCasted']}`, 3)
-                // player.checkForAndHandleIEDProc(spellIndex, this.logger);
-                player.checkHandleProcsWithICD(currentTime, spellIndex, this.logger);
+                eventsToCreate = player.checkHandleProcsWithICD(currentTime, spellIndex, this.logger);
+                this.addEventsToEventHeap(eventHeap, eventsToCreate);
 
                 spellIndex += 1
             } else if (nextEvent._eventType === 'BUFF_EXPIRE') {

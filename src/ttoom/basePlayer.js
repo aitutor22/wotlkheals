@@ -187,30 +187,6 @@ class BasePlayer {
         return (typeof this._buffs[buffKey] !== 'undefined') && this._buffs[buffKey]['active'];
     }
 
-    // checks if dmcg is available for use
-    // if it is, then checks if spell can proc dmcg
-    // if dmcg is activated, then also need to pass a dmcg expire event
-    handleDmcg(timestamp, spellIndex, logger) {
-        let eventsToCreate = [];
-        // if dmcg is worn, see if it can proc
-        if (typeof this._buffs['dmcg'] !== 'undefined') {
-            // NOTE -> while mana cooldowns availability are checked regularly (under useManaCooldown), dmcg isn't as it is not a mana cooldown
-            // hence we need to update it's availability
-            if (!this._buffs['dmcg']['availableForUse'] && (timestamp - this._buffs['dmcg']['lastUsed'] >= DATA['items']['dmcg']['proc']['icd'])) {
-                this._buffs['dmcg']['availableForUse'] = true;
-            }
-
-            if (this._buffs['dmcg']['availableForUse']) {
-                let isDmcg = this.checkProcHelper('dmcg', spellIndex, 1, DATA['items']['dmcg']['proc']['chance']);
-                if (isDmcg) {
-                    this.setBuffActive('dmcg', true, timestamp, false, logger);
-                    eventsToCreate.push({timestamp: timestamp + DATA['items']['dmcg']['proc']['duration'], eventType: 'BUFF_EXPIRE', subEvent: 'dmcg'});
-                }
-            }
-        }
-        return eventsToCreate;
-    }
-
     // will run through a list of procs with internal cooldown that can trigger after a spell cast
     // we need to first check if the proc is off cooldown
     // then we check if it procs
@@ -220,7 +196,6 @@ class BasePlayer {
         let eventsToCreate = [];
         for (let procName of this._procsToCheck) {
             let info = DATA['items'][procName]['proc'];
-
             if (typeof this._icds[procName] === 'undefined') {
                 this._icds[procName] = {
                     availableForUse: true, // can it be used
@@ -228,7 +203,7 @@ class BasePlayer {
                 }
             }
 
-
+            // checks and see if procs have come off cd
             if (!this._icds[procName]['availableForUse'] && (timestamp - this._icds[procName]['lastUsed'] >= info['icd'])) {
                 this._icds[procName]['availableForUse'] = true;
             }
@@ -236,13 +211,16 @@ class BasePlayer {
             if (this._icds[procName]['availableForUse']) {
                 let isProc = this.checkProcHelper(procName, spellIndex, 1, info['chance']);
                 if (isProc) {
+                    this._icds[procName]['availableForUse'] = false;
+                    this._icds[procName]['lastUsed'] = timestamp;
+
                     // if proc leads to a direct mana gain like ied, call addManaHelper
                     if ('mana' in info) {
                         this.addManaHelper(info['mana'], procName, logger);
                     }
 
                     // if proc results in creation of a buff, we call setBuffActive and also returns a buff_expire event
-                    if ('createsBuff' in info) {
+                    if ('createsBuff' in info && info['createsBuff']) {
                         this.setBuffActive(procName, true, timestamp, logger);
                         eventsToCreate.push({timestamp: timestamp + info['duration'], eventType: 'BUFF_EXPIRE', subEvent: procName});
                     }
@@ -252,18 +230,18 @@ class BasePlayer {
         return eventsToCreate;
     }
 
-    // checks if there is IED proc - if there is add mana
-    // if we do use IED, then we need to set a "ied_on_coolodown" buff expire
-    // this to ensure we don't use IED while it is on CD
-    // HANDLE THIS AFTER WORK - merge dmcg and ied together
-    checkForAndHandleIEDProc(spellIndex, logger) {
-        let procChance = DATA['items']['ied']['proc']['chance'],
-            isProc = this.checkProcHelper('ied', spellIndex, 1, procChance);
+    // // checks if there is IED proc - if there is add mana
+    // // if we do use IED, then we need to set a "ied_on_coolodown" buff expire
+    // // this to ensure we don't use IED while it is on CD
+    // // HANDLE THIS AFTER WORK - merge dmcg and ied together
+    // checkForAndHandleIEDProc(spellIndex, logger) {
+    //     let procChance = DATA['items']['ied']['proc']['chance'],
+    //         isProc = this.checkProcHelper('ied', spellIndex, 1, procChance);
 
-        if (isProc) {
-            this.addManaHelper(DATA['items']['ied']['proc']['mana'], 'ied', logger);
-        }
-    }
+    //     if (isProc) {
+    //         this.addManaHelper(DATA['items']['ied']['proc']['mana'], 'ied', logger);
+    //     }
+    // }
 
     // checks to see if currentMana has exceeded max mana at end of turn
     // e.g. when dmcg expires

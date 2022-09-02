@@ -163,7 +163,7 @@ class Paladin extends BasePlayer {
             }
         }
 
-        eventsToCreate = eventsToCreate.concat(this.handleDmcg(timestamp, spellIndex, logger));
+        // eventsToCreate = eventsToCreate.concat(this.handleDmcg(timestamp, spellIndex, logger));
 
         // checks if sow proc (instants lke holy shock or sacred shield)
         if (spellInfo['instant']) this.checkForAndHandleSoWProc(timestamp, spellIndex, logger, 'normal');
