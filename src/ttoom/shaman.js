@@ -18,11 +18,15 @@ class Shaman extends BasePlayer {
     constructor(options, rng, thresholdItemsToCreate, maxMinsToOOM) {
         super('shaman', options, rng, thresholdItemsToCreate, maxMinsToOOM);
 
-        // if (!this._options['2pT7'] && this._options['4pT7']) {
-        //     throw new Error('4PT7 was selected but not 2PT7');
-        // }
-        // mp5_WS = WATER_SHIELD * WS_PPM / 12
-        console.log(options['manaOptions']['waterShieldProcsPerMinFromDamage'])
+        if (!this._options['2pT7'] && this._options['4pT7']) {
+            throw new Error('4PT7 was selected but not 2PT7');
+        }
+        
+        // we calculate how much mp2 water shield  is -> note that the base value is in mp5 while proc value is in absolute terms
+        // thus need to divide differently to get denominator
+        this._waterShieldBaseBaseTick = this.classInfo['waterShield']['baseMp5'] / 5 * 2 + 
+            options['manaOptions']['waterShieldProcsPerMinFromDamage'] * this.classInfo['waterShield']['procValue'] / 30;
+
         this._otherMultiplicativeTotal = 1;
         // tidalFocus reduces healing cost by 5%; note that we don't put 2pt6 here as it only affects CHAIN_HEAL
         this._baseOtherMultiplicativeTotal = Utility.getKeyBoolean(this._options['talents'], 'tidalFocus') ? (1 - this.classInfo['manaCostModifiers']['tidalFocus']) : 1;
@@ -31,19 +35,21 @@ class Shaman extends BasePlayer {
         this.initialiseManaCooldowns(options['manaCooldowns']);
     }
 
-    // // converts mp5 to a mp2 tick value
-    // addManaRegenFromReplenishmentAndOtherMP5(logger=null, timestamp=null) {
-    //     // we could use a cached value, but DMCG increases max mana pool, so for time being, we recalculate each time we call this
-    //     const replenishmentTick = (this.maxMana * DATA['constants']['replenishment'] / 5 * 2 * this._options['manaOptions']['replenishmentUptime']);
-    //     const otherMP5Tick = (this._otherMP5 / 5 * 2);
-    //     const tickAmount = Math.floor(replenishmentTick + otherMP5Tick);
-    //     // since replenishment might tick outside spellcast, we print timestamp
-    //     if (logger) logger.log(`${timestamp}s: Gained ${tickAmount} from mana tick`, 2);
+    // due to water shield being more complicated, we overwrite parent function
+    // converts mp5 to a mp2 tick value
+    addManaRegenFromReplenishmentAndOtherMP5(logger=null, timestamp=null) {
+        // we could use a cached value, but DMCG increases max mana pool, so for time being, we recalculate each time we call this
+        const replenishmentTick = (this.maxMana * DATA['constants']['replenishment'] / 5 * 2 * this._options['manaOptions']['replenishmentUptime']);
+        const otherMP5Tick = (this._otherMP5 / 5 * 2);
+        const tickAmount = Math.floor(replenishmentTick + otherMP5Tick + this._waterShieldBaseBaseTick);
+        // since replenishment might tick outside spellcast, we print timestamp
+        if (logger) logger.log(`${timestamp}s: Gained ${tickAmount} from mana tick`, 2);
 
-    //     // we record the ticks from replenishment and othermp5 separately; need to ensure we don't lose values due to floor function
-    //     this.addManaHelper(Math.floor(replenishmentTick), 'Replenishment');
-    //     this.addManaHelper(tickAmount - Math.floor(replenishmentTick), 'otherMP5');
-    // }
+        // we record the ticks from replenishment, water shield and othermp5 separately; need to ensure we don't lose values due to floor function
+        this.addManaHelper(Math.floor(replenishmentTick), 'Replenishment');
+        this.addManaHelper(Math.floor(this._waterShieldBaseBaseTick), 'Water Shield Base');
+        this.addManaHelper(tickAmount - Math.floor(replenishmentTick) - Math.floor(this._waterShieldBaseBaseTick), 'otherMP5');
+    }
 
     // majority of spell selection is done in basePlayer's selectSpellHelper
     // the only logic we want to add is if infusion of light is active, always cast Holy Light unless CPM is set to 0
@@ -148,6 +154,7 @@ class Shaman extends BasePlayer {
 
         // after spell is casted, add effects
         if (isCrit) {
+            this.checkAndAddManaFromWaterShieldProc(spellKey, spellIndex, logger);
             // this.addManaFromIllumination(spellKey, logger);
             // // holy shock crits triggers infusion of light
             // if (spellKey === 'HOLY_SHOCK') {
@@ -155,7 +162,6 @@ class Shaman extends BasePlayer {
             // }
         }
 
-        // eventsToCreate = eventsToCreate.concat(this.handleDmcg(timestamp, spellIndex, logger));
 
         return [status, errorMessage, offset, eventsToCreate];
     }
@@ -184,19 +190,25 @@ class Shaman extends BasePlayer {
         return this.subtractManaHelper(spellKey, timestamp, baseCostMultiplicativeFactors, baseCostAdditiveFactors, otherMultiplicativeTotal);
     }
 
-    // addManaFromIllumination(spellKey, logger=null) {
-    //     let baseManaCost = this.classInfo['spells'].find((_spell) => _spell['key'] === spellKey)['baseManaCost'];
-    //     let amount = Math.floor(baseManaCost * 0.3);
-        
-    //     if (typeof this._statistics['illumination'] === 'undefined') {
-    //         this._statistics['illumination'] = {};
-    //     }
-    //     if (!(spellKey in this._statistics['illumination'])) {
-    //         this._statistics['illumination'][spellKey] = 0;
-    //     }
-    //     this._statistics['illumination'][spellKey] += amount;
-    //     return this.addManaHelper(amount, 'illumination', logger);
-    // }
+    // UGH NEED TO CONSIDER SEPARATE PROC CHANCES
+    checkAndAddManaFromWaterShieldProc(spellKey, spellIndex, logger=null) {
+        let procChance = this.classInfo['waterShield']['chance'][spellKey],
+            numHits = spellKey === 'CHAIN_HEAL' ? this._options['chainHealHits'] : 1,
+            amount = 0;
+        // pass true to allowMultipleHits means this returns the number of procs rather than a boolean
+        let numProcs = this.checkProcHelper('waterShield', spellIndex, numHits, procChance, true);
+        if (numProcs === 0) return;
+
+        amount = this.classInfo['waterShield']['procValue'] * numProcs;
+        if (typeof this._statistics['waterShieldProc'] === 'undefined') {
+            this._statistics['waterShieldProc'] = {};
+        }
+        if (!(spellKey in this._statistics['waterShieldProc'])) {
+            this._statistics['waterShieldProc'][spellKey] = 0;
+        }
+        this._statistics['waterShieldProc'][spellKey] += amount;
+        return this.addManaHelper(amount, 'waterShieldProc', logger);
+    }
 
 
 }

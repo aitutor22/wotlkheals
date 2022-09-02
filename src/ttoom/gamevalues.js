@@ -214,23 +214,17 @@ const data = {
             }
         },
         shaman: {
+            // https://wowwiki-archive.fandom.com/wiki/Spell_critical_strike
+            baseCritChance: 0.022,
+            baseMana: 4396,
+            eightyUpgradesIntConversionFactor: 1.04, // 80upgrades character screen includes 2 pts in ancestral intellect; so we need to divide it out
             // when we calculate hasteFactor, we also need to consider the number of spells that
             // are not healing spells (e.g. divine plea) but are casted
             // otherwise we will undercount the haste factor
-            numGcdsPerMinNotCountedUnderSpells: 0,
+            numGcdsPerMinNotCountedUnderSpells: 0, // to add in future, probably around 2 with FET, etc
             intModifier: 1.04 * 1.1, // 2 pts in ancestral intellect only, blessing of kings
             baseCritChanceModifier: 0.14, // 5% additional crit chance from thundering strikes, 5% from tidal mastery, 4% from blessing of elements
             spells: [
-            // {
-            //     'key': 'HOLY_SHOCK',
-            //     'name': 'Holy Shock',
-            //     'cooldown': 6, // the actual cooldown of spell
-            //     'instant': true,
-            //     'baseManaCost': 790.92,
-            //     'baseCastTime': 0,
-            //     baseHeal: 2500,
-            //     coefficient: 0.807, // tested by currelius, before talents
-            // },
             {
                 'key': 'CHAIN_HEAL',
                 'name': 'Chain Heal',
@@ -264,16 +258,16 @@ const data = {
                 playerClass: 'shaman',
                 '2pT6': true, // +10% cost reduction to chain heal
                 // '4pT7': true, // 5% reduction to HL mana cost
-                trinkets: ['soup', 'owl'],
+                trinkets: ['soup'],
                 cpm: {
                   CHAIN_HEAL: 15,
                 },
                 gcd: 1.5,
                 firstSpell: 'CHAIN_HEAL', // fix which is the first spell we want to cast
-                manaPool: 25000,
                 mp5FromGear: 300,
-                spellPower: 2500, // includes spellpower from holy guidance (though if dmcg procs, system will auto calculate)
-                critChance: 0.3, // from gear and raid buffs; does not include talents
+                unbuffedInt: 1000,
+                // note that when we actually pull values from front end, we get crit rating and convert to crit chance
+                critChance: 0.2, // from gear and raid buffs; does not include talents
                 manaCooldowns: [],
                 talents: {
                     tidalFocus: true,

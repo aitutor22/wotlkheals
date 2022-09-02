@@ -60,7 +60,7 @@ class BasePlayer {
             }
         }
 
-        this._otherMP5 = options['mp5FromGear'] + DATA['constants']['mp5RaidBuffs']; 
+        this._otherMP5 = options['mp5FromGear'] + DATA['constants']['mp5RaidBuffs'];
         this._currentMana = this._baseMaxMana;
 
         // tracks potential buffs like dmcg (15s duration)
@@ -314,6 +314,9 @@ class BasePlayer {
         for (let item of items) {
             // soup and eog should have multiple chances to proc
             let factor = (['soup', 'eog'].indexOf(item) > -1) ? soupHits : 1;
+            if (item === 'waterShield') {
+                factor = 4; // up to max of 4 chances for water shield to proc when we use chain heal
+            }
             this._rngThresholds[item] = createHelper(maxMinsToOOM * 60 * factor);
         }
     }
@@ -482,9 +485,20 @@ class BasePlayer {
         return amount;
     }
 
-    checkProcHelper(key, spellIndex, numHits, procChance) {
+    // takes an optional parameter allowMultipleHits
+    // if set to false, returns a boolean indicating whether there is a successful hit
+    // if set to true, returns the number of hits (useful for something like water shield and chain heal)
+    // where each hit can proc water shield
+    checkProcHelper(key, spellIndex, numHits, procChance, allowMultipleHits=false) {
         let arr = this._rngThresholds[key].slice(spellIndex * numHits, (spellIndex + 1) * numHits);
-        return Utility.anyValueBelowThreshold(arr, procChance);
+        if (!allowMultipleHits) return Utility.anyValueBelowThreshold(arr, procChance);
+
+        let numProcs = 0;
+        for (let i = 0; i < arr.length; i++) {
+            if (arr[i] < procChance) numProcs++;
+        }
+        console.log(numProcs)
+        return numProcs;
     }
 
     // can be either soup or eog

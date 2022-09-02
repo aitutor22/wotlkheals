@@ -89,6 +89,8 @@ class Experiment {
         // class specific rng like seal of wisdom
         if (playerClass === 'paladin') {
             thresholds.push('sow');
+        } else if (playerClass === 'shaman') {
+            thresholds.push('waterShield');
         }
 
         // these trinkets have rng effects - if player has selected them, then add

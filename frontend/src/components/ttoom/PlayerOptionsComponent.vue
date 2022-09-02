@@ -52,11 +52,11 @@
 
                 <!-- shaman tier -->
                 <div v-if="playerClass === 'shaman'" class="form-check form-check-inline">
-                  <input class="form-check-input" type="checkbox" id="2pT7" v-model="oomOptions['tier']['2pT6']">
+                  <input class="form-check-input" type="checkbox" id="2pT6" v-model="oomOptions['tier']['2pT6']">
                   <label class="form-check-label" for="2pT6"
                     v-b-tooltip.hover title="Your Chain Heal ability costs 10% less mana.">2PT6</label>
                 </div>
-                <div v-if="playerClass === 'shaman'" class="form-check form-check-inline">
+                <div v-if="playerClass === 'shaman'" class="form-check form-check-inline ml-4">
                   <input class="form-check-input" type="checkbox" id="2pT7" v-model="oomOptions['tier']['2pT7']">
                   <label class="form-check-label" for="2pT7"
                     v-b-tooltip.hover title="Your Water Shield is 10% stronger.">2PT7</label>
@@ -97,12 +97,12 @@
                 <h6>Unbuffed Stats from 80 Upgrades</h6>
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
-                    v-b-tooltip.hover title="Unbuffed Int from gear as taken from 80 upgrades; already includes +10% additional int from Divine Intellect Talent">Int</span>
+                    v-b-tooltip.hover title="Unbuffed Int from gear as taken from 80 upgrades; already includes additional int from talents">Int</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['charSheetStats']['int']">
                 </div>
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
-                    v-b-tooltip.hover title="Unbuffed, including spellpower from Holy Guidance">Spellpower</span>
+                    v-b-tooltip.hover title="Unbuffed, including spellpower from talents">Spellpower</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['charSheetStats']['spellpower']">
                 </div>
                 <div v-if="playerClass === 'shaman'" class="input-group mb-2" style="width: 100%">
@@ -161,35 +161,9 @@
                   <span class="input-group-text" id="basic-addon1">Chain Heal CPM</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['cpm']['CHAIN_HEAL']">
                 </div>
-    }
-<!--                 <div class="input-group mb-2" style="width: 100%">
-                  <span class="input-group-text" id="basic-addon1">FoL CPM</span>
-                  <input type="text" class="form-control" v-model.number="oomOptions['cpm']['FLASH_OF_LIGHT']">
-                </div>
                 <div class="input-group mb-2" style="width: 100%">
-                  <span class="input-group-text" id="basic-addon1">HS CPM </span>
-                  <input type="text" class="form-control" v-model.number="oomOptions['cpm']['HOLY_SHOCK']">
-                </div>
-                <div class="input-group mb-2" style="width: 100%">
-                  <span class="input-group-text" id="basic-addon1"
-                    v-b-tooltip.hover title="Integer from 0 to 5"># hits from glyph HL</span>
-                  <input type="text" class="form-control" v-model.number="oomOptions['glyphHolyLightHits']">
-                </div>
-                <div class="input-group mb-2" style="width: 100%">
-                  <span class="input-group-text" id="basic-addon1"
-                    v-b-tooltip.hover title="Number of talent points in Enlightened Judgements (0 to 2)">#pts (Enl. Judgements)</span>
-                  <input type="text" class="form-control" v-model.number="oomOptions['talents']['enlightenedJudgements']">
-                </div>
-
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="4pT7" v-model="oomOptions['4pT7']">
-                  <label class="form-check-label" for="4pT7"
-                    v-b-tooltip.hover title="The cost of your Holy Light is reduced by 5%.">4pT7</label>
-                </div> -->
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="2pT6" v-model="oomOptions['2pT6']">
-                  <label class="form-check-label" for="2pT6"
-                    v-b-tooltip.hover title="Your Chain Heal ability cost 10% less mana.">2pT6</label>
+                  <span class="input-group-text" id="basic-addon1">Chain Heal Hits</span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['chainHealHits']">
                 </div>
               </b-card-text></b-tab>
 
@@ -260,7 +234,6 @@
 
                 <!-- class specific -->
                 <div v-if="playerClass === 'shaman'">
-                  123
                    <div class="input-group mb-2" style="width: 100%" v-if="'waterShieldProcsPerMinFromDamage' in oomOptions['manaOptions']">
                     <span class="input-group-text" id="basic-addon1"
                       v-b-tooltip.hover title="Water Shield PPM from taking damage">Water Shield PPM (taking damage)</span>
