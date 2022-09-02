@@ -61,8 +61,6 @@ const data = {
           critRating: 0,
           spellpower: 0,
         },
-        spellPower: 2400,
-        critChance: 30,
         seed: '',
         cpm: {
           HOLY_LIGHT: 35,
@@ -96,10 +94,64 @@ const data = {
       },
     },
     shaman: {
+      // most users will input int taken from 80 upgrades, which will already have a 10% boost to talents
+      // so need to convert accordingly
+      statsConversionFactor: {
+        int: 1.04, // assume just 2 points in ancestral intellect
+        spellPowerFromInt: 0.15, // nature's blessing
+      },
+      presets: [{
+        name: 'P1 Realistic',
+        default: true,
+        url: 'https://eightyupgrades.com/set/3jckxd9fBQaLoWaVZqQQQZ',
+        notes: '',
+        charSheetStats: {
+          int: 1002,
+          spellpower: 1981,
+          critRating: 349,
+          mp5FromGear: 264,
+        },
+        trinkets: ['soup'],
+        // trinkets: ['soup', 'soulDead'],
+        tier: {
+          '2pT6': false,
+          '2pT7': true,
+          '4pT7': true,
+        },
+      },
+      {
+        name: 'P1 Realistic (with 2PT6)',
+        default: true,
+        url: 'https://eightyupgrades.com/set/fzTiGGqrazpgJ7YC3nm6mP',
+        notes: '',
+        charSheetStats: {
+          int: 960,
+          spellpower: 1934,
+          critRating: 312,
+          mp5FromGear: 275,
+        },
+        trinkets: ['soup'],
+        // trinkets: ['soup', 'soulDead'],
+        tier: {
+          '2pT6': true,
+          '2pT7': true,
+          '4pT7': true,
+        },
+      }],
       oomOptions: {
-        manaPool: 25000,
-        spellPower: 2500,
-        critChance: 20,
+        charSheetStats: {
+          int: 1425, // this includes the 10% int talent
+          spellpower: 2035,
+          critRating: 425,
+          mp5FromGear: 117,
+        },
+        // we store player stats before trinkets
+        // these are the real values that are passed to the backend
+        statsBeforeTrinket: {
+          int: 0,
+          critRating: 0,
+          spellpower: 0,
+        },
         seed: '',
         cpm: {
           CHAIN_HEAL: 30,
@@ -116,9 +168,12 @@ const data = {
           waterShieldProcsPerMinFromDamage: 2.5,
         },
         trinkets: ['soup',],
-        mp5FromGearAndRaidBuffs: 200,
         chainHealHits: 3,
-        '2pT6': true,
+        tier: {
+          '2pT6': false,
+          '2pT7': true,
+          '4pT7': true,
+        },
       },
     },
     items: {

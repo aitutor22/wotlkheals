@@ -218,7 +218,7 @@ const data = {
             // are not healing spells (e.g. divine plea) but are casted
             // otherwise we will undercount the haste factor
             numGcdsPerMinNotCountedUnderSpells: 0,
-            intModifier: 1.1 * 1.1, // ancestral intellect, blessing of kings
+            intModifier: 1.04 * 1.1, // 2 pts in ancestral intellect only, blessing of kings
             baseCritChanceModifier: 0.14, // 5% additional crit chance from thundering strikes, 5% from tidal mastery, 4% from blessing of elements
             spells: [
             // {

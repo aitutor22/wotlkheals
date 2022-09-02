@@ -20,8 +20,9 @@
             <b-tabs pills card>
 
               <!-- paladin gear -->
-              <b-tab v-if="playerClass === 'paladin'" title="Gear" active><b-card-text>
-                <h6>Presets from Light Club</h6>
+              <b-tab title="Gear" active><b-card-text>
+                <h6 v-if="playerClass === 'paladin'">Presets from Light Club</h6>
+                <h6 v-if="playerClass === 'shaman'">Presets from Shaman Discord</h6>
                   <b-button-group>
                     <b-button v-for="(preset, index) in presets" :key="index"
                       :class="{'btn-success': selectedPreset && !hasChangedPreset && (selectedPreset['name'] === preset['name'])}"
@@ -37,15 +38,33 @@
 
                 <!-- tier options -->
                 <h6>Tier Sets</h6>
-                <div class="form-check form-check-inline">
+                <!-- paladin stuff -->
+                <div v-if="playerClass === 'paladin'" class="form-check form-check-inline">
                   <input class="form-check-input" type="checkbox" id="2pT7" v-model="oomOptions['tier']['2pT7']">
                   <label class="form-check-label" for="2pT7"
                     v-b-tooltip.hover title="Your Holy Shock gains an additional 10% chance to critically strike.">2PT7</label>
                 </div>
-                <div class="form-check form-check-inline ml-4">
+                <div v-if="playerClass === 'paladin'" class="form-check form-check-inline ml-4">
                   <input class="form-check-input" type="checkbox" id="4pT7" v-model="oomOptions['tier']['4pT7']">
                   <label class="form-check-label" for="4pT7"
                     v-b-tooltip.hover title="The cost of your Holy Light is reduced by 5%.">4PT7</label>
+                </div>
+
+                <!-- shaman tier -->
+                <div v-if="playerClass === 'shaman'" class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="2pT7" v-model="oomOptions['tier']['2pT6']">
+                  <label class="form-check-label" for="2pT6"
+                    v-b-tooltip.hover title="Your Chain Heal ability costs 10% less mana.">2PT6</label>
+                </div>
+                <div v-if="playerClass === 'shaman'" class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="2pT7" v-model="oomOptions['tier']['2pT7']">
+                  <label class="form-check-label" for="2pT7"
+                    v-b-tooltip.hover title="Your Water Shield is 10% stronger.">2PT7</label>
+                </div>
+                <div v-if="playerClass === 'shaman'" class="form-check form-check-inline ml-4">
+                  <input class="form-check-input" type="checkbox" id="4pT7" v-model="oomOptions['tier']['4pT7']">
+                  <label class="form-check-label" for="4pT7"
+                    v-b-tooltip.hover title="Increases the healing done by your Chain Heal and Healing Wave by 5%.">4PT7</label>
                 </div>
                 <hr>
 
