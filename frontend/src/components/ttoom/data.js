@@ -10,6 +10,41 @@ const data = {
         int: 1.1,
         spellPowerFromInt: 0.2, // holy guidance
       },
+      presets: [{
+        name: 'P1 Realistic',
+        default: true,
+        url: 'https://eightyupgrades.com/set/e4pt8ZyQMZerC6n3TrHXnH',
+        notes: '',
+        charSheetStats: {
+          int: 1332,
+          spellpower: 1971,
+          critRating: 333,
+          mp5FromGear: 174,
+        },
+        trinkets: ['soup', 'owl'],
+        tier: {
+          '2pT7': true,
+          '4pT7': true,
+        }
+      },
+      {
+        name: 'P1 Lootwhore',
+        default: false,
+        url: 'https://eightyupgrades.com/set/tL7pmzxb984wbHrmciH9ZK',
+        notes: 'Swapped Owl for Soup',
+        charSheetStats: {
+          int: 1425,
+          spellpower: 2035,
+          critRating: 425,
+          mp5FromGear: 156,
+        },
+        trinkets: ['soup', 'dmcg'],
+        tier: {
+          '2pT7': true,
+          '4pT7': true,
+        }
+      },
+      ],
       oomOptions: {
         // these are the values that user inputs, which include the trinket stats as they are taken from 80 upgrades
         // this isn't actually passed to the backend
@@ -54,9 +89,10 @@ const data = {
         },
         trinkets: ['soup', 'eog'],
         glyphHolyLightHits: 4,
-        mp5FromGearAndRaidBuffs: 300,
-        '2pT7': true,
-        '4pT7': true,
+        tier: {
+          '2pT7': true,
+          '4pT7': true,
+        },
       },
     },
     shaman: {

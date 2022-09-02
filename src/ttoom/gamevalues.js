@@ -194,6 +194,7 @@ const data = {
                 glyphHolyLightHits: 4, 
                 mp5FromGear: 300,
                 unbuffedInt: 1000,
+                // note that when we actually pull values from front end, we get crit rating and convert to crit chance
                 critChance: 0.2, // from gear and raid buffs; does not include talents
                 manaCooldowns: [],
                 talents: {

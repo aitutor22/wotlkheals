@@ -24,6 +24,15 @@ export const ttoom = {
     setOomOptions(state: object, value: object) {
       Vue.set(state, 'oomOptions', value);
     },
+    setTrinkets(state: any, value: object) {
+      Vue.set(state.oomOptions, 'trinkets', value);
+    },
+    // payLoad should be like {2PT7: true, 4PT7: false}
+    setTierOptions(state: any, payLoad: any) {
+      for (const key in payLoad) {
+        Vue.set(state.oomOptions.tier, key, payLoad[key]);
+      }
+    },
     setCharSheetStats(state: any, payLoad: any) {
       Vue.set(state.oomOptions.charSheetStats, payLoad['key'], payLoad['value']);
     },

@@ -10,6 +10,17 @@
   </div>
 </template>
 
+<script type="text/javascript">
+export default {
+  metaInfo: {
+    // if no subcomponents specify a metaInfo.title, this title will be used
+    title: '',
+    // all titles will be injected into this template
+    titleTemplate: '%s | Wotlk Heals'
+  }
+}
+</script>
+
 <style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;

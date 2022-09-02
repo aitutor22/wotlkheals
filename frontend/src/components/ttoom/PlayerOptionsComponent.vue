@@ -21,15 +21,29 @@
 
               <!-- paladin gear -->
               <b-tab v-if="playerClass === 'paladin'" title="Gear" active><b-card-text>
+                <h6>Presets from Light Club</h6>
+                  <b-button-group>
+                    <b-button v-for="(preset, index) in presets" :key="index"
+                      :class="{'btn-success': selectedPreset && !hasChangedPreset && (selectedPreset['name'] === preset['name'])}"
+                      @click="setPreset(preset)">
+                      {{ preset.name }}
+                    </b-button>
+                  </b-button-group>
+                  <p v-if="selectedPreset" class="mt-2">
+                    <a :href="selectedPreset['url']" target=”_blank”>Link to 80upgrades</a>
+                    <span v-if="selectedPreset['notes'] !== ''"> (Note: {{ selectedPreset['notes'] }})</span>
+                  </p>
+                <hr>
+
                 <!-- tier options -->
                 <h6>Tier Sets</h6>
                 <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="checkbox" id="2pT7" v-model="oomOptions['2pT7']">
+                  <input class="form-check-input" type="checkbox" id="2pT7" v-model="oomOptions['tier']['2pT7']">
                   <label class="form-check-label" for="2pT7"
                     v-b-tooltip.hover title="Your Holy Shock gains an additional 10% chance to critically strike.">2PT7</label>
                 </div>
                 <div class="form-check form-check-inline ml-4">
-                  <input class="form-check-input" type="checkbox" id="4pT7" v-model="oomOptions['4pT7']">
+                  <input class="form-check-input" type="checkbox" id="4pT7" v-model="oomOptions['tier']['4pT7']">
                   <label class="form-check-label" for="4pT7"
                     v-b-tooltip.hover title="The cost of your Holy Light is reduced by 5%.">4PT7</label>
                 </div>
@@ -260,23 +274,35 @@ export default {
     ...mapState('ttoom', ['oomOptions']),
     hasDmcg() {
       return this.oomOptions['trinkets'].indexOf('dmcg') > -1;
+    },
+    presets() {
+      return data[this.playerClass]['presets'];
     }
   },
   data() {
     return {
+      selectedPreset: null,
+      hasChangedPreset: false,
     };
   },
+  mounted() {
+    this.$nextTick(function () {
+      // Code that will run only after the
+      // entire view has been rendered
+      this.setPreset();
+    })
+  },
   watch: {
+    // whenever player class changes, updated the initial selectedPreset
+    playerClass() {
+      this.setPreset();
+      return;
+    },
     '$store.state.ttoom.oomOptions.trinkets': function(newValue, oldValue) {
-      // when we first initialize, we want to find the unbuffed int value for the paladin, without trinkets
-      // basically subtract trinket stats from charSheetStats to get statsBeforeTrinket
-      if (typeof oldValue === 'undefined') {
-        this.loopThroughTrinkets(this.oomOptions['charSheetStats'], true, (stat, newValue) => {
-          this.setStatsBeforeTrinket({key: stat, value: newValue});
-        });
-        return;
-      }
+      if (typeof oldValue === 'undefined') return;
       
+      this.hasChangedPreset = true;
+
       // whenever user selects or unselects trinkets, we will use statsBeforeTrinket and the selected trinket to calculate set charsheetstats
       // basically add trinket stats to statsBeforeTrinket resulting in charSheetStats
       this.loopThroughTrinkets(this.oomOptions['statsBeforeTrinket'], false, (stat, newValue) => {
@@ -288,6 +314,7 @@ export default {
     '$store.state.ttoom.oomOptions.charSheetStats': {
       handler: function(newValue, oldValue) {
         if (typeof oldValue === 'undefined') return;
+        this.hasChangedPreset = true;
         this.loopThroughTrinkets(this.oomOptions['charSheetStats'], true, (stat, newValue) => {
           this.setStatsBeforeTrinket({key: stat, value: newValue});
         });
@@ -296,7 +323,7 @@ export default {
     },
   },
   methods: {
-    ...mapMutations('ttoom', ['setCharSheetStats', 'setStatsBeforeTrinket']),
+    ...mapMutations('ttoom', ['setCharSheetStats', 'setStatsBeforeTrinket', 'setTrinkets', 'setTierOptions']),
     loopThroughTrinkets(originalValues, subtractTrinketValuesFromCharSheetStats, callback) {
       function addOrSubtract(a, b, subtract) {
         if (subtract) return a - b;
@@ -335,6 +362,32 @@ export default {
     close() {
       this.$emit('close');
     },
+    calculateStatsBeforeTrinket() {
+      // when we first initialize, we want to find the unbuffed int value for the paladin, without trinkets
+      // basically subtract trinket stats from charSheetStats to get statsBeforeTrinket
+      this.loopThroughTrinkets(this.oomOptions['charSheetStats'], true, (stat, newValue) => {
+        this.setStatsBeforeTrinket({key: stat, value: newValue});
+      });
+    },
+    // updates selectedPreset and also updates tier sets, trinkets and stats
+    // if preset isn't passed, will use default value
+    setPreset(preset) {
+      if (typeof preset === 'undefined') {
+        preset = data[this.playerClass]['presets'].find((entry) => entry['default']);
+      }
+      this.selectedPreset = preset;
+      this.setTrinkets(preset['trinkets']);
+      this.setTierOptions(preset['tier']);
+      for (let statKey in preset['charSheetStats']) {
+        this.setCharSheetStats({key: statKey, value: preset['charSheetStats'][statKey]});
+      }
+      this.calculateStatsBeforeTrinket(); // need to recalculate statsBeforeTrinket everytime we update presets
+      // bad code but we force the button to update color 50ms later
+      // otherwise, this wont work as this.hasChangedPreset will be set to false in the watch events for trinket change
+      setTimeout(() => {
+        this.hasChangedPreset = false; // this controlls whether the button will be shaded
+      }, 50);
+    }
   },
 }
 </script>

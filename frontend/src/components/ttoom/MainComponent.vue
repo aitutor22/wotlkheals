@@ -1,15 +1,20 @@
 <template>
   <div class="container">
-    <div class="row" v-if="showExplanation">
+    <div v-if="showExplanation" class="row">
       <p class="text-justify">
-        This tool simulates how long it takes for a Holy Paladin to go OOM (ttoom). Hover over the fields to see a quick explanation. Note: do not add stats from trinkets to spellpower, crit, etc.
+        This tool simulates how long it takes to go OOM (ttoom). Click <b>Edit Options</b>, input stats from 80upgrades (including talents), and click <b>Run Simulation</b>. Unlike dps sims, this tool focuses more on spell choice and gameplay choices than gear, as we believe that has the highest impact on healer performance.
       </p>
       <p class="text-justify">
-        This tool is in alpha and please message <b>Trollhealer#8441</b> on Discord if you see any bugs or have suggestions. Special thanks to <b>Lovelace</b> and <b>Currelius</b> for formula help, <b>Kanga</b> for setting everything up, as well as the rest of the healer cabal for valuable feedback.
+        Please message <b>Trollhealer#8441</b> on Discord if you see any bugs or have suggestions.
+        <span v-if="playerClass === 'paladin'">
+          Special thanks to <b>Lovelace</b> and <b>Currelius</b> for formula help, <b>Kanga</b> for setting everything up, as well as the rest of the healer cabal for valuable feedback.
+        </span>
+        <span v-if="playerClass === 'shaman'">
+          Created jointly with <b>Lovelace</b>. Special thanks to <b>Kanga</b> for setting everything up.
+        </span>
       </p>
     </div>
     
-
     <div class="row">
       <div class="col-md-4">
           <button class="btn btn-warning" @click="showOptionsModal = true">Edit Options</button>
@@ -107,6 +112,12 @@
       <h5>Change Log</h5>
       <ul>
         <li>
+          <p><b>03/09/22</b></p>
+          <p>
+            For convenience, users can now input int & crit rating taken from 80upgrades. Added presets taken from <a href='https://discord.gg/lightclubclassic'>Light Club</a>.
+          </p>
+        </li>
+        <li>
           <p><b>26/08/22</b></p>
           <p>
             User can now input a seed to allow for better comparison. Added options to control how mana cooldowns are used. Fixed bug where DMCG would only be used once in some cases. Improved mobile responsiveness.
@@ -129,6 +140,9 @@ import data from './data';
 // https://stackoverflow.com/questions/38085352/how-to-use-two-y-axes-in-chart-js-v2
 export default {
   name: 'TTOOM',
+  metaInfo: {
+    title: 'Time to OOM',
+  },
   props: {
     playerClass: String,
   },
@@ -161,6 +175,15 @@ export default {
         return 'paladin-options';
       }
       return null;
+    },
+    playerClassVerbose() {
+      if (this.playerClass === 'paladin') {
+        return 'Holy Paladin';
+      } else if (this.playerClass === 'shaman') {
+        return 'Resto Shaman'
+      } else {
+        return '';
+      }
     },
     logs() {
       if (!this.selectedLog) return;
@@ -264,16 +287,9 @@ export default {
         }
       }
 
-      // for (let otherField of ['manaPool', 'critChance']) {
-      //   if (!this.basicNumberValidation(this.oomOptions[otherField])) {
-      //     alert('Please enter a valid number for : ' + otherField);
-      //     return;
-      //   }
-      // }
-
       // class specific validation
       if (this.playerClass === 'paladin') {
-        if (!this.oomOptions['2pT7'] && this.oomOptions['4pT7']) {
+        if (!this.oomOptions['tier']['2pT7'] && this.oomOptions['tier']['4pT7']) {
           alert('4PT7 was selected but not 2PT7');
           return;
         }
