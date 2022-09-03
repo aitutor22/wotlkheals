@@ -245,6 +245,17 @@ const data = {
                 category: 'directHeal',
             },
             {
+                'key': 'HEALING_WAVE',
+                'name': 'Healing Wave',
+                'cooldown': 0,
+                'instant': false,
+                'baseCastTime': 2.5,
+                'baseManaCost': 1099,
+                baseHeal: 3250,
+                coefficient: 1.61, // doesn't include TW
+                category: 'directHeal',
+            },
+            {
                 'key': 'LESSER_HEALING_WAVE',
                 'name': 'Lesser Healing Wave',
                 'cooldown': 0,

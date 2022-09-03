@@ -156,6 +156,7 @@ const data = {
         cpm: {
           CHAIN_HEAL: 30,
           LESSER_HEALING_WAVE: 5,
+          HEALING_WAVE: 1,
         },
         talents: {
           tidalFocus: true,

@@ -95,6 +95,8 @@ class Shaman extends BasePlayer {
                 let glpyhLHWBonus = this._options['lesserHealingWaveCastPercentageOnEarthShield'] / 100 * 0.2;
                 multiplicativeFactors.push({'glyphLesserHealingWave': glpyhLHWBonus});
             }
+        } else if (spellKey === 'HEALING_WAVE') {
+            multiplicativeFactors = [{purification: 0.1}, {healingWay: 0.25}];
         }
         else {
             throw new Error('Unknown spellkey: ' + spellKey);
@@ -285,7 +287,7 @@ class Shaman extends BasePlayer {
             this._statistics['waterShieldProc'][spellKey] = 0;
         }
         this._statistics['waterShieldProc'][spellKey] += amount;
-        return this.addManaHelper(amount, 'waterShieldProc', logger, timestamp);
+        return this.addManaHelper(Math.floor(amount), 'waterShieldProc', logger, timestamp);
     }
 
 
