@@ -35,7 +35,6 @@ class Shaman extends BasePlayer {
         // tidalFocus reduces healing cost by 5%; note that we don't put 2pt6 here as it only affects CHAIN_HEAL
         this._baseOtherMultiplicativeTotal = Utility.getKeyBoolean(this._options['talents'], 'tidalFocus') ? (1 - this.classInfo['manaCostModifiers']['tidalFocus']) : 1;
         this._numchainHealHits = Math.floor(this._options['chainHealHits']);
-   
         this.initialiseManaCooldowns(options['manaCooldowns']);
     }
 
@@ -76,7 +75,8 @@ class Shaman extends BasePlayer {
     // reduces the chain heal bounce accordingly
     calculateHealing(spellKey, isCrit, chainHealHitIndex=0) {
         let amount = 0,
-            multiplicativeFactors = [];
+            multiplicativeFactors = [],
+            coefficientAddition = 0
 
         if (spellKey === 'CHAIN_HEAL') {
             // note: when we pass chainHealFactor into calculateHealingFactor, we will automatically +1 to it
@@ -89,19 +89,23 @@ class Shaman extends BasePlayer {
             }
         } else if (spellKey === 'LESSER_HEALING_WAVE') {
             multiplicativeFactors = [{purification: 0.1}];
-            // glpyh
-            // Your Lesser Healing Wave heals for 20% more if the target is also affected by Earth Shield.
+            // tidalWaves increases LHW coefficient by 0.1
+            coefficientAddition = this.isStackActive('tidalWaves') ? 0.1 : 0;
+
+            // glpyh - Your Lesser Healing Wave heals for 20% more if the target is also affected by Earth Shield.
             if (Utility.getKeyBoolean(this._options, 'glyphLesserHealingWave')) {
                 let glpyhLHWBonus = this._options['lesserHealingWaveCastPercentageOnEarthShield'] / 100 * 0.2;
                 multiplicativeFactors.push({'glyphLesserHealingWave': glpyhLHWBonus});
             }
         } else if (spellKey === 'HEALING_WAVE') {
+            // tidalWaves increases HW coefficient by 0.2
+            coefficientAddition = this.isStackActive('tidalWaves') ? 0.2 : 0;
             multiplicativeFactors = [{purification: 0.1}, {healingWay: 0.25}];
         }
         else {
             throw new Error('Unknown spellkey: ' + spellKey);
         }
-        return Math.floor(this.calculateHealingHelper(spellKey, {}, multiplicativeFactors, isCrit));
+        return Math.floor(this.calculateHealingHelper(spellKey, {}, multiplicativeFactors, isCrit, coefficientAddition));
     }
 
     // chain heal functions quite differently from other spells due to multiple hits
@@ -159,10 +163,21 @@ class Shaman extends BasePlayer {
         procs = this.getSoupEogProcs(spellIndex, spellKey === 'CHAIN_HEAL' ? this._numchainHealHits : 1);
 
         modifiedCritChance = this.critChance;
-        // // 10% additional crit chance to holy shock from 2pT7
-        // if (spellKey === 'HOLY_SHOCK' && this._options['2pT7']) {
-        //     modifiedCritChance += 0.1
-        // } 
+
+
+        if (this.isStackActive('tidalWaves') && spellKey === 'LESSER_HEALING_WAVE') {
+            // 25% additional crit chance to LHW if Tidal Waves is up
+            modifiedCritChance += 0.25;
+        }
+
+            // if () {
+                
+            //     this.modifyStacks('tidalWaves', 'decrement', 1, timestamp, logger);
+            // }
+
+        // else if (spellKey === 'HEALING_WAVE') {
+        //         this.modifyStacks('tidalWaves', 'decrement', 1, timestamp, logger);
+        //     }
         // // infusion of lights adds 20% crit chance to holy light
         // if (spellKey === 'HOLY_LIGHT' && this.isBuffActive('infusionOfLight')) {
         //     this.setBuffActive('infusionOfLight', false, timestamp, true, logger);
@@ -202,6 +217,11 @@ class Shaman extends BasePlayer {
             logger.log('🥣🥣🥣 SOUP 🥣🥣🥣', 2);
         } else if (procs['eog']) {
             logger.log('👀 👀 EOG 👀 👀', 2);
+        }
+
+        // casting CH or riptide should add tidal waves
+        if (spellKey === 'CHAIN_HEAL' || spellKey === 'RIPTIDE') {
+            this.modifyStacks('tidalWaves', 'set', 2, timestamp, logger);
         }
 
         // for chainHeal, we handle this separately because the behaviour is more complex

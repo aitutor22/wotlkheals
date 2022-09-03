@@ -67,6 +67,8 @@ class BasePlayer {
         this._buffs = {};
         // tracks icds like ied and also dmcg (the 45s cooldown)
         this._icds = {};
+        // similar to buffs, but has counter (like Tidal Waves)
+        this._stacks = {};
         // assume all healers are using IED
         this._procsToCheck = ['ied'];
         // checks if player is using dmcg
@@ -180,8 +182,35 @@ class BasePlayer {
            if (logger) logger.log(`${timestamp}s: ${buffKey} expired`, 2);
         }
     }
+
+    // operation can be set, increment, or decrement
+    modifyStacks(stackKey, operation, amount, timestamp, logger=null) {
+        if (typeof this._stacks[stackKey] === 'undefined') {
+            this._stacks[stackKey] = {
+                amount: 0,
+            }
+        }
+
+        if (operation === 'set') {
+            let oldAmount = this._stacks[stackKey];
+            this._stacks[stackKey] = amount;
+            // only log if there is a change in stacks
+            if (logger && amount !== oldAmount) logger.log(`${timestamp}s: setting ${stackKey} stacks to ${amount}`, 2);
+        } else if (operation === 'decrement') {
+            this._stacks[stackKey] = Math.max(0, this._stacks[stackKey] - amount);
+            if (logger) logger.log(`${timestamp}s: decreasing ${stackKey} stacks to ${amount}`, 2);
+        } else if (operation === 'increment') {
+            this._stacks[stackKey] += amount;
+            if (logger) logger.log(`${timestamp}s: increasing ${stackKey} stacks to ${amount}`, 2);
+        } else {
+            throw new Error('Invalid operation: ' + operation);
+        }
+    }
     // end setters
 
+    isStackActive(stackKey) {
+        return (typeof this._stacks[stackKey] !== 'undefined') && this._stacks[stackKey] > 0;
+    }
 
     isBuffActive(buffKey) {
         return (typeof this._buffs[buffKey] !== 'undefined') && this._buffs[buffKey]['active'];
@@ -449,9 +478,10 @@ class BasePlayer {
     // lets say multiplicativeFactors = [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1, 'glpyh': 0.5}]
     // then we multiply x by (1 + 0.12) * (1 + 0.05) * (1 + 1 + 0.5)
     // additiveFactors not implemented yet; it's for when we add stuff to amount before multiplication
-    calculateHealingHelper(spellKey, additiveFactors=null, multiplicativeFactors=null, isCrit=false) {
+    // coefficientAddition is for situations like tidalWaves where we add bonus healing effects
+    calculateHealingHelper(spellKey, additiveFactors=null, multiplicativeFactors=null, isCrit=false, coefficientAddition=0) {
         const spellData = this.classInfo['spells'].find((_spell) => _spell['key'] === spellKey);
-        let amount = spellData['baseHeal'] + this.spellPower * spellData['coefficient'];
+        let amount = spellData['baseHeal'] + this.spellPower * (spellData['coefficient'] + coefficientAddition);
         let factorSum = 0;
         if (multiplicativeFactors !== null) {
             for (let factor of multiplicativeFactors) {
