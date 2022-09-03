@@ -310,6 +310,14 @@ export default {
             alert('glyphHolyLightHits should be an integer between 0 and 5');
             return; 
         }
+      } else if (this.playerClass === 'shaman') {
+        if (this.oomOptions['glyphLesserHealingWave']) {
+          let num = this.oomOptions['lesserHealingWaveCastPercentageOnEarthShield'];
+          if (!this.basicNumberValidation(num) || num < 0 || num > 100) {
+            alert('Please insert valid number for lesserHealingWaveCastPercentageOnEarthShield');
+            return;
+          }
+        }
       }
 
       this.fetching = true;

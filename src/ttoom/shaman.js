@@ -87,6 +87,14 @@ class Shaman extends BasePlayer {
             if (Utility.getKeyBoolean(this._options, '4pT7')) {
                 multiplicativeFactors.push({'4pT7': 0.05});
             }
+        } else if (spellKey === 'LESSER_HEALING_WAVE') {
+            multiplicativeFactors = [{purification: 0.1}];
+            // glpyh
+            // Your Lesser Healing Wave heals for 20% more if the target is also affected by Earth Shield.
+            if (Utility.getKeyBoolean(this._options, 'glyphLesserHealingWave')) {
+                let glpyhLHWBonus = this._options['lesserHealingWaveCastPercentageOnEarthShield'] / 100 * 0.2;
+                multiplicativeFactors.push({'glyphLesserHealingWave': glpyhLHWBonus});
+            }
         }
         else {
             throw new Error('Unknown spellkey: ' + spellKey);

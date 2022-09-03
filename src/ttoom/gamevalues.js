@@ -250,7 +250,7 @@ const data = {
                 'cooldown': 0,
                 'instant': false,
                 'baseCastTime': 1.5,
-                'baseManaCost': 835.24,
+                'baseManaCost': 659.4,
                 baseHeal: 1720,
                 coefficient: 0.806,
                 category: 'directHeal',
@@ -265,7 +265,7 @@ const data = {
             spellPowerFromInt: 0.15, // nature's blessing
             waterShield: {
                 baseMp5: 100, // unaffected by improved shields talent
-                procValue: 460, // whenever damaged or crit (requires proc chance), gains 460 mana back (after talents)
+                procValue: 492, // whenever damaged or crit (requires proc chance), gains 460 mana back (after talents)
                 chance: {
                     'HEALING_WAVE': 1,
                     'RIPTIDE': 1,
@@ -417,6 +417,9 @@ const data = {
         'INNERVATE': 'Innervate',
         'ManaTideTotem': 'Mana Tide Totem',
         'ARCANE_TORRENT': 'Arcane Torrent',
+        'totemOfForestGrowth': 'Totem of Forest Growth',
+        'waterShieldProc': 'Improved Water Shield',
+        'manaTideTotem': 'Mana Tide Totem',
     },
 }
 

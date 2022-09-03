@@ -566,12 +566,7 @@ class BasePlayer {
 
         // cannot exceed max mana
         if (this._currentMana > this.maxMana) {
-            console.log('exceeded mana at ' + timestamp)
             this._currentMana = this.maxMana;
-        }
-
-        if (category === 'waterShieldProc' && this._currentMana - oldMana < 460) {
-            console.log(timestamp)
         }
 
         this._statistics['manaGenerated'][category] += this._currentMana - oldMana;

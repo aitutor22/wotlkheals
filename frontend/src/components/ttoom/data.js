@@ -155,6 +155,7 @@ const data = {
         seed: '',
         cpm: {
           CHAIN_HEAL: 30,
+          LESSER_HEALING_WAVE: 5,
         },
         talents: {
           tidalFocus: true,
@@ -164,7 +165,7 @@ const data = {
           manaPotion: true,
           injector: false,
           innervate: false,
-          manaTideTotem: false,
+          manaTideTotem: true,
           waterShieldProcsPerMinFromDamage: 2.5,
         },
         trinkets: ['soup',],
@@ -174,6 +175,8 @@ const data = {
           '2pT7': true,
           '4pT7': true,
         },
+        glyphLesserHealingWave: false,
+        lesserHealingWaveCastPercentageOnEarthShield: 50,
       },
     },
     items: {
