@@ -118,5 +118,4 @@ test('Analyzer loatheb', () => {
     // expect(results['counter'][1]).toBe(4);
     // expect(results['counter'][3]).toBe(1);
     // expect(results['totalCasts']).toBe(5);
-    console.log(results)
 });

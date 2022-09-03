@@ -224,6 +224,13 @@ const data = {
             numGcdsPerMinNotCountedUnderSpells: 0, // to add in future, probably around 2 with FET, etc
             intModifier: 1.04 * 1.1, // 2 pts in ancestral intellect only, blessing of kings
             baseCritChanceModifier: 0.14, // 5% additional crit chance from thundering strikes, 5% from tidal mastery, 4% from blessing of elements
+            // should theoretically be within spells array, but since we use this alot, microoptimization to avoid having to constantly search array
+            chainHealBounceFactor: {
+                0: 1,
+                1: 0.6,
+                2: 0.36,
+                3: 0.216,
+            },
             spells: [
             {
                 'key': 'CHAIN_HEAL',
@@ -232,6 +239,7 @@ const data = {
                 'instant': false,
                 'baseCastTime': 2.5,
                 'baseManaCost': 835.24,
+                // 'baseManaCost': 1274, //this is HL mana cost; changing this to test out if water shield is overcapping
                 baseHeal: 1130,
                 coefficient: 1.34, // from lovelace
                 category: 'directHeal',

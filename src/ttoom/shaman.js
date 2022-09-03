@@ -3,7 +3,6 @@ const BasePlayer = require('./basePlayer');
 const DATA = require('./gamevalues');
 const Utility = require('../common/utilities');
 
-
 // methods that must be implemented by all player class
 // subtractMana
 
@@ -51,6 +50,14 @@ class Shaman extends BasePlayer {
         this.addManaHelper(tickAmount - Math.floor(replenishmentTick) - Math.floor(this._waterShieldBaseBaseTick), 'otherMP5');
     }
 
+    // chain heal is a bit funky with how it work since it's multiple hits off the spellIndex
+    // each spell should have a separate proc, and we use a special proc function to handle
+    // for each chain heal cast, we pull out an array of 4 random numbers, and select the appropriate number based on chainHealHitIndex
+    checkChainHealProcHelper(key, spellIndex, chainHealHitIndex, procChance) {
+        let arr = this._rngThresholds[key].slice(spellIndex * 4, (spellIndex + 1) * 4);
+        return arr[chainHealHitIndex] < procChance;
+    }
+
     // majority of spell selection is done in basePlayer's selectSpellHelper
     // the only logic we want to add is if infusion of light is active, always cast Holy Light unless CPM is set to 0
     selectSpell(timestamp, spellIndex) {
@@ -59,23 +66,55 @@ class Shaman extends BasePlayer {
         return this.selectSpellHelper(timestamp, spellIndex);
     }
 
-    calculateHealing(spellKey, isCrit) {
+    // if spellKey is Chain heal, requires chainHealHitIndex, which can be 0, 1, 2 or 3
+    // reduces the chain heal bounce accordingly
+    calculateHealing(spellKey, isCrit, chainHealHitIndex=0) {
         let amount = 0,
             multiplicativeFactors = [];
-            // glyphHLFactor = this._options['glyphHolyLightHits'] * this.classInfo['glyphHolyLightHitHealingPercentage'];
 
         if (spellKey === 'CHAIN_HEAL') {
-            let chainHealBounceFactor = 0.6 + 0.36 + 0.216; // 40% reduction per bounce, 4 hits with glyph
-            // {'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1, 'glpyh': glyphHLFactor}
-            multiplicativeFactors = [{purification: 0.1}, {improvedChainHeal: 0.2}, {'bounces': chainHealBounceFactor}];
+            // note: when we pass chainHealFactor into calculateHealingFactor, we will automatically +1 to it
+            // hence need to subtract by 1 here
+            let chainHealFactor = this.classInfo['chainHealBounceFactor'][chainHealHitIndex] - 1;
+            multiplicativeFactors = [{purification: 0.1}, {improvedChainHeal: 0.2}, {'chainHealFactor': chainHealFactor}];
         }
-        // else if (spellKey === 'FLASH_OF_LIGHT' || spellKey === 'HOLY_SHOCK') {
-        //     multiplicativeFactors = [{'healingLight': 0.12}, {'divinity': 0.05}, {'beacon': 1}];
-        // } 
         else {
             throw new Error('Unknown spellkey: ' + spellKey);
         }
         return Math.floor(this.calculateHealingHelper(spellKey, {}, multiplicativeFactors, isCrit));
+    }
+
+    // chain heal functions quite differently from other spells due to multiple hits
+    // since EoG/Soup can only proc once, we don't need to handle here
+    // but water shield proc needs to be handled separatedly
+    // returns a boolean indicating whether it was crit
+    castChainHealHelper(spellKey, timestamp, spellIndex, critChance, logger) {
+        let numCritsTotal = 0, 
+            offset = 0, // since chain heal is not an instant, no offset
+            numChainHealHits = this._numchainHealHits,
+            msg;
+
+        // to be in for loop
+        // we loop through each of the hits and checks healing and crit separately
+        // this behaves differently from beacon/glyph of holy light because for those, they can't crit separately
+        // bug - crit/water shield are all proccing together
+        for (let chainHealHitIndex = 0; chainHealHitIndex < numChainHealHits; chainHealHitIndex++) {
+            let isCrit = this.checkChainHealProcHelper('crit', spellIndex, chainHealHitIndex, critChance),
+                amountHealed = this.calculateHealing(spellKey, isCrit, chainHealHitIndex);
+
+
+            msg = isCrit ? `${timestamp}s: **CRIT ${spellKey} for ${amountHealed}**` :
+                    `${timestamp}s: Casted ${spellKey} for ${amountHealed}`;
+
+            logger.log(msg, 2);
+
+            // after spell is casted, add effects
+            if (isCrit) {
+                this.checkAndAddManaFromWaterShieldProc(spellKey, spellIndex, logger, chainHealHitIndex, timestamp);
+                numCritsTotal++;
+            }
+        }
+        return numCritsTotal > 0;
     }
 
     // selectSpell and castSpell work differently
@@ -92,6 +131,8 @@ class Shaman extends BasePlayer {
             eventsToCreate = [];
         let status, manaUsed, currentMana, errorMessage, offset, isCrit, msg, modifiedCritChance, amountHealed;
 
+        // for chain heal, we assume each hit is separate, and can crit and proc WS separately
+        // however, we also assume that there can be only max of 1 eog/soup proc
         // checks for soup, and eog procs
         // chain heal has more hits; all other spells have 1 hit
         procs = this.getSoupEogProcs(spellIndex, spellKey === 'CHAIN_HEAL' ? this._numchainHealHits : 1);
@@ -113,17 +154,21 @@ class Shaman extends BasePlayer {
         logger.log(statMsg, 3);
 
         let spellInfo = this.classInfo['spells'].find(_spell => _spell['key'] === spellKey);
-        // NOTE: Earthshield can crit, but when we cast spell here, it merely applies the spell and thus earth shield is 0 healing
-        isCrit = spellInfo['category'] === 'directHeal' ? this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance) : false;
-        // directHeals should just calculate actual healing amount, for hots, just cast the spell
-        if (spellInfo['category'] === 'directHeal') {
-            amountHealed = this.calculateHealing(spellKey, isCrit);
-        } else {
-            eventsToCreate.push({
-                timestamp: timestamp, 
-                eventType: 'INITIALIZE_HOT_EVENTS',
-                subEvent: spellInfo['key'],
-            })
+
+        // for chain heal, we handle all of this in a separate function
+        if (spellKey !== 'CHAIN_HEAL') {
+            // NOTE: Earthshield can crit, but when we cast spell here, it merely applies the spell and thus earth shield is 0 healing
+            isCrit = spellInfo['category'] === 'directHeal' ? this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance) : false;
+            // directHeals should just calculate actual healing amount, for hots, just cast the spell
+            if (spellInfo['category'] === 'directHeal') {
+                amountHealed = this.calculateHealing(spellKey, isCrit);
+            } else {
+                eventsToCreate.push({
+                    timestamp: timestamp, 
+                    eventType: 'INITIALIZE_HOT_EVENTS',
+                    subEvent: spellInfo['key'],
+                })
+            }
         }
         [status, manaUsed, currentMana, errorMessage] = this.subtractMana(spellKey, timestamp, procs);
 
@@ -132,13 +177,23 @@ class Shaman extends BasePlayer {
             return [status, errorMessage, 0, eventsToCreate];
         }
 
-        // BE CAREFUL WHERE THIS CODE GOES - if you put it before the oom check, will add 1 to final tally
-        this.addSpellCastToStatistics(spellKey, isCrit);
         if (procs['soup']) {
             logger.log('🥣🥣🥣 SOUP 🥣🥣🥣', 2);
         } else if (procs['eog']) {
             logger.log('👀 👀 EOG 👀 👀', 2);
         }
+
+        // for chainHeal, we handle this separately because the behaviour is more complex
+        if (spellKey === 'CHAIN_HEAL') {
+            logger.log(`Spent ${originalMana - currentMana} mana on CHAIN_HEAL`, 2);
+            let isChainHealCrit = this.castChainHealHelper(spellKey, timestamp, spellIndex, modifiedCritChance, logger);
+            this.addSpellCastToStatistics(spellKey, isChainHealCrit);
+            // chain heal has 0 offset as it's not instant spell
+            return [status, errorMessage, 0, eventsToCreate];
+        }
+
+        // BE CAREFUL WHERE THIS CODE GOES - if you put it before the oom check, will add 1 to final tally
+        this.addSpellCastToStatistics(spellKey, isCrit);
 
         if (spellInfo['category'] === 'directHeal' ) {
             msg = isCrit ? `${timestamp}s: **CRIT ${spellKey} for ${amountHealed}** (spent ${originalMana - currentMana} mana)` :
@@ -161,7 +216,6 @@ class Shaman extends BasePlayer {
             //     this.setBuffActive('infusionOfLight', true, timestamp, true, logger);
             // }
         }
-
 
         return [status, errorMessage, offset, eventsToCreate];
     }
@@ -190,16 +244,19 @@ class Shaman extends BasePlayer {
         return this.subtractManaHelper(spellKey, timestamp, baseCostMultiplicativeFactors, baseCostAdditiveFactors, otherMultiplicativeTotal);
     }
 
-    // UGH NEED TO CONSIDER SEPARATE PROC CHANCES
-    checkAndAddManaFromWaterShieldProc(spellKey, spellIndex, logger=null) {
+    // given that a spell has crit, check if it then procs water shield
+    // if spellKey is CHAIN_HEAL, need to pass in a separate chainHealHitIndex so system can use the specialised chainHealProcHelper
+    checkAndAddManaFromWaterShieldProc(spellKey, spellIndex, logger=null, chainHealHitIndex=0, timestamp) {
         let procChance = this.classInfo['waterShield']['chance'][spellKey],
-            numHits = spellKey === 'CHAIN_HEAL' ? this._options['chainHealHits'] : 1,
-            amount = 0;
-        // pass true to allowMultipleHits means this returns the number of procs rather than a boolean
-        let numProcs = this.checkProcHelper('waterShield', spellIndex, numHits, procChance, true);
-        if (numProcs === 0) return;
+            amount = 0,
+            isProc;
 
-        amount = this.classInfo['waterShield']['procValue'] * numProcs;
+        isProc = spellKey !== 'CHAIN_HEAL' ? this.checkProcHelper('waterShield', spellIndex, 1, procChance) :
+            this.checkChainHealProcHelper('waterShield', spellIndex, chainHealHitIndex, procChance);
+
+        if (!isProc) return;
+
+        amount = this.classInfo['waterShield']['procValue'];
         if (typeof this._statistics['waterShieldProc'] === 'undefined') {
             this._statistics['waterShieldProc'] = {};
         }
@@ -207,7 +264,7 @@ class Shaman extends BasePlayer {
             this._statistics['waterShieldProc'][spellKey] = 0;
         }
         this._statistics['waterShieldProc'][spellKey] += amount;
-        return this.addManaHelper(amount, 'waterShieldProc', logger);
+        return this.addManaHelper(amount, 'waterShieldProc', logger, timestamp);
     }
 
 

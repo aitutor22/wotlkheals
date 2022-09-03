@@ -230,19 +230,6 @@ class BasePlayer {
         return eventsToCreate;
     }
 
-    // // checks if there is IED proc - if there is add mana
-    // // if we do use IED, then we need to set a "ied_on_coolodown" buff expire
-    // // this to ensure we don't use IED while it is on CD
-    // // HANDLE THIS AFTER WORK - merge dmcg and ied together
-    // checkForAndHandleIEDProc(spellIndex, logger) {
-    //     let procChance = DATA['items']['ied']['proc']['chance'],
-    //         isProc = this.checkProcHelper('ied', spellIndex, 1, procChance);
-
-    //     if (isProc) {
-    //         this.addManaHelper(DATA['items']['ied']['proc']['mana'], 'ied', logger);
-    //     }
-    // }
-
     // checks to see if currentMana has exceeded max mana at end of turn
     // e.g. when dmcg expires
     checkOverflowMana(timestamp) {
@@ -487,8 +474,10 @@ class BasePlayer {
 
     // takes an optional parameter allowMultipleHits
     // if set to false, returns a boolean indicating whether there is a successful hit
-    // if set to true, returns the number of hits (useful for something like water shield and chain heal)
-    // where each hit can proc water shield
+    // if set to true, returns the number of hits
+    // originally wrote this for watershield when we were modelling chain heal crits as binary (either all crit or all dont crit)
+    // subsequently, changed the behaviour to consider each hit separately
+    // but leave the code in, in case we need it in future
     checkProcHelper(key, spellIndex, numHits, procChance, allowMultipleHits=false) {
         let arr = this._rngThresholds[key].slice(spellIndex * numHits, (spellIndex + 1) * numHits);
         if (!allowMultipleHits) return Utility.anyValueBelowThreshold(arr, procChance);
@@ -497,7 +486,6 @@ class BasePlayer {
         for (let i = 0; i < arr.length; i++) {
             if (arr[i] < procChance) numProcs++;
         }
-        console.log(numProcs)
         return numProcs;
     }
 
@@ -579,6 +567,10 @@ class BasePlayer {
         if (this._currentMana > this.maxMana) {
             this._currentMana = this.maxMana;
         }
+
+        // if (category === 'waterShieldProc' && this._currentMana - oldMana < 460) {
+        //     console.log(timestamp)
+        // }
 
         this._statistics['manaGenerated'][category] += this._currentMana - oldMana;
         if (logger && amount > 0) {
@@ -685,10 +677,13 @@ class BasePlayer {
             // trying to calculate how much mana we spent on average
             totalManaSpent = (typeof this._statistics['manaSpent'] !== 'undefined') && (typeof this._statistics['manaSpent'][key] !== 'undefined')
                 ? this._statistics['manaSpent'][key] : 0;
-            // only applicable for paladin - subtract mana saved from illumination
+            // only applicable for paladin & shaman - subtract mana saved from illumination / water shield
             if ((typeof this._statistics['illumination'] !== 'undefined') &&
                     (typeof this._statistics['illumination'][key] !== 'undefined')) {
-                totalManaSpent -= this._statistics['illumination'][key]
+                totalManaSpent -= this._statistics['illumination'][key];
+            } if ((typeof this._statistics['waterShieldProc'] !== 'undefined') &&
+                    (typeof this._statistics['waterShieldProc'][key] !== 'undefined')) {
+                totalManaSpent -= this._statistics['waterShieldProc'][key];
             }
 
             hpet = Math.floor((this._statistics['healing'][key] / totalCasts) / castTime)

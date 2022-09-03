@@ -168,7 +168,7 @@ const data = {
           waterShieldProcsPerMinFromDamage: 2.5,
         },
         trinkets: ['soup',],
-        chainHealHits: 3,
+        chainHealHits: 4,
         tier: {
           '2pT6': false,
           '2pT7': true,
