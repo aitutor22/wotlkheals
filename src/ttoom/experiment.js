@@ -91,6 +91,7 @@ class Experiment {
             thresholds.push('sow');
         } else if (playerClass === 'shaman') {
             thresholds.push('waterShield');
+            thresholds.push('earthliving');
         }
 
         // these trinkets have rng effects - if player has selected them, then add

@@ -330,7 +330,7 @@ class BasePlayer {
         for (let item of items) {
             // soup and eog should have multiple chances to proc
             let factor = (['soup', 'eog'].indexOf(item) > -1) ? soupHits : 1;
-            if (item === 'waterShield' || (item === 'crit' && this._playerClass === 'shaman')) {
+            if (item === 'waterShield' || (this._playerClass === 'shaman' && (item === 'crit' || item === 'earthliving'))) {
                 factor = 4; // up to max of 4 chances for water shield to proc when we use chain heal; same for crit
             }
             this._rngThresholds[item] = createHelper(maxMinsToOOM * 60 * factor);
@@ -472,6 +472,16 @@ class BasePlayer {
         return [requireGCD ? 2 : 1, eventsToCreate];
     }
 
+    addHealingToStatistics(spellKey, amount) {
+        // stores in statistics
+        if (!(spellKey in this._statistics['healing'])) {
+            this._statistics['healing'][spellKey] = 0;
+        }
+
+        this._statistics['healing'][spellKey] += amount;
+        this._statistics['overall']['healing'] += amount;
+    }
+
     // returns uncrit healing amount
     // multplicative factors are passed as an array of dictionaries
     // each dictionary is added together before mulitplied with the healingValue
@@ -491,14 +501,7 @@ class BasePlayer {
         }
 
         amount = Math.floor(amount * (isCrit ? 1.5 : 1));
-
-        // stores in statistics
-        if (!(spellKey in this._statistics['healing'])) {
-            this._statistics['healing'][spellKey] = 0;
-        }
-
-        this._statistics['healing'][spellKey] += amount;
-        this._statistics['overall']['healing'] += amount;
+        this.addHealingToStatistics(spellKey, amount);
         return amount;
     }
 

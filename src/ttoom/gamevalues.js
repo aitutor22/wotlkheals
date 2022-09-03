@@ -265,7 +265,7 @@ const data = {
                 baseHeal: 1720,
                 coefficient: 0.806,
                 category: 'directHeal',
-            },
+            }
             ],
             manaCostModifiers: {
                 'tidalFocus': 0.05, // 5% mana discount on all spells,
@@ -278,6 +278,18 @@ const data = {
                 lhwCritChance: 0.25, // adds 25% crit to LHW
                 bonusHWHealCoefficient: 0.2,
                 bonusLHWHealCoefficient: 0.1,
+            },
+            ancestralAwakening: {
+                spells: ['RIPTIDE', 'HEALING_WAVE', 'LESSER_HEALING_WAVE'],
+                value: 0.3,
+            },
+            earthliving: {
+                bonusSpellPower: 150,
+                baseHeal: 652,
+                coefficient: 0.684,
+                multiplier: 0.1, // 10% from purification
+                category: 'hot',
+                procChance: 0.2,
             },
             maxSoupHits: 4,
             spellPowerFromInt: 0.15, // nature's blessing

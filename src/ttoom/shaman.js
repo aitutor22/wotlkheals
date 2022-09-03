@@ -31,6 +31,10 @@ class Shaman extends BasePlayer {
             this._waterShieldBaseBaseTick *= 1.1;
         }
 
+        // adds earthliving weapon to spellpower
+        this._baseSpellPower += this.classInfo['earthliving']['bonusSpellPower'];
+        this._earthlivingProcChance = this.classInfo['earthliving']['procChance'];
+
         this._otherMultiplicativeTotal = 1;
         // tidalFocus reduces healing cost by 5%; note that we don't put 2pt6 here as it only affects CHAIN_HEAL
         this._baseOtherMultiplicativeTotal = Utility.getKeyBoolean(this._options['talents'], 'tidalFocus') ? (1 - this.classInfo['manaCostModifiers']['tidalFocus']) : 1;
@@ -124,15 +128,13 @@ class Shaman extends BasePlayer {
         // bug - crit/water shield are all proccing together
         for (let chainHealHitIndex = 0; chainHealHitIndex < numChainHealHits; chainHealHitIndex++) {
             let isCrit = this.checkChainHealProcHelper('crit', spellIndex, chainHealHitIndex, critChance)
-
             let amountHealed = this.calculateHealing(spellKey, isCrit, chainHealHitIndex);
-
 
             msg = isCrit ? `${timestamp}s: **CRIT ${spellKey} for ${amountHealed}**` :
                     `${timestamp}s: Casted ${spellKey} for ${amountHealed}`;
 
             logger.log(msg, 2);
-
+            this.checkForEarthliving(spellKey, spellIndex, logger, chainHealHitIndex);
             // after spell is casted, add effects
             if (isCrit) {
                 this.checkAndAddManaFromWaterShieldProc(spellKey, spellIndex, logger, chainHealHitIndex, timestamp);
@@ -245,12 +247,16 @@ class Shaman extends BasePlayer {
         // after spell is casted, add effects
         if (isCrit) {
             this.checkAndAddManaFromWaterShieldProc(spellKey, spellIndex, logger);
-            // this.addManaFromIllumination(spellKey, logger);
-            // // holy shock crits triggers infusion of light
-            // if (spellKey === 'HOLY_SHOCK') {
-            //     this.setBuffActive('infusionOfLight', true, timestamp, true, logger);
-            // }
+            if (this.classInfo['ancestralAwakening']['spells'].indexOf(spellKey) > -1) {
+                let ancestralAwakeningAmount = Math.floor(amountHealed * this.classInfo['ancestralAwakening']['value']);
+                logger.log(`Ancestral Awakening (${spellKey}) healed for ${ancestralAwakeningAmount}`, 2);
+                // we count the AA healing under the spell that casted it
+                this.addHealingToStatistics(spellKey, ancestralAwakeningAmount);
+            }
         }
+
+        this.checkForEarthliving(spellKey, spellIndex, logger);
+
 
         return [status, errorMessage, offset, eventsToCreate];
     }
@@ -302,6 +308,18 @@ class Shaman extends BasePlayer {
         }
         this._statistics['waterShieldProc'][spellKey] += amount;
         return this.addManaHelper(Math.floor(amount), 'waterShieldProc', logger, timestamp);
+    }
+
+    checkForEarthliving(spellKey, spellIndex, logger=null, chainHealHitIndex=0) {
+        let isProc = spellKey !== 'CHAIN_HEAL' ? this.checkProcHelper('earthliving', spellIndex, 1, this._earthlivingProcChance) :
+            this.checkChainHealProcHelper('earthliving', spellIndex, chainHealHitIndex, this._earthlivingProcChance);
+
+        if (!isProc) return;
+        let earthlivingInfo = this.classInfo['earthliving'];
+        let earthlivingAmount = Math.floor((earthlivingInfo['baseHeal'] + this.spellPower * earthlivingInfo['coefficient']) * (1 + earthlivingInfo['multiplier']));
+        logger.log(`Earthliving (${spellKey}) healed for ${earthlivingAmount}`, 2);
+        // we count the earthliving healing under the spell that casted it
+        this.addHealingToStatistics(spellKey, earthlivingAmount);
     }
 
 
