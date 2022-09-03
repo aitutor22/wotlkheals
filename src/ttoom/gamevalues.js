@@ -272,6 +272,13 @@ const data = {
                 '2pT6': 0.1, // 10% mana discount on chain heal
                 'totemOfForestGrowth': 78, // subtracts 78 mana only for chain heal
             },
+            tidalWaves: {
+                maxStacks: 2,
+                hwCastTimeReduction: 0.3, // reduces HW cast time
+                lhwCritChance: 0.25, // adds 25% crit to LHW
+                bonusHWHealCoefficient: 0.2,
+                bonusLHWHealCoefficient: 0.1,
+            },
             maxSoupHits: 4,
             spellPowerFromInt: 0.15, // nature's blessing
             waterShield: {

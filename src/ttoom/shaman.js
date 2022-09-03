@@ -90,7 +90,7 @@ class Shaman extends BasePlayer {
         } else if (spellKey === 'LESSER_HEALING_WAVE') {
             multiplicativeFactors = [{purification: 0.1}];
             // tidalWaves increases LHW coefficient by 0.1
-            coefficientAddition = this.isStackActive('tidalWaves') ? 0.1 : 0;
+            coefficientAddition = this.isStackActive('tidalWaves') ? this.classInfo['tidalWaves']['bonusLHWHealCoefficient'] : 0;
 
             // glpyh - Your Lesser Healing Wave heals for 20% more if the target is also affected by Earth Shield.
             if (Utility.getKeyBoolean(this._options, 'glyphLesserHealingWave')) {
@@ -99,7 +99,7 @@ class Shaman extends BasePlayer {
             }
         } else if (spellKey === 'HEALING_WAVE') {
             // tidalWaves increases HW coefficient by 0.2
-            coefficientAddition = this.isStackActive('tidalWaves') ? 0.2 : 0;
+            coefficientAddition = this.isStackActive('tidalWaves') ? this.classInfo['tidalWaves']['bonusHWHealCoefficient'] : 0;
             multiplicativeFactors = [{purification: 0.1}, {healingWay: 0.25}];
         }
         else {
@@ -167,17 +167,9 @@ class Shaman extends BasePlayer {
 
         if (this.isStackActive('tidalWaves') && spellKey === 'LESSER_HEALING_WAVE') {
             // 25% additional crit chance to LHW if Tidal Waves is up
-            modifiedCritChance += 0.25;
+            modifiedCritChance += this.classInfo['tidalWaves']['lhwCritChance'];
         }
 
-            // if () {
-                
-            //     this.modifyStacks('tidalWaves', 'decrement', 1, timestamp, logger);
-            // }
-
-        // else if (spellKey === 'HEALING_WAVE') {
-        //         this.modifyStacks('tidalWaves', 'decrement', 1, timestamp, logger);
-        //     }
         // // infusion of lights adds 20% crit chance to holy light
         // if (spellKey === 'HOLY_LIGHT' && this.isBuffActive('infusionOfLight')) {
         //     this.setBuffActive('infusionOfLight', false, timestamp, true, logger);
@@ -221,7 +213,9 @@ class Shaman extends BasePlayer {
 
         // casting CH or riptide should add tidal waves
         if (spellKey === 'CHAIN_HEAL' || spellKey === 'RIPTIDE') {
-            this.modifyStacks('tidalWaves', 'set', 2, timestamp, logger);
+            this.modifyStacks('tidalWaves', 'set', this.classInfo['tidalWaves']['maxStacks'], timestamp, logger);
+        } else if (spellKey === 'LESSER_HEALING_WAVE' || spellKey === 'HEALING_WAVE') {
+            this.modifyStacks('tidalWaves', 'decrement', 1, timestamp, logger);
         }
 
         // for chainHeal, we handle this separately because the behaviour is more complex

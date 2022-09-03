@@ -343,7 +343,7 @@ class Experiment {
         if (spellSelected['key'] === 'HEALING_WAVE' && player.isStackActive('tidalWaves')) {
             // tidalWave will reduce Healing Wave cast time by 30%
             // while not ideal to put here, fastest way; refactor in future
-            spellFinishCastingTimestamp = currentTime + spellSelected['castTime'] * (1 - 0.3) + offset;
+            spellFinishCastingTimestamp = currentTime + spellSelected['castTime'] * (1 - DATA['classes']['shaman']['tidalWaves']['hwCastTimeReduction']) + offset;
         } else {
             spellFinishCastingTimestamp = currentTime + spellSelected['castTime'] + offset;
         }
