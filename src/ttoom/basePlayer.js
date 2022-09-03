@@ -301,8 +301,8 @@ class BasePlayer {
         for (let item of items) {
             // soup and eog should have multiple chances to proc
             let factor = (['soup', 'eog'].indexOf(item) > -1) ? soupHits : 1;
-            if (item === 'waterShield') {
-                factor = 4; // up to max of 4 chances for water shield to proc when we use chain heal
+            if (item === 'waterShield' || (item === 'crit' && this._playerClass === 'shaman')) {
+                factor = 4; // up to max of 4 chances for water shield to proc when we use chain heal; same for crit
             }
             this._rngThresholds[item] = createHelper(maxMinsToOOM * 60 * factor);
         }
@@ -480,6 +480,7 @@ class BasePlayer {
     // but leave the code in, in case we need it in future
     checkProcHelper(key, spellIndex, numHits, procChance, allowMultipleHits=false) {
         let arr = this._rngThresholds[key].slice(spellIndex * numHits, (spellIndex + 1) * numHits);
+        if (arr.length === 0) throw new Error('ran out of rng numbers for ' + key);
         if (!allowMultipleHits) return Utility.anyValueBelowThreshold(arr, procChance);
 
         let numProcs = 0;
@@ -565,12 +566,13 @@ class BasePlayer {
 
         // cannot exceed max mana
         if (this._currentMana > this.maxMana) {
+            console.log('exceeded mana at ' + timestamp)
             this._currentMana = this.maxMana;
         }
 
-        // if (category === 'waterShieldProc' && this._currentMana - oldMana < 460) {
-        //     console.log(timestamp)
-        // }
+        if (category === 'waterShieldProc' && this._currentMana - oldMana < 460) {
+            console.log(timestamp)
+        }
 
         this._statistics['manaGenerated'][category] += this._currentMana - oldMana;
         if (logger && amount > 0) {

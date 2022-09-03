@@ -55,6 +55,7 @@ class Shaman extends BasePlayer {
     // for each chain heal cast, we pull out an array of 4 random numbers, and select the appropriate number based on chainHealHitIndex
     checkChainHealProcHelper(key, spellIndex, chainHealHitIndex, procChance) {
         let arr = this._rngThresholds[key].slice(spellIndex * 4, (spellIndex + 1) * 4);
+        if (arr.length === 0) throw new Error('ran out of rng numbers for ' + key);
         return arr[chainHealHitIndex] < procChance;
     }
 
@@ -99,8 +100,10 @@ class Shaman extends BasePlayer {
         // this behaves differently from beacon/glyph of holy light because for those, they can't crit separately
         // bug - crit/water shield are all proccing together
         for (let chainHealHitIndex = 0; chainHealHitIndex < numChainHealHits; chainHealHitIndex++) {
-            let isCrit = this.checkChainHealProcHelper('crit', spellIndex, chainHealHitIndex, critChance),
-                amountHealed = this.calculateHealing(spellKey, isCrit, chainHealHitIndex);
+            let isCrit = this.checkChainHealProcHelper('crit', spellIndex, chainHealHitIndex, critChance)
+            // let isCrit = Math.random() < critChance;
+
+            let amountHealed = this.calculateHealing(spellKey, isCrit, chainHealHitIndex);
 
 
             msg = isCrit ? `${timestamp}s: **CRIT ${spellKey} for ${amountHealed}**` :

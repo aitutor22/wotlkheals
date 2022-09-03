@@ -73,7 +73,7 @@ function createOptions(playerClass, playerOptions) {
     }
 
     if (playerOptions['manaOptions']['manaPotion']) {
-        options['manaCooldowns'].push({key: 'RUNIC_MANA_POTION', minimumManaDeficit: 18000, minimumTimeElapsed: 0});
+        options['manaCooldowns'].push({key: 'RUNIC_MANA_POTION', minimumManaDeficit: 20000, minimumTimeElapsed: 0});
     }
 
     if (playerOptions['manaOptions']['selfLoh']) {
