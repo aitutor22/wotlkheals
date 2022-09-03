@@ -42,6 +42,8 @@ class Shaman extends BasePlayer {
         this._baseOtherMultiplicativeTotal = Utility.getKeyBoolean(this._options['talents'], 'tidalFocus') ? (1 - this.classInfo['manaCostModifiers']['tidalFocus']) : 1;
         this._numchainHealHits = Math.floor(this._options['chainHealHits']);
         this.initialiseManaCooldowns(options['manaCooldowns']);
+        // tracks ES for crit
+        this._earthShieldHitIndex = 0;
     }
 
     // due to water shield being more complicated, we overwrite parent function
@@ -107,11 +109,21 @@ class Shaman extends BasePlayer {
             // tidalWaves increases HW coefficient by 0.2
             coefficientAddition = this.isStackActive('tidalWaves') ? this.classInfo['tidalWaves']['bonusHWHealCoefficient'] : 0;
             multiplicativeFactors = [{purification: 0.1}, {healingWay: 0.25}];
-        }
-        else {
+        }  else if (spellKey === 'EARTH_SHIELD') {
+            multiplicativeFactors = [{'improvedShields': 0.15}, {'improvedEarthShield': 0.1}, {'glyph': 0.2}, {'purification': 0.1}];
+        } else {
             throw new Error('Unknown spellkey: ' + spellKey);
         }
         return Math.floor(this.calculateHealingHelper(spellKey, {}, multiplicativeFactors, isCrit, coefficientAddition));
+    }
+
+    calculateHoT(spellKey, timestamp, logger) {
+        let isCrit = this.checkProcHelper('earthShieldCrit', this._earthShieldHitIndex, 1, this.critChance);
+        let amountHealed = this.calculateHealing(spellKey, isCrit);
+        let msg = isCrit ? `**${timestamp}s: ${spellKey} CRIT for ${amountHealed}**` :
+            `${timestamp}s: ${spellKey} ticked for ${amountHealed}`;
+        logger.log(msg, 2);
+        this._earthShieldHitIndex++;
     }
 
     // chain heal functions quite differently from other spells due to multiple hits

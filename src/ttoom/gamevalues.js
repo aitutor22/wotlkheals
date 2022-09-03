@@ -233,6 +233,23 @@ const data = {
             },
             spells: [
             {
+                'key': 'EARTH_SHIELD',
+                'name': 'Earth Shield',
+                'cooldown': 48, // assume we cast every 8 x 6s
+                'instant': true,
+                'baseCastTime': 0,
+                'baseManaCost': 659.4,
+                baseHeal: 337,
+                coefficient: 0.286, // need to verify
+                // following are hot only options
+                category: 'hot',
+                canCrit: true,
+                precasted: true, //should be casted at start of fight
+                numIntervals: 8,
+                secsBetweenInterval: 6,
+                startAtTimestamp: false,
+            },
+            {
                 'key': 'CHAIN_HEAL',
                 'name': 'Chain Heal',
                 'cooldown': 0,

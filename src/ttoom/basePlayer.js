@@ -292,7 +292,7 @@ class BasePlayer {
             // will also put the spell on cooldown
             if (entry['category'] === 'hot' && entry['precasted']) {
                 entry['availableForUse'] = false;
-                entry['lastUsed'] = -1;    
+                entry['lastUsed'] = 0;    
             } else {
                 entry['availableForUse'] = true;
                 entry['lastUsed'] = -9999;

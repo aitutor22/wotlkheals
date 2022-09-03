@@ -90,8 +90,7 @@ class Experiment {
         if (playerClass === 'paladin') {
             thresholds.push('sow');
         } else if (playerClass === 'shaman') {
-            thresholds.push('waterShield');
-            thresholds.push('earthliving');
+            thresholds.push(...['waterShield', 'earthliving', 'earthShieldCrit']);
         }
 
         // these trinkets have rng effects - if player has selected them, then add
@@ -156,6 +155,9 @@ class Experiment {
             }
             // manually added (should improve code) sacred shield as it is precasted
             eventHeap.addEvent(0, 'INITIALIZE_HOT_EVENTS', 'SACRED_SHIELD');
+        } else if (player._playerClass === 'shaman') {
+            // manually added
+            eventHeap.addEvent(0, 'INITIALIZE_HOT_EVENTS', 'EARTH_SHIELD');
         }
 
         while (eventHeap.hasElements() && currentTime <= maxMinsToOOM * 60) {
