@@ -244,13 +244,24 @@ const data = {
                 coefficient: 1.34, // from lovelace
                 category: 'directHeal',
             },
+            {
+                'key': 'LESSER_HEALING_WAVE',
+                'name': 'Lesser Healing Wave',
+                'cooldown': 0,
+                'instant': false,
+                'baseCastTime': 1.5,
+                'baseManaCost': 835.24,
+                baseHeal: 1720,
+                coefficient: 0.806,
+                category: 'directHeal',
+            },
             ],
             manaCostModifiers: {
                 'tidalFocus': 0.05, // 5% mana discount on all spells,
                 '2pT6': 0.1, // 10% mana discount on chain heal
                 'totemOfForestGrowth': 78, // subtracts 78 mana only for chain heal
             },
-            maxSoupHits: 6, //up to 6 for 
+            maxSoupHits: 4,
             spellPowerFromInt: 0.15, // nature's blessing
             waterShield: {
                 baseMp5: 100, // unaffected by improved shields talent

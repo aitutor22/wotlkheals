@@ -26,6 +26,11 @@ class Shaman extends BasePlayer {
         this._waterShieldBaseBaseTick = this.classInfo['waterShield']['baseMp5'] / 5 * 2 + 
             options['manaOptions']['waterShieldProcsPerMinFromDamage'] * this.classInfo['waterShield']['procValue'] / 30;
 
+        // 2PT7 increases water shield by 10%
+        if (Utility.getKeyBoolean(this._options, '2pT7')) {
+            this._waterShieldBaseBaseTick *= 1.1;
+        }
+
         this._otherMultiplicativeTotal = 1;
         // tidalFocus reduces healing cost by 5%; note that we don't put 2pt6 here as it only affects CHAIN_HEAL
         this._baseOtherMultiplicativeTotal = Utility.getKeyBoolean(this._options['talents'], 'tidalFocus') ? (1 - this.classInfo['manaCostModifiers']['tidalFocus']) : 1;
@@ -78,6 +83,10 @@ class Shaman extends BasePlayer {
             // hence need to subtract by 1 here
             let chainHealFactor = this.classInfo['chainHealBounceFactor'][chainHealHitIndex] - 1;
             multiplicativeFactors = [{purification: 0.1}, {improvedChainHeal: 0.2}, {'chainHealFactor': chainHealFactor}];
+            // 4PT7 increases chain heal and healing wave healing by 5%
+            if (Utility.getKeyBoolean(this._options, '4pT7')) {
+                multiplicativeFactors.push({'4pT7': 0.05});
+            }
         }
         else {
             throw new Error('Unknown spellkey: ' + spellKey);
@@ -101,7 +110,6 @@ class Shaman extends BasePlayer {
         // bug - crit/water shield are all proccing together
         for (let chainHealHitIndex = 0; chainHealHitIndex < numChainHealHits; chainHealHitIndex++) {
             let isCrit = this.checkChainHealProcHelper('crit', spellIndex, chainHealHitIndex, critChance)
-            // let isCrit = Math.random() < critChance;
 
             let amountHealed = this.calculateHealing(spellKey, isCrit, chainHealHitIndex);
 
@@ -259,7 +267,9 @@ class Shaman extends BasePlayer {
 
         if (!isProc) return;
 
-        amount = this.classInfo['waterShield']['procValue'];
+        // 2PT7 increases water shield by 10%
+        amount = this.classInfo['waterShield']['procValue'] * (Utility.getKeyBoolean(this._options, '2pT7') ? 1.1 : 1);
+
         if (typeof this._statistics['waterShieldProc'] === 'undefined') {
             this._statistics['waterShieldProc'] = {};
         }
