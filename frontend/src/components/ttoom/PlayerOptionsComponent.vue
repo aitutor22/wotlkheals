@@ -166,11 +166,19 @@
                   <input type="text" class="form-control" v-model.number="oomOptions['chainHealHits']">
                 </div>
                 <div class="input-group mb-2" style="width: 100%">
+                  <span class="input-group-text" id="basic-addon1">Riptide CPM</span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['cpm']['RIPTIDE']">
+                </div>
+                <div class="input-group mb-2" style="width: 100%">
+                  <span class="input-group-text" id="basic-addon1">Healing Wave CPM</span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['cpm']['HEALING_WAVE']">
+                </div>
+                <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1">Lesser Healing Wave CPM</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['cpm']['LESSER_HEALING_WAVE']">
                 </div>
 
-                <b-form-group label="Select your final glyph (CH and ES assumed)">
+                <b-form-group label="Select your final glyph (Glyph of CH and ES assumed to be taken)">
                   <b-form-radio v-model="oomOptions['finalGlyph']" name="some-radios" value="lesserHealingWave">Lesser Healing Wave</b-form-radio>
                   <b-form-radio v-model="oomOptions['finalGlyph']" name="some-radios" value="earthliving">Earthliving</b-form-radio>
                 </b-form-group>

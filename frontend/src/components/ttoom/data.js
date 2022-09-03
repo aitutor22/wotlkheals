@@ -154,9 +154,10 @@ const data = {
         },
         seed: '',
         cpm: {
-          CHAIN_HEAL: 30,
+          CHAIN_HEAL: 15,
           LESSER_HEALING_WAVE: 5,
           HEALING_WAVE: 1,
+          RIPTIDE: 9,
         },
         talents: {
           tidalFocus: true,

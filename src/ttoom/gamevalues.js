@@ -221,7 +221,7 @@ const data = {
             // when we calculate hasteFactor, we also need to consider the number of spells that
             // are not healing spells (e.g. divine plea) but are casted
             // otherwise we will undercount the haste factor
-            numGcdsPerMinNotCountedUnderSpells: 0, // to add in future, probably around 2 with FET, etc
+            numGcdsPerMinNotCountedUnderSpells: 1, // to add in future, probably around 2 with FET + mana tide + earth shield
             intModifier: 1.04 * 1.1, // 2 pts in ancestral intellect only, blessing of kings
             baseCritChanceModifier: 0.14, // 5% additional crit chance from thundering strikes, 5% from tidal mastery, 4% from blessing of elements
             // should theoretically be within spells array, but since we use this alot, microoptimization to avoid having to constantly search array
@@ -249,20 +249,23 @@ const data = {
                 secsBetweenInterval: 6,
                 startAtTimestamp: false,
             },
-            // {
-            //     'key': 'RIPTIDE',
-            //     'name': 'Riptide',
-            //     'cooldown': 6,
-            //     'instant': true,
-            //     'baseCastTime': 0,
-            //     'baseManaCost': 791.28,
-            //     baseHeal: 1670,
-            //     coefficient: 0.403,
-            //     hotBaseHeal: 334,
-            //     hotCoefficient: 0.188,
-            //     chainHealBonus: 0.25,
-            //     category: 'directHeal',
-            // },
+            {
+                'key': 'RIPTIDE',
+                'name': 'Riptide',
+                'cooldown': 6,
+                'instant': true,
+                'baseCastTime': 0,
+                'baseManaCost': 791.28,
+                baseHeal: 1670,
+                coefficient: 0.403,
+                hotBaseHeal: 334,
+                hotCoefficient: 0.188,
+                category: 'directHealWithHot',
+                numIntervals: 5,
+                secsBetweenInterval: 3,
+                startAtTimestamp: false,
+                chainHealBonus: 0.25,
+            },
             {
                 'key': 'CHAIN_HEAL',
                 'name': 'Chain Heal',

@@ -79,17 +79,20 @@ class Shaman extends BasePlayer {
         return this.selectSpellHelper(timestamp, spellIndex);
     }
 
-    // if spellKey is Chain heal, requires chainHealHitIndex, which can be 0, 1, 2 or 3
+    // if spellKey is Chain heal, requires options to have chainHealHitIndex, which can be 0, 1, 2 or 3
     // reduces the chain heal bounce accordingly
-    calculateHealing(spellKey, isCrit, chainHealHitIndex=0) {
+    calculateHealing(spellKey, isCrit, options=null) {
         let amount = 0,
             multiplicativeFactors = [],
             coefficientAddition = 0
 
         if (spellKey === 'CHAIN_HEAL') {
+            if (typeof options['chainHealHitIndex'] === 'undefined') {
+                throw new Error('Missing key: chainHealHitIndex');
+            }
             // note: when we pass chainHealFactor into calculateHealingFactor, we will automatically +1 to it
             // hence need to subtract by 1 here
-            let chainHealFactor = this.classInfo['chainHealBounceFactor'][chainHealHitIndex] - 1;
+            let chainHealFactor = this.classInfo['chainHealBounceFactor'][options['chainHealHitIndex']] - 1;
             multiplicativeFactors = [{purification: 0.1}, {improvedChainHeal: 0.2}, {'chainHealFactor': chainHealFactor}];
             // 4PT7 increases chain heal and healing wave healing by 5%
             if (Utility.getKeyBoolean(this._options, '4pT7')) {
@@ -111,6 +114,13 @@ class Shaman extends BasePlayer {
             multiplicativeFactors = [{purification: 0.1}, {healingWay: 0.25}];
         }  else if (spellKey === 'EARTH_SHIELD') {
             multiplicativeFactors = [{'improvedShields': 0.15}, {'improvedEarthShield': 0.1}, {'glyph': 0.2}, {'purification': 0.1}];
+        }  else if (spellKey === 'RIPTIDE') {
+            // riptide can refer to either the direct heal portion or the hot portion
+            // if it is the hot_portion, instead of passing in RIPTIDE, we pass in RIPTIDE|HOT to calculateHealingHelper
+            if (options && typeof options['isHotTick'] !== 'undefined' && options['isHotTick']) {
+                spellKey = 'RIPTIDE|HOT';
+            }
+            multiplicativeFactors = [{purification: 0.1}];
         } else {
             throw new Error('Unknown spellkey: ' + spellKey);
         }
@@ -118,12 +128,19 @@ class Shaman extends BasePlayer {
     }
 
     calculateHoT(spellKey, timestamp, logger) {
-        let isCrit = this.checkProcHelper('earthShieldCrit', this._earthShieldHitIndex, 1, this.critChance);
-        let amountHealed = this.calculateHealing(spellKey, isCrit);
+        let isCrit = false,
+            options = {}; //most hots cannot crit, except for earth shield
+        if (spellKey === 'EARTH_SHIELD') {
+            isCrit = this.checkProcHelper('earthShieldCrit', this._earthShieldHitIndex, 1, this.critChance);
+            this._earthShieldHitIndex++;
+        } else if (spellKey === 'RIPTIDE') {
+            // this is only required for riptide, because it has both a direct heal and a hot
+            options['isHotTick'] = true;
+        }
+        let amountHealed = this.calculateHealing(spellKey, isCrit, options);
         let msg = isCrit ? `**${timestamp}s: ${spellKey} CRIT for ${amountHealed}**` :
             `${timestamp}s: ${spellKey} ticked for ${amountHealed}`;
         logger.log(msg, 2);
-        this._earthShieldHitIndex++;
     }
 
     // chain heal functions quite differently from other spells due to multiple hits
@@ -142,7 +159,7 @@ class Shaman extends BasePlayer {
         // bug - crit/water shield are all proccing together
         for (let chainHealHitIndex = 0; chainHealHitIndex < numChainHealHits; chainHealHitIndex++) {
             let isCrit = this.checkChainHealProcHelper('crit', spellIndex, chainHealHitIndex, critChance)
-            let amountHealed = this.calculateHealing(spellKey, isCrit, chainHealHitIndex);
+            let amountHealed = this.calculateHealing(spellKey, isCrit, {chainHealHitIndex: chainHealHitIndex});
 
             msg = isCrit ? `${timestamp}s: **CRIT ${spellKey} for ${amountHealed}**` :
                     `${timestamp}s: Casted ${spellKey} for ${amountHealed}`;
@@ -202,11 +219,14 @@ class Shaman extends BasePlayer {
         // for chain heal, we handle all of this in a separate function
         if (spellKey !== 'CHAIN_HEAL') {
             // NOTE: Earthshield can crit, but when we cast spell here, it merely applies the spell and thus earth shield is 0 healing
-            isCrit = spellInfo['category'] === 'directHeal' ? this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance) : false;
+            isCrit = (spellInfo['category'] === 'directHeal') ? this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance) : false;
+            // || spellInfo['category'] === 'directHealWithHot'
             // directHeals should just calculate actual healing amount, for hots, just cast the spell
             if (spellInfo['category'] === 'directHeal') {
                 amountHealed = this.calculateHealing(spellKey, isCrit);
-            } else {
+            } 
+
+            if (spellInfo['category'] === 'hot' || spellInfo['category'] === 'directHealWithHot') {
                 eventsToCreate.push({
                     timestamp: timestamp, 
                     eventType: 'INITIALIZE_HOT_EVENTS',

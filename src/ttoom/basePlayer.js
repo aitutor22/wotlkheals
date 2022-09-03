@@ -490,8 +490,16 @@ class BasePlayer {
     // additiveFactors not implemented yet; it's for when we add stuff to amount before multiplication
     // coefficientAddition is for situations like tidalWaves where we add bonus healing effects
     calculateHealingHelper(spellKey, additiveFactors=null, multiplicativeFactors=null, isCrit=false, coefficientAddition=0) {
+        // if we get something like RIPTIDE|HOT, we want to calculate the hot portion while attributing the heal to riptide
+        let isHot = false;
+        if (spellKey.indexOf('|HOT') > -1) {
+            spellKey = spellKey.split('|HOT')[0];
+            isHot = true;
+        }
+
         const spellData = this.classInfo['spells'].find((_spell) => _spell['key'] === spellKey);
-        let amount = spellData['baseHeal'] + this.spellPower * (spellData['coefficient'] + coefficientAddition);
+        let amount = !isHot ? spellData['baseHeal'] + this.spellPower * (spellData['coefficient'] + coefficientAddition) :
+            spellData['hotBaseHeal'] + this.spellPower * (spellData['hotCoefficient'] + coefficientAddition);
         let factorSum = 0;
         if (multiplicativeFactors !== null) {
             for (let factor of multiplicativeFactors) {
@@ -499,7 +507,7 @@ class BasePlayer {
                 amount *= factorSum;
             }
         }
-
+        
         amount = Math.floor(amount * (isCrit ? 1.5 : 1));
         this.addHealingToStatistics(spellKey, amount);
         return amount;
