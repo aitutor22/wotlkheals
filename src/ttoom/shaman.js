@@ -33,7 +33,9 @@ class Shaman extends BasePlayer {
 
         // adds earthliving weapon to spellpower
         this._baseSpellPower += this.classInfo['earthliving']['bonusSpellPower'];
-        this._earthlivingProcChance = this.classInfo['earthliving']['procChance'];
+        // EL glyph adds 5% chance
+        this._earthlivingProcChance = this.classInfo['earthliving']['procChance'] +
+            (options['finalGlyph'] === 'earthliving' ? 0.05 : 0);
 
         this._otherMultiplicativeTotal = 1;
         // tidalFocus reduces healing cost by 5%; note that we don't put 2pt6 here as it only affects CHAIN_HEAL
@@ -97,7 +99,7 @@ class Shaman extends BasePlayer {
             coefficientAddition = this.isStackActive('tidalWaves') ? this.classInfo['tidalWaves']['bonusLHWHealCoefficient'] : 0;
 
             // glpyh - Your Lesser Healing Wave heals for 20% more if the target is also affected by Earth Shield.
-            if (Utility.getKeyBoolean(this._options, 'glyphLesserHealingWave')) {
+            if (this._options['finalGlyph'] === 'lesserHealingWave') {
                 let glpyhLHWBonus = this._options['lesserHealingWaveCastPercentageOnEarthShield'] / 100 * 0.2;
                 multiplicativeFactors.push({'glyphLesserHealingWave': glpyhLHWBonus});
             }

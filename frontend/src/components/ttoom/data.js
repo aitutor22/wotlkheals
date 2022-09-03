@@ -176,7 +176,7 @@ const data = {
           '2pT7': true,
           '4pT7': true,
         },
-        glyphLesserHealingWave: false,
+        finalGlyph: 'lesserHealingWave',
         lesserHealingWaveCastPercentageOnEarthShield: 50,
       },
     },

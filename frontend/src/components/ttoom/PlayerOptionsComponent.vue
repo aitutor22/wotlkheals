@@ -169,11 +169,13 @@
                   <span class="input-group-text" id="basic-addon1">Lesser Healing Wave CPM</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['cpm']['LESSER_HEALING_WAVE']">
                 </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="glyphLesserHealingWave" v-model="oomOptions['glyphLesserHealingWave']">
-                  <label class="form-check-label" for="glyphLesserHealingWave">Glyph of Lesser Healing Wave?</label>
-                </div>
-                <div v-if="oomOptions['glyphLesserHealingWave']" class="input-group mb-2" style="width: 100%">
+
+                <b-form-group label="Select your final glyph (CH and ES assumed)">
+                  <b-form-radio v-model="oomOptions['finalGlyph']" name="some-radios" value="lesserHealingWave">Lesser Healing Wave</b-form-radio>
+                  <b-form-radio v-model="oomOptions['finalGlyph']" name="some-radios" value="earthliving">Earthliving</b-form-radio>
+                </b-form-group>
+
+                <div v-if="oomOptions['finalGlyph'] === 'lesserHealingWave'" class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1">% LHW on Earth Shield target</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['lesserHealingWaveCastPercentageOnEarthShield']">
                 </div>

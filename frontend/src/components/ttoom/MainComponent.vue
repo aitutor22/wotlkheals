@@ -311,7 +311,7 @@ export default {
             return; 
         }
       } else if (this.playerClass === 'shaman') {
-        if (this.oomOptions['glyphLesserHealingWave']) {
+        if (this.oomOptions['finalGlyph'] === 'lesserHealingWave') {
           let num = this.oomOptions['lesserHealingWaveCastPercentageOnEarthShield'];
           if (!this.basicNumberValidation(num) || num < 0 || num > 100) {
             alert('Please insert valid number for lesserHealingWaveCastPercentageOnEarthShield');
