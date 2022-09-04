@@ -111,8 +111,7 @@ const data = {
           critRating: 349,
           mp5FromGear: 264,
         },
-        trinkets: ['soup'],
-        // trinkets: ['soup', 'soulDead'],
+        trinkets: ['soup', 'soulDead'],
         tier: {
           '2pT6': false,
           '2pT7': true,
@@ -130,8 +129,7 @@ const data = {
           critRating: 312,
           mp5FromGear: 275,
         },
-        trinkets: ['soup'],
-        // trinkets: ['soup', 'soulDead'],
+        trinkets: ['soup', 'soulDead'],
         tier: {
           '2pT6': true,
           '2pT7': true,
@@ -196,6 +194,13 @@ const data = {
             itemType: 'trinket',
             base: {
                 spellpower: 75,
+            },
+        },
+        soulDead: {
+            name: 'Soul of the Dead',
+            itemType: 'trinket',
+            base: {
+                critRating: 95,
             },
         },
         eog: {

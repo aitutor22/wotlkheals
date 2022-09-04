@@ -3,6 +3,8 @@ const GEM_VALUES = {
 }
 
 const data = {
+    itemProcsOnCast: ['dmcg'],
+    itemProcsOnCrit: ['soulDead'],
     items: {
         // increase int by 300 for 15s
         dmcg: {
@@ -29,6 +31,19 @@ const data = {
                 icd: 0,
                 chance: 0.02,
                 manaReduction: 800,
+            },
+        },
+        soulDead: {
+            name: 'Soul of the Dead',
+            itemType: 'trinket',
+            base: {
+                critRating: 95,
+            },
+            proc: {
+                icd: 45,
+                chance: 0.25,
+                mana: 900,
+                additionalCondition: 'crit', // most effects proc on cast, but soul of the dead procs only on crits
             },
         },
         eog: {
@@ -484,6 +499,7 @@ const data = {
         'totemOfForestGrowth': 'Totem of Forest Growth',
         'waterShieldProc': 'Improved Water Shield',
         'manaTideTotem': 'Mana Tide Totem',
+        'soulDead': 'Soul of the Dead',
     },
 }
 

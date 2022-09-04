@@ -104,7 +104,7 @@ class Experiment {
         }
 
         // these trinkets have rng effects - if player has selected them, then add
-        for (let key of ['soup', 'eog', 'dmcg']) {
+        for (let key of ['soup', 'eog', 'dmcg', 'soulDead']) {
             if (playerOptions.trinkets.indexOf(key) > -1) {
                 thresholds.push(key);
             }
@@ -200,7 +200,7 @@ class Experiment {
                 }
 
                 // shouldn't actually produce events here, but just in case
-                eventsToCreate = player.checkHandleProcsWithICD(currentTime, spellIndex, this.logger);
+                eventsToCreate = player.checkHandleProcsOnCastWithICD(currentTime, spellIndex, this.logger);
                 this.addEventsToEventHeap(eventHeap, eventsToCreate);
 
                 // continues with next spell in simulation
@@ -251,7 +251,8 @@ class Experiment {
 
                 // this.logger.log(`${player._statistics['overall']['spellsCasted'] / currentTime * 60}`, 3)
                 // this.logger.log(`${player._statistics['overall']['spellsCasted']}`, 3)
-                eventsToCreate = player.checkHandleProcsWithICD(currentTime, spellIndex, this.logger);
+                // note that for chain heal, this means that we assume it only has 1 chance to proc per CH cast, rather than x4 from 4 bounces
+                eventsToCreate = player.checkHandleProcsOnCastWithICD(currentTime, spellIndex, this.logger);
                 this.addEventsToEventHeap(eventHeap, eventsToCreate);
 
                 spellIndex += 1

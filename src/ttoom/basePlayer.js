@@ -55,8 +55,9 @@ class BasePlayer {
             if (typeof item['base']['spellpower'] !== 'undefined') {
                 this._baseSpellPower += item['base']['spellpower'];
             }
-            if (typeof item['base']['crit'] !== 'undefined') {
-                this._baseCritChance += item['base']['crit'];
+
+            if (typeof item['base']['critRating'] !== 'undefined') {
+                this._baseCritChance += (item['base']['critRating'] / DATA['constants']['critRatingConversion']) / 100;
             }
         }
 
@@ -70,11 +71,23 @@ class BasePlayer {
         // similar to buffs, but has counter (like Tidal Waves)
         this._stacks = {};
         // assume all healers are using IED
-        this._procsToCheck = ['ied'];
-        // checks if player is using dmcg
-        if (this._options['trinkets'].indexOf('dmcg') > -1) {
-            this._procsToCheck.push('dmcg');
-        }        
+        this._procsOnCastToCheck = ['ied'];
+        this._procsOnCritToCheck = [];
+
+        // checks if player is using items that have procs like dmcg that are checked on cast
+        for (let potentialProc of DATA['itemProcsOnCast']) {
+            if (this._options['trinkets'].indexOf(potentialProc) > -1) {
+                this._procsOnCastToCheck.push(potentialProc);
+            }
+        }
+
+        // checks for procs like soul of the dead
+        for (let potentialProc of DATA['itemProcsOnCrit']) {
+            if (this._options['trinkets'].indexOf(potentialProc) > -1) {
+                this._procsOnCritToCheck.push(potentialProc);
+            }
+        }
+
 
         this._manaCooldowns = [];
         this._rngThresholds = {};
@@ -221,9 +234,10 @@ class BasePlayer {
     // then we check if it procs
     // and then for each proc, we have a specific effect
     // after a proc, we then return a list of expire buff events (for stuff like dmcg)
-    checkHandleProcsWithICD(timestamp, spellIndex, logger) {
+
+    checkHandleProcsWithICDHelper(procsToCheck, timestamp, spellIndex, logger) {
         let eventsToCreate = [];
-        for (let procName of this._procsToCheck) {
+        for (let procName of procsToCheck) {
             let info = DATA['items'][procName]['proc'];
             if (typeof this._icds[procName] === 'undefined') {
                 this._icds[procName] = {
@@ -258,6 +272,17 @@ class BasePlayer {
         }
         return eventsToCreate;
     }
+
+    // checks procs that arise from cast like IED, dmcg
+    checkHandleProcsOnCastWithICD(timestamp, spellIndex, logger) {
+        return this.checkHandleProcsWithICDHelper(this._procsOnCastToCheck, timestamp, spellIndex, logger);
+    }
+
+    // checks procs that arise from cast like IED, dmcg
+    checkHandleProcsOnCritWithICD(timestamp, spellIndex, logger) {
+        return this.checkHandleProcsWithICDHelper(this._procsOnCritToCheck, timestamp, spellIndex, logger);
+    }
+
 
     // checks to see if currentMana has exceeded max mana at end of turn
     // e.g. when dmcg expires
@@ -330,8 +355,8 @@ class BasePlayer {
         for (let item of items) {
             // soup and eog should have multiple chances to proc
             let factor = (['soup', 'eog'].indexOf(item) > -1) ? soupHits : 1;
-            if (item === 'waterShield' || (this._playerClass === 'shaman' && (item === 'crit' || item === 'earthliving'))) {
-                factor = 4; // up to max of 4 chances for water shield to proc when we use chain heal; same for crit
+            if (item === 'waterShield' || (this._playerClass === 'shaman' && (item === 'crit' || item === 'earthliving' || item === 'soulDead'))) {
+                factor = 4; // up to max of 4 chances for water shield to proc when we use chain heal; same for crit; soulDead is based on crit, so need 4x more rng numbers too
             }
             this._rngThresholds[item] = createHelper(maxMinsToOOM * 60 * factor);
         }

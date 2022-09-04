@@ -14,6 +14,11 @@ const Utility = require('../common/utilities');
 */
 
 
+// SUPER IMPORTANT: chain heal and otherspells are handled in separate functions
+// thus, BE VERY CAREFUL AND MAKE SURE to consider that effects are handled in both places
+// for instance, this.checkHandleProcsOnCritWithICD(timestamp, spellIndex, logger) needs to be in both functions
+
+
 class Shaman extends BasePlayer {
     // note that maxMana doesn't include mana pool from dmcg
     constructor(options, rng, thresholdItemsToCreate, maxMinsToOOM) {
@@ -184,6 +189,8 @@ class Shaman extends BasePlayer {
             // after spell is casted, add effects
             if (isCrit) {
                 this.checkAndAddManaFromWaterShieldProc(spellKey, spellIndex, logger, chainHealHitIndex, timestamp);
+                let hackedSpellIndex = (spellIndex * 4 + chainHealHitIndex); // super hackish way to ensure each chain heal hit is handled separately
+                this.checkHandleProcsOnCritWithICD(timestamp, hackedSpellIndex, logger);
                 numCritsTotal++;
             }
         }
@@ -308,6 +315,7 @@ class Shaman extends BasePlayer {
                 // we count the AA healing under the spell that casted it
                 this.addHealingToStatistics(spellKey, ancestralAwakeningAmount);
             }
+            this.checkHandleProcsOnCritWithICD(timestamp, spellIndex, logger);
         }
 
         this.checkForEarthliving(spellKey, spellIndex, logger);

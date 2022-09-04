@@ -161,6 +161,7 @@ class Paladin extends BasePlayer {
             if (spellKey === 'HOLY_SHOCK') {
                 this.setBuffActive('infusionOfLight', true, timestamp, logger);
             }
+            this.checkHandleProcsOnCritWithICD(timestamp, spellIndex, logger);
         }
 
         // eventsToCreate = eventsToCreate.concat(this.handleDmcg(timestamp, spellIndex, logger));

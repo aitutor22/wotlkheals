@@ -21,10 +21,8 @@ Vue.use(VueMeta);
 Vue.component('v-select', vSelect);
 Vue.config.productionTip = false;
 
-// to update
-// axios.defaults.baseURL = 'http://localhost:3000/api/';
-axios.defaults.baseURL = '/api/';
-
+axios.defaults.baseURL = ((typeof process.env['NODE_ENV'] !== 'undefined') && (process.env['NODE_ENV'] === 'development')) ?
+    'http://localhost:3000/api/' : axios.defaults.baseURL = '/api/';
 
 new Vue({
   router,

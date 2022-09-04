@@ -82,6 +82,10 @@
                   <input class="form-check-input" type="checkbox" id="illustration" v-model="oomOptions['trinkets']" value="illustration">
                   <label class="form-check-label" for="illustration">Illustration</label>
                 </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="soulDead" v-model="oomOptions['trinkets']" value="soulDead">
+                  <label class="form-check-label" for="soulDead">Soul of the Dead</label>
+                </div>
                 <div v-if="playerClass === 'paladin'" class="form-check">
                   <input class="form-check-input" type="checkbox" id="owl" v-model="oomOptions['trinkets']" value="owl">
                   <label class="form-check-label" for="owl"
