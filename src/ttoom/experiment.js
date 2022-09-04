@@ -275,11 +275,12 @@ class Experiment {
 
         let statistics = player.calculate_statistics_after_sim_ends(lastCastTimestamp),
             hps = Math.floor(player._statistics['overall']['healing'] / lastCastTimestamp);
-        return {ttoom: lastCastTimestamp, statistics: statistics, logs: this.logger._resultArr, hps: hps};
+        return {ttoom: lastCastTimestamp, statistics: statistics, logs: this.logger._resultArr, hps: hps, raidBuffedStats: player._statistics['raidBuffedStats']};
     }
 
     runBatch(batchSize=10, batchSeed=0, playerClass='paladin', logsLevel=0, numBins=30) {
-        let timings = [], listOfHPS = [], manaGeneratedStatistics = [], spellsCastedStatistics = [], medianEntry, resultSingleLoop, binResults;
+        let timings = [], listOfHPS = [], manaGeneratedStatistics = [], spellsCastedStatistics = [],
+            medianEntry, resultSingleLoop, binResults, raidBuffedStats;
         // if seed is 0, we get a random number from 1 to 9999 and used it to seed
         if (batchSeed === 0) {
             batchSeed = Math.floor(Math.random() * 10000 + 1)
@@ -295,6 +296,9 @@ class Experiment {
             timings.push({ttoom: resultSingleLoop['ttoom'], seed: batchSeed * (i + 1)});
             listOfHPS.push(resultSingleLoop['hps']);
         }
+
+        // this should be the same for all runs, so we just take the last run values
+        raidBuffedStats = resultSingleLoop['raidBuffedStats'];
 
         medianEntry = Utility.medianArrDict(timings, 'ttoom');
         // should probably be split out in future
@@ -340,6 +344,7 @@ class Experiment {
             batchSeed: batchSeed,
             ttoom: medianEntry['ttoom'],
             hps: Utility.median(listOfHPS),
+            raidBuffedStats: raidBuffedStats,
             logs: resultSingleLoop['logs'],
             manaStatistics: Utility.medianStatistics(manaGeneratedStatistics, 'source', 'MP5', 'floor'),
             spellsCastedStatistics: castProfileSummary,

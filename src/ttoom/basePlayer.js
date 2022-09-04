@@ -44,8 +44,8 @@ class BasePlayer {
             this._buffedInt * DATA['constants']['critChanceFromOneInt'] + this.classInfo['baseCritChance'];
 
         this._baseSpellPower = Math.floor(options['unbuffedSpellPower'] + this._buffedInt * this.classInfo['spellPowerFromInt'] 
-            + DATA['constants']['spellPowerRaidBuffs'] +
-            (options['flask'] === 'frostWyrm' ? DATA['battleConsumables']['flaskFrostWyrm']['base']['spellpower'] : 0));
+            + DATA['constants']['spellPowerRaidBuffs']
+            + (options['flask'] === 'frostWyrm' ? DATA['battleConsumables']['flaskFrostWyrm']['base']['spellpower'] : 0));
 
         // loops through the trinkets selected, and adds base stat values - currently only supports int and spellpower and crit
         for (let key of this._options['trinkets']) {
@@ -105,6 +105,7 @@ class BasePlayer {
             'spellsCasted': {},
             'healing': {},
             'overall': {spellsCasted: 0, nonHealingSpellsWithGcd: 0, healing: 0},
+            'raidBuffedStats': {},
         }
 
         this._hasteFactor = 0;

@@ -35,6 +35,14 @@ class Paladin extends BasePlayer {
         this._numHitsPerHolyLight = Math.floor(2 + this._options['glyphHolyLightHits']) // beacon + original target + glpyh
    
         this.initialiseManaCooldowns(options['manaCooldowns']);
+        // do this here rather than end of basePlayer, as we might make changes to some fields while running the constructor of the specific player class
+        this._statistics['raidBuffedStats'] = {
+            'int': this._buffedInt,
+            'manaPool': this.maxMana,
+            'spellPower': this._baseSpellPower,
+            'critChance': this.critChance,
+            'mp5': this._otherMP5,
+        };
     }
 
     // majority of spell selection is done in basePlayer's selectSpellHelper

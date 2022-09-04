@@ -392,12 +392,14 @@ export default {
           }
         }
 
-        // need to add/subtract the spellpower portion of int
-        if (stat === 'spellpower') {
-          let spellpowerFromInt = data[this.playerClass]['statsConversionFactor']['spellPowerFromInt'] *
-            this.oomOptions['charSheetStats']['int'];
-          newValue = addOrSubtract(newValue, spellpowerFromInt, subtractTrinketValuesFromCharSheetStats);
-        }
+        // NOTE: AS OF 5th Sep 2022, eighty upgrades does not modify the spellpower portion shown on character screen
+        // with the spellpower portion of int
+        // // need to add/subtract the spellpower portion of int
+        // if (stat === 'spellpower') {
+        //   let spellpowerFromInt = data[this.playerClass]['statsConversionFactor']['spellPowerFromInt'] *
+        //     this.oomOptions['charSheetStats']['int'];
+        //   newValue = addOrSubtract(newValue, spellpowerFromInt, subtractTrinketValuesFromCharSheetStats);
+        // }
 
         callback(stat, Math.round(newValue));
       }

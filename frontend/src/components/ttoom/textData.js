@@ -22,6 +22,7 @@ const textData = {
       'There are minor rounding issues which can slightly increase the CPM shown.',
     ],
     shaman: [
+      'Healing Stream Totem is not implemented',
       'Only two points are taken in Ancestral Knowledge.',
       'Selecting Bloodlust will not affect the amount of spells casted as that is determined by CPM; rather, casting Bloodlust is aimed at properly evaluating mana usage since Bloodlust is an expensive spell.',
       'The first Earth Shield is assumed to be precasted just before entering battle',

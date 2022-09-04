@@ -54,6 +54,14 @@ class Shaman extends BasePlayer {
         this.initialiseManaCooldowns(options['manaCooldowns']);
         // tracks ES for crit
         this._earthShieldHitIndex = 0;
+
+        this._statistics['raidBuffedStats'] = {
+            'int': this._buffedInt,
+            'manaPool': this.maxMana,
+            'spellPower': this._baseSpellPower,
+            'critChance': this.critChance,
+            'mp5': this._otherMP5,
+        };
     }
 
     createRiptideTracker(eventHeap) {

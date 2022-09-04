@@ -323,6 +323,7 @@ export default {
             this.fetching = false;
             this.showExplanation = false;
             this.results = response.data;
+            console.log(this.results);
             this.selectedLog = response.data['logs'];
             if (!this.isFixedAxis) {
               this.minXAxis = Number(this.results['chartDetails']['minXAxis']);

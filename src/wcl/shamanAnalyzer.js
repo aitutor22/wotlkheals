@@ -20,26 +20,32 @@ class Analyzer {
     // don't want to mean overhealing% as that's inaccurate too
     // instead just sum overhealing and divide by sum of raw heal
     static calculateOverhealing(healingEvents, overhealingCounter) {
-        // using timestamp to determine which is the first hit and third hit doesn't work if they use the same timestamp
-        // a better way is to rank based on healing amount (but need to consider crit)
-        for (let entry of healingEvents) {
-            // in WCL, overheal doesn't show up if it's 0
-            if (!('overheal' in entry)) {
-                entry['overheal'] = 0
+        try {
+            // using timestamp to determine which is the first hit and third hit doesn't work if they use the same timestamp
+            // a better way is to rank based on healing amount (but need to consider crit)
+            for (let entry of healingEvents) {
+                // in WCL, overheal doesn't show up if it's 0
+                if (!('overheal' in entry)) {
+                    entry['overheal'] = 0
+                }
+                entry['rawHeal'] = entry['amount'] + entry['overheal'];
+                // if we want to rank based on healing amount, we need consider only uncrit heal
+                entry['uncritRawHeal'] = entry['rawHeal'] / (entry['hitType'] === 2 ? 1.5 : 1);
             }
-            entry['rawHeal'] = entry['amount'] + entry['overheal'];
-            // if we want to rank based on healing amount, we need consider only uncrit heal
-            entry['uncritRawHeal'] = entry['rawHeal'] / (entry['hitType'] === 2 ? 1.5 : 1);
+            // we sort from highest to lowest uncritRawHeal, which will correspond to the hits
+            // the largest item is the first item, etc
+            healingEvents.sort((a, b) => b['uncritRawHeal'] - a['uncritRawHeal']);
+            
+            for (let i = 0; i < healingEvents.length; i++) {
+                overhealingCounter[i + 1]['rawHeal'] += healingEvents[i]['rawHeal'];
+                overhealingCounter[i + 1]['overheal'] += healingEvents[i]['overheal']; 
+            }
+            return overhealingCounter;   
+        } catch (error) {
+            console.log(error);
+            console.log('error with calculate overheal in shaman');
         }
-        // we sort from highest to lowest uncritRawHeal, which will correspond to the hits
-        // the largest item is the first item, etc
-        healingEvents.sort((a, b) => b['uncritRawHeal'] - a['uncritRawHeal']);
-        
-        for (let i = 0; i < healingEvents.length; i++) {
-            overhealingCounter[i + 1]['rawHeal'] += healingEvents[i]['rawHeal'];
-            overhealingCounter[i + 1]['overheal'] += healingEvents[i]['overheal']; 
-        }
-        return overhealingCounter;
+
     }
 
     categorizeChainHeal(maxNumChainHealHits=4) {
