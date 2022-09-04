@@ -198,6 +198,15 @@
                   <span class="input-group-text" id="basic-addon1">% LHW on Earth Shield target</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['lesserHealingWaveCastPercentageOnEarthShield']">
                 </div>
+                <hr>
+                <h6>Advanced Gameplay Choices</h6>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="bloodlust" v-model="oomOptions['bloodlust']" :value="true">
+                  <label class="form-check-label" for="bloodlust"
+                    v-b-tooltip.hover title="Ticking this will not affect the amount of spells casted as that is determined by CPM; rather this aims to more properly sim mana usage since Bloodlust is an expensive spell.">
+                    Use Bloodlust
+                  </label>
+                </div>
               </b-card-text></b-tab>
 
 

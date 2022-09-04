@@ -10,7 +10,7 @@ const SpellQueue = require('./spellqueue');
  *  - After creating a player object, run createRngThresholds and createSpellQueue to complete the initialization.
  */
 class BasePlayer {
-    constructor(playerClass, options, rng, thresholdItemsToCreate, maxMinsToOOM) {
+    constructor(playerClass, options, rng, thresholdItemsToCreate, maxMinsToOOM, spellsToExclude=null) {
         /** 
          * The description begins here.
          * More description continues here.
@@ -93,7 +93,7 @@ class BasePlayer {
         this._rngThresholds = {};
         this.createRngThresholds(rng, thresholdItemsToCreate, maxMinsToOOM);
 
-        this._spells = this.initialiseSpells();
+        this._spells = this.initialiseSpells(spellsToExclude);
         this._validSpells = this._spells.map((_spell) => _spell['key']);
         this._instantSpells = this._spells.filter((_spell) => _spell['instant']).map((_spell) => _spell['key']);
         this._statistics = {
@@ -293,9 +293,14 @@ class BasePlayer {
     }
 
     // start functions that are used for initialisation
-    initialiseSpells() {
+    initialiseSpells(spellsToExclude) {
         let results = [];
+        if (!spellsToExclude) {
+            spellsToExclude = [];
+        }
         for (let _spell of this.classInfo['spells']) {
+            // checks that this isn't part of a spell to be excluded
+            if (spellsToExclude.indexOf(_spell['key']) > -1) continue;
             // object.assign is fine here as no nested stuff
             let entry = Object.assign({}, _spell);
 
@@ -397,6 +402,23 @@ class BasePlayer {
         // we use the spellQueue to decide what spell to select (to try to adhere to user's input cast profile)
         selectedSpellKey = this._spellQueue.getSpell();
         return spellsWithNoCooldown.find((_spell) => _spell['key'] === selectedSpellKey);
+    }
+
+    // for spells that are not healing spells
+    castOtherSpell(spellKey, timestamp, spellIndex, logger) {
+        let spellInfo = this.classInfo['spells'].find(_spell => _spell['key'] === spellKey);
+        let originalMana = this._currentMana;
+        let [status, manaUsed, currentMana, errorMessage] = this.subtractMana(spellKey, timestamp, {});
+
+        if (status === 0) {
+            return [status, errorMessage, 0, eventsToCreate];
+        }
+
+        let offset = this._instantSpells.indexOf(spellKey) > -1 ? this._gcd : 0;
+        let eventsToCreate = [];
+        let msg = `${timestamp}s: Casted ${spellKey} (spent ${originalMana - currentMana} mana)`;
+        logger.log(msg, 2);
+        return [status, errorMessage, offset, eventsToCreate];
     }
 
     // checks to see if a mana cooldown should be used

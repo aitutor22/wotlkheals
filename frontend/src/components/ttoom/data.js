@@ -152,8 +152,8 @@ const data = {
         },
         seed: '',
         cpm: {
-          CHAIN_HEAL: 15,
-          LESSER_HEALING_WAVE: 5,
+          CHAIN_HEAL: 20,
+          LESSER_HEALING_WAVE: 6,
           HEALING_WAVE: 1,
           RIPTIDE: 9,
         },
@@ -178,6 +178,7 @@ const data = {
         finalGlyph: 'lesserHealingWave',
         lesserHealingWaveCastPercentageOnEarthShield: 50,
         minEarthShieldTicksBeforeConsuming: 2, // for riptide
+        bloodlust: true,
       },
     },
     items: {

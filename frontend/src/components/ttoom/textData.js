@@ -18,10 +18,13 @@ const textData = {
       'Soup and EoG procs are directly subtracted from the spell that procced it rather than the following spell. This is both for implemention simplicity and also to reflect that spells with multiple chances to proc soup will have lower blended mana cost.',
       'For instants to proc SoW, the player might to pause for a very short while to allow the hit to go off when using a 1.8 speed weapon. Currently, the system does not implement this delay as more work needs to be done to determine how long, if any, a pause is required.',
       'When infusion of light is active, Holy Light is always casted unless you have set HL cpm to 0.',
+      'The first Sacred Shield is assumed to be precasted just before entering battle',
       'There are minor rounding issues which can slightly increase the CPM shown.',
     ],
     shaman: [
       'Only two points are taken in Ancestral Knowledge.',
+      'Selecting Bloodlust will not affect the amount of spells casted as that is determined by CPM; rather, casting Bloodlust is aimed at properly evaluating mana usage since Bloodlust is an expensive spell.',
+      'The first Earth Shield is assumed to be precasted just before entering battle',
       'GCD for mana tide totem should be 1s, but this is not reflected in the sim yet.',
       'There are minor rounding issues which can slightly increase the CPM shown.',
     ],

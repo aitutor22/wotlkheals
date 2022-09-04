@@ -248,6 +248,17 @@ const data = {
             },
             spells: [
             {
+                'key': 'BLOODLUST',
+                'name': 'Bloodlust',
+                'cooldown': 99999, // can only be casted once per battle
+                'instant': true,
+                'baseCastTime': 0,
+                'baseManaCost': 1142.96,
+                baseHeal: 0,
+                coefficient: 0, // from lovelace
+                category: 'others',
+            },
+            {
                 'key': 'EARTH_SHIELD',
                 'name': 'Earth Shield',
                 'cooldown': 48, // assume we cast every 8 x 6s

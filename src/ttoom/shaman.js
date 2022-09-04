@@ -22,7 +22,11 @@ const Utility = require('../common/utilities');
 class Shaman extends BasePlayer {
     // note that maxMana doesn't include mana pool from dmcg
     constructor(options, rng, thresholdItemsToCreate, maxMinsToOOM) {
-        super('shaman', options, rng, thresholdItemsToCreate, maxMinsToOOM);
+        // checks if user wants us to include bloodlust
+        let spellsToExclude = [];
+        if (!options['bloodlust']) spellsToExclude.push('BLOODLUST');
+
+        super('shaman', options, rng, thresholdItemsToCreate, maxMinsToOOM, spellsToExclude);
 
         if (!this._options['2pT7'] && this._options['4pT7']) {
             throw new Error('4PT7 was selected but not 2PT7');
@@ -44,7 +48,6 @@ class Shaman extends BasePlayer {
         this._earthlivingProcChance = this.classInfo['earthliving']['procChance'] +
             (options['finalGlyph'] === 'earthliving' ? 0.05 : 0);
 
-        this._otherMultiplicativeTotal = 1;
         // tidalFocus reduces healing cost by 5%; note that we don't put 2pt6 here as it only affects CHAIN_HEAL
         this._baseOtherMultiplicativeTotal = Utility.getKeyBoolean(this._options['talents'], 'tidalFocus') ? (1 - this.classInfo['manaCostModifiers']['tidalFocus']) : 1;
         this._numchainHealHits = Math.floor(this._options['chainHealHits']);
@@ -207,17 +210,20 @@ class Shaman extends BasePlayer {
 
         let originalMana = this._currentMana;
         let procs = {},
-            eventsToCreate = [];
+            eventsToCreate = [],
+            spellInfo = this.classInfo['spells'].find(_spell => _spell['key'] === spellKey);
         let status, manaUsed, currentMana, errorMessage, offset, isCrit, msg, modifiedCritChance, amountHealed;
+
+        if (spellInfo['category'] === 'others') {
+            return this.castOtherSpell(spellKey, timestamp, spellIndex, logger);
+        }
 
         // for chain heal, we assume each hit is separate, and can crit and proc WS separately
         // however, we also assume that there can be only max of 1 eog/soup proc
         // checks for soup, and eog procs
         // chain heal has more hits; all other spells have 1 hit
         procs = this.getSoupEogProcs(spellIndex, spellKey === 'CHAIN_HEAL' ? this._numchainHealHits : 1);
-
         modifiedCritChance = this.critChance;
-
 
         if (this.isStackActive('tidalWaves') && spellKey === 'LESSER_HEALING_WAVE') {
             // 25% additional crit chance to LHW if Tidal Waves is up
@@ -234,8 +240,6 @@ class Shaman extends BasePlayer {
         statMsg += `Crit Chance: ${Utility.roundDp(modifiedCritChance * 100, 1)}% ; `;
         statMsg += `Spellpower: ${this.spellPower}`;
         logger.log(statMsg, 3);
-
-        let spellInfo = this.classInfo['spells'].find(_spell => _spell['key'] === spellKey);
 
         // for chain heal, we handle all of this in a separate function
         if (spellKey !== 'CHAIN_HEAL') {
@@ -325,11 +329,20 @@ class Shaman extends BasePlayer {
 
     // procs can be eog/soup
     subtractMana(spellKey, timestamp, procs) {
-        let baseCostMultiplicativeFactors = {};
+        let baseCostMultiplicativeFactors = {},
+            otherMultiplicativeTotal;
+
+        // unaffected by tidal focus
+        if (spellKey === 'BLOODLUST') {
+            otherMultiplicativeTotal = 1;
+        } 
 
         // Chain Heal gets a further 10% discount on mana cost
-        let otherMultiplicativeTotal = (spellKey === 'CHAIN_HEAL' && Utility.getKeyBoolean(this._options, '2pT6')) ?
-            this._baseOtherMultiplicativeTotal - this.classInfo['manaCostModifiers']['2pT6'] : this._baseOtherMultiplicativeTotal;
+        else if (spellKey === 'CHAIN_HEAL' && Utility.getKeyBoolean(this._options, '2pT6')) {
+            otherMultiplicativeTotal = this._baseOtherMultiplicativeTotal - this.classInfo['manaCostModifiers']['2pT6'];
+        } else {
+            otherMultiplicativeTotal = this._baseOtherMultiplicativeTotal;
+        }
 
         let baseCostAdditiveFactors = {};
         // // gonna assume that all hpals are wearing libramOfRenewal
