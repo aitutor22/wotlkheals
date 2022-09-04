@@ -240,7 +240,7 @@ const data = {
                 'baseCastTime': 0,
                 'baseManaCost': 659.4,
                 baseHeal: 337,
-                coefficient: 0.286, // need to verify
+                coefficient: 0.538,
                 // following are hot only options
                 category: 'hot',
                 canCrit: true,

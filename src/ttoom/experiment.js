@@ -62,10 +62,19 @@ class Experiment {
     }
 
     // creates healing over time events
-    initializeHotEvents(nextEvent, player, eventHeap, spellIndex=-1) {
+    initializeHotEvents(nextEvent, player, eventHeap) {
         let currentTime = nextEvent._timestamp,
             hotSpellKey = nextEvent._subEvent,
-            hotSpellData = player.classInfo['spells'].find((_spell) => _spell['key'] === hotSpellKey);
+            spellIndex = -1;
+
+        // looking for riptide|1, where 1 is spellIndex
+        if (hotSpellKey.indexOf('|') > -1) {
+            let entries = hotSpellKey.split('|');
+            hotSpellKey = entries[0];
+            spellIndex = entries[1];
+        }
+        let hotSpellData = player.classInfo['spells'].find((_spell) => _spell['key'] === hotSpellKey)
+
         eventHeap.addIntervalEvents(currentTime, 'HOT_TICK', hotSpellKey, hotSpellData['numIntervals'], hotSpellData['secsBetweenInterval'], hotSpellData['startAtTimestamp'], spellIndex);
         this.logger.log(`Initialising ${hotSpellKey} HoTs`, 2);
     }
@@ -128,6 +137,11 @@ class Experiment {
             cooldownUsed = null,
             status, errorMessage, offset;
 
+        // for shaman, we need to pass in event heap to allow it to track riptide
+        if (playerClass === 'shaman') {
+            player.createRiptideTracker(eventHeap);
+        }
+
         // assume first cast is always holy light
         // spellSelected = this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, 0, this._playerOptions['firstSpell']);
         spellSelected = this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, 0);
@@ -155,10 +169,10 @@ class Experiment {
                 t += 60;
             }
             // manually added (should improve code) sacred shield as it is precasted
-            eventHeap.addEvent(0, 'INITIALIZE_HOT_EVENTS', 'SACRED_SHIELD');
+            eventHeap.addEvent(0, 'INITIALIZE_HOT_EVENTS', 'SACRED_SHIELD|-1');
         } else if (player._playerClass === 'shaman') {
             // manually added
-            eventHeap.addEvent(0, 'INITIALIZE_HOT_EVENTS', 'EARTH_SHIELD');
+            eventHeap.addEvent(0, 'INITIALIZE_HOT_EVENTS', 'EARTH_SHIELD|-1');
         }
 
         while (eventHeap.hasElements() && currentTime <= maxMinsToOOM * 60) {
@@ -247,7 +261,7 @@ class Experiment {
             } else if (nextEvent._eventType === 'MANA_TICK') {
                 this.handleManaTick(nextEvent, player, eventHeap, spellIndex);
             } else if (nextEvent._eventType === 'INITIALIZE_HOT_EVENTS') {
-                this.initializeHotEvents(nextEvent, player, eventHeap, spellIndex);
+                this.initializeHotEvents(nextEvent, player, eventHeap);
             } else if (nextEvent._eventType === 'HOT_TICK') {
                 this.handleHotTick(nextEvent, player, eventHeap, spellIndex);
             }

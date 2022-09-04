@@ -179,6 +179,7 @@ const data = {
         },
         finalGlyph: 'lesserHealingWave',
         lesserHealingWaveCastPercentageOnEarthShield: 50,
+        minEarthShieldTicksBeforeConsuming: 2, // for riptide
       },
     },
     items: {

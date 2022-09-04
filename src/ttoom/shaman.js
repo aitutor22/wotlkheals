@@ -1,5 +1,6 @@
 
 const BasePlayer = require('./basePlayer');
+const HotTracker = require('./hottracker');
 const DATA = require('./gamevalues');
 const Utility = require('../common/utilities');
 
@@ -45,6 +46,10 @@ class Shaman extends BasePlayer {
         this.initialiseManaCooldowns(options['manaCooldowns']);
         // tracks ES for crit
         this._earthShieldHitIndex = 0;
+    }
+
+    createRiptideTracker(eventHeap) {
+        this._riptideTracker = new HotTracker(eventHeap, 'shaman');
     }
 
     // due to water shield being more complicated, we overwrite parent function
@@ -95,6 +100,10 @@ class Shaman extends BasePlayer {
             // hence need to subtract by 1 here
             let chainHealFactor = this.classInfo['chainHealBounceFactor'][options['chainHealHitIndex']] - 1;
             multiplicativeFactors = [{purification: 0.1}, {improvedChainHeal: 0.2}, {'chainHealFactor': chainHealFactor}];
+
+            // consuming riptide adds 25% healing to all
+            if (options['riptideConsumed']) multiplicativeFactors.push({riptide: 0.25});
+
             // 4PT7 increases chain heal and healing wave healing by 5%
             if (Utility.getKeyBoolean(this._options, '4pT7')) {
                 multiplicativeFactors.push({'4pT7': 0.05});
@@ -114,7 +123,7 @@ class Shaman extends BasePlayer {
             coefficientAddition = this.isStackActive('tidalWaves') ? this.classInfo['tidalWaves']['bonusHWHealCoefficient'] : 0;
             multiplicativeFactors = [{purification: 0.1}, {healingWay: 0.25}];
         }  else if (spellKey === 'EARTH_SHIELD') {
-            multiplicativeFactors = [{'improvedShields': 0.15}, {'improvedEarthShield': 0.1}, {'glyph': 0.2}, {'purification': 0.1}];
+            multiplicativeFactors = [{'improvedShields': 0.15, 'improvedEarthShield': 0.1}, {'glyph': 0.2}, {'purification': 0.1}];
         }  else if (spellKey === 'RIPTIDE') {
             // riptide can refer to either the direct heal portion or the hot portion
             // if it is the hot_portion, instead of passing in RIPTIDE, we pass in RIPTIDE|HOT to calculateHealingHelper
@@ -154,13 +163,18 @@ class Shaman extends BasePlayer {
             numChainHealHits = this._numchainHealHits,
             msg;
 
+        // check if riptide is up. if so, add 25% to chain heal
+        let riptideConsumed = this._riptideTracker.consume('RIPTIDE', timestamp);
+        if (riptideConsumed) {
+            logger.log('Consuming riptide', 2);
+        }
+
         // to be in for loop
         // we loop through each of the hits and checks healing and crit separately
         // this behaves differently from beacon/glyph of holy light because for those, they can't crit separately
-        // bug - crit/water shield are all proccing together
         for (let chainHealHitIndex = 0; chainHealHitIndex < numChainHealHits; chainHealHitIndex++) {
             let isCrit = this.checkChainHealProcHelper('crit', spellIndex, chainHealHitIndex, critChance)
-            let amountHealed = this.calculateHealing(spellKey, isCrit, {chainHealHitIndex: chainHealHitIndex});
+            let amountHealed = this.calculateHealing(spellKey, isCrit, {chainHealHitIndex: chainHealHitIndex, riptideConsumed: riptideConsumed});
 
             msg = isCrit ? `${timestamp}s: **CRIT ${spellKey} for ${amountHealed}**` :
                     `${timestamp}s: Casted ${spellKey} for ${amountHealed}`;
@@ -185,7 +199,6 @@ class Shaman extends BasePlayer {
         if (this._validSpells.indexOf(spellKey) === -1) throw new Error('other spells not handled yet');
 
         let originalMana = this._currentMana;
-
         let procs = {},
             eventsToCreate = [];
         let status, manaUsed, currentMana, errorMessage, offset, isCrit, msg, modifiedCritChance, amountHealed;
@@ -232,7 +245,8 @@ class Shaman extends BasePlayer {
                 eventsToCreate.push({
                     timestamp: timestamp, 
                     eventType: 'INITIALIZE_HOT_EVENTS',
-                    subEvent: spellInfo['key'],
+                    // we want to pass in the spellIndex for the hot, so if need be, we can remove it (e.g. riptide ticks consumed)
+                    subEvent: `${spellInfo['key']}|${spellIndex}`,
                 })
             }
         }
@@ -254,6 +268,11 @@ class Shaman extends BasePlayer {
             this.modifyStacks('tidalWaves', 'set', this.classInfo['tidalWaves']['maxStacks'], timestamp, logger);
         } else if (spellKey === 'LESSER_HEALING_WAVE' || spellKey === 'HEALING_WAVE') {
             this.modifyStacks('tidalWaves', 'decrement', 1, timestamp, logger);
+        }
+
+        // adds riptide to tracker for chain heal consumption purposes
+        if (spellKey === 'RIPTIDE') {
+            this._riptideTracker.trackHot('RIPTIDE', spellIndex, timestamp, this._options['minEarthShieldTicksBeforeConsuming']);
         }
 
         // for chainHeal, we handle this separately because the behaviour is more complex

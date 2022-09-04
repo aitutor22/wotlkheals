@@ -22,7 +22,7 @@ class HotTracker {
         }
 
         const timestampAvailableForConsumption = timestamp +
-            (minTicksBeforeConsumable - ((spellInfo['startAtTimestamp'] ? 0 : 1))) * spellInfo['secsBetweenInterval'];
+            (minTicksBeforeConsumable - ((spellInfo['startAtTimestamp'] ? 1 : 0))) * spellInfo['secsBetweenInterval'];
         this._data[spellKey].push({
             spellIndex: spellIndex,
             timestampAvailableForConsumption: timestampAvailableForConsumption,
@@ -33,7 +33,6 @@ class HotTracker {
     // but don't actually use it yet (similar to peep in a heap)
     canConsume(spellKey, timestamp) {
        if ((typeof this._data[spellKey] === 'undefined') || this._data[spellKey].length === 0) return false;
-
        // _data[spellKey] is auto sorted from oldest to newest, so just need to check the first element
        return timestamp > this._data[spellKey][0]['timestampAvailableForConsumption'];
     }

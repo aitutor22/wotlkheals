@@ -169,6 +169,13 @@
                   <span class="input-group-text" id="basic-addon1">Riptide CPM</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['cpm']['RIPTIDE']">
                 </div>
+                <div class="mb-2">
+                  <span class="mr-2">Min riptide ticks before CH consumption</span>
+                  <v-select
+                    :options="[0, 1, 2, 3, 4, 5]" v-model="oomOptions['minEarthShieldTicksBeforeConsuming']">
+                    
+                  </v-select>
+                </div>
                 <div class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1">Healing Wave CPM</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['cpm']['HEALING_WAVE']">
@@ -432,5 +439,12 @@ export default {
 
 .full-screen-modal .close {
   font-size: 3em;
+}
+
+.vs--single.vs--open .vs__selected { position: inherit; }
+.v-select {
+  display: inline-block;
+  width: auto; 
+  min-width: 11em;
 }
 </style>

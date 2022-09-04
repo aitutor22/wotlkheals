@@ -16,7 +16,7 @@ class Event {
         this._timestamp = Utility.roundDp(timestamp, 2); // time in seconds from start of fight
         this._eventType = eventType;
         this._subEvent = subEvent;
-        this._spellIndex = spellIndex;
+        this._spellIndex = Number(spellIndex);
     }
 
     toString() {
