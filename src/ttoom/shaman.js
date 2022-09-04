@@ -44,6 +44,10 @@ class Shaman extends BasePlayer {
         this.initialiseManaCooldowns(options['manaCooldowns']);
         // tracks ES for crit
         this._earthShieldHitIndex = 0;
+        // tracks the timestamp when riptide buff is available to be used
+        
+
+
     }
 
     // due to water shield being more complicated, we overwrite parent function
@@ -128,8 +132,8 @@ class Shaman extends BasePlayer {
     }
 
     calculateHoT(spellKey, timestamp, logger) {
-        let isCrit = false,
-            options = {}; //most hots cannot crit, except for earth shield
+        let isCrit = false, //most hots cannot crit, except for earth shield
+            options = {};
         if (spellKey === 'EARTH_SHIELD') {
             isCrit = this.checkProcHelper('earthShieldCrit', this._earthShieldHitIndex, 1, this.critChance);
             this._earthShieldHitIndex++;
@@ -219,10 +223,11 @@ class Shaman extends BasePlayer {
         // for chain heal, we handle all of this in a separate function
         if (spellKey !== 'CHAIN_HEAL') {
             // NOTE: Earthshield can crit, but when we cast spell here, it merely applies the spell and thus earth shield is 0 healing
-            isCrit = (spellInfo['category'] === 'directHeal') ? this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance) : false;
+            isCrit = spellInfo['category'].startsWith('directHeal') ? this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance) : false;
             // || spellInfo['category'] === 'directHealWithHot'
             // directHeals should just calculate actual healing amount, for hots, just cast the spell
-            if (spellInfo['category'] === 'directHeal') {
+            // for this line, we search for both directHeal and directHealWithHot
+            if (spellInfo['category'].startsWith('directHeal')) {
                 amountHealed = this.calculateHealing(spellKey, isCrit);
             } 
 
@@ -266,7 +271,7 @@ class Shaman extends BasePlayer {
         // BE CAREFUL WHERE THIS CODE GOES - if you put it before the oom check, will add 1 to final tally
         this.addSpellCastToStatistics(spellKey, isCrit);
 
-        if (spellInfo['category'] === 'directHeal' ) {
+        if (spellInfo['category'].startsWith('directHeal')) {
             msg = isCrit ? `${timestamp}s: **CRIT ${spellKey} for ${amountHealed}** (spent ${originalMana - currentMana} mana)` :
                 `${timestamp}s: Casted ${spellKey} for ${amountHealed} (spent ${originalMana - currentMana} mana)`;
         } else {
@@ -290,8 +295,6 @@ class Shaman extends BasePlayer {
         }
 
         this.checkForEarthliving(spellKey, spellIndex, logger);
-
-
         return [status, errorMessage, offset, eventsToCreate];
     }
 

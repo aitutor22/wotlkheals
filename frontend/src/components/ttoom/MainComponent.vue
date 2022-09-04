@@ -44,13 +44,21 @@
           Batch Seed: <b>{{ results['batchSeed'] }} </b>
           <span v-if="oomOptions['seed'] !== '' && oomOptions['seed'] > 0 && oomOptions['seed'] === results['batchSeed']">(Seed currently fixed)</span>
         </p>
-        <p><em>
-          HPLD's ttoom has higher variance vs other healers due to Divine Plea breakpoints (amplified by using Darkmoon Card: Greatness).
-        </em></p>
-        <p>
-          <em>The bimodal distribution means a simple median ttoom misses important context - you could have a high median ttoom but also be mana-screwed 30-40% of the time. The histogram (median in red) provides more context, and you can click on bars to see the log on the right.
-          </em>
-        </p>
+        <div v-if="playerClass === 'paladin'">
+          <p><em>
+            HPLD's ttoom has higher variance vs other healers due to Divine Plea breakpoints (amplified by using Darkmoon Card: Greatness).
+          </em></p>
+          <p>
+            <em>The bimodal distribution means a simple median ttoom misses important context - you could have a high median ttoom but also be mana-screwed 30-40% of the time. The histogram (median in red) provides more context, and you can click on bars to see the log on the right.
+            </em>
+          </p>
+        </div>
+        <div v-if="playerClass === 'shaman'">
+          <p>
+            <em>There are large number of proc effects in the shaman toolkit, and a simple median ttoom misses important context. You could have a high median ttoom but also be mana-screwed 30-40% of the time. The histogram (median in red) provides more context, and you can click on bars to see the log on the right.
+            </em>
+          </p>
+        </div>
         <div>
           <input type="text" name="" v-model="minXAxis">
           <input type="text" name="" v-model="maxXAxis">
@@ -88,40 +96,21 @@
       </div>
     </div>
 
-    <div v-if="results" class="row gap-top">
+    <div v-if="results && implementationAssumptions.length > 0" class="row gap-top">
       <h5>Assumptions & Known Issues</h5>
       <ol>
-        <li>The following have NOT been implented yet: Divine Favour, FoL Infusion of Light (currently the system will automatically prioritise HL when Infusion of Light is up), and standalone gcds used for Beacon and Sacred Shield.</li>
-        <li>
-          Judgement is not casted in the sim, but two SoW procs is automatically calculated every 60s (Judgement counts as 2 hits).
-        </li>
-        <li>
-          Soup and EoG procs are directly subtracted from the spell that procced it rather than the following spell. This is both for implemention simplicity and also to reflect that spells with multiple chances to proc soup will have lower blended mana cost.
-        </li>
-        <li>
-          For instants to proc SoW, the player might to pause for a very short while to allow the hit to go off when using a 1.8 speed weapon. Currently, the system does not implement this delay as more work needs to be done to determine how long, if any, a pause is required.
-        </li>
-        <li>When infusion of light is active, Holy Light is always casted unless you have set HL cpm to 0.</li>
-        <li>
-          There are minor rounding issues which can slightly increase the CPM shown.
+        <li v-for="(assumption, index) in implementationAssumptions" :key="index">
+          {{ assumption }}
         </li>
       </ol>
     </div>
 
-    <div v-if="results" class="row gap-top">
-      <h5>Change Log</h5>
+    <div v-if="results && changeLogs.length > 0" class="row gap-top">
+      <h5>Change Logs</h5>
       <ul>
-        <li>
-          <p><b>03/09/22</b></p>
-          <p>
-            For convenience, users can now input int & crit rating taken from 80upgrades. Added presets taken from <a href='https://discord.gg/lightclubclassic'>Light Club</a>.
-          </p>
-        </li>
-        <li>
-          <p><b>26/08/22</b></p>
-          <p>
-            User can now input a seed to allow for better comparison. Added options to control how mana cooldowns are used. Fixed bug where DMCG would only be used once in some cases. Improved mobile responsiveness.
-          </p>
+        <li v-for="(changeLog, index) in changeLogs" :key="index">
+          <p><b>{{ changeLog['dateAdded'] }}</b></p>
+          <p>{{ changeLog['text'] }}</p>
         </li>
       </ul>
     </div>
@@ -136,6 +125,7 @@ import BarChart from './BarChart';
 import PlayerOptions from './PlayerOptionsComponent';
 
 import data from './data';
+import textData from './textData';
 
 // https://stackoverflow.com/questions/38085352/how-to-use-two-y-axes-in-chart-js-v2
 export default {
@@ -170,6 +160,12 @@ export default {
   },
   computed: {
     ...mapState('ttoom', ['oomOptions']),
+    changeLogs() {
+      return textData['changeLogs'][this.playerClass];
+    },
+    implementationAssumptions() {
+      return textData['implementationAssumptions'][this.playerClass];
+    },
     optionsComponent() {
       if (this.playerClass === 'paladin') {
         return 'paladin-options';
@@ -376,5 +372,9 @@ export default {
 
 .gap-top {
   margin-top: 40px;
+}
+
+ol {
+  width: 100%;
 }
 </style>

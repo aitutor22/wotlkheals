@@ -83,3 +83,20 @@ test('addIntervalEvents with startAtTimestamp', () => {
 
     expect(eventHeap.hasElements()).toBe(false);
 });
+
+test('remove interval events', () => {
+    let eventHeap = new EventHeap(), evt;
+    eventHeap.addIntervalEvents(0, 'HOT_TICK', 'RIPTIDE', 5, 3, false, 2);
+    eventHeap.addEvent(4.5, 'SPELLCAST', 'HOLY_LIGHT');
+    eventHeap.addEvent(3, 'SPELLCAST', 'FLASH_OF_LIGHT');
+    eventHeap.addEvent(8, 'SPELLCAST', 'RIPTIDE');
+    expect(eventHeap.priorityQueue.length).toBe(8);
+    eventHeap.removeIntervalEvents('HOT_TICK', 'RIPTIDE', 2);
+
+    evt = eventHeap.pop();
+    expect(evt._timestamp).toBe(3);
+    evt = eventHeap.pop();
+    expect(evt._timestamp).toBe(4.5);
+    evt = eventHeap.pop();
+    expect(evt._timestamp).toBe(8);
+})

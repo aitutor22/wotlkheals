@@ -1,11 +1,36 @@
 <template>
   <div id="app" class="container">
-    <nav>
-      <router-link to="/">Home</router-link> |
-      <router-link to="/paladin/ttoom/">Paladin TTOOM</router-link> | 
-      <router-link to="/paladin/statweights/">Paladin Stat Weights</router-link> | 
-      <router-link to="/paladin/analyzer/overhealing/">Paladin Overhealing</router-link>
-    </nav>
+    <b-nav pills>
+      <b-nav-item-dropdown
+        id="paladin-dropdown"
+        text="Paladin"
+        toggle-class="nav-link-custom"
+        left
+      >
+        <b-dropdown-item to="/paladin/ttoom/">
+          Time to OOM
+        </b-dropdown-item>
+        <b-dropdown-item to="/paladin/statweights/">
+          Stat Weights
+        </b-dropdown-item>
+        <b-dropdown-item to="/paladin/analyzer/overhealing/">
+          Overhealing Analyzer
+        </b-dropdown-item>
+      </b-nav-item-dropdown>
+      <b-nav-item-dropdown
+        id="shaman-dropdown"
+        text="Shaman"
+        toggle-class="nav-link-custom"
+        left
+      >
+        <b-dropdown-item to="/shaman/ttoom/">
+          Time to OOM
+        </b-dropdown-item>
+        <b-dropdown-item to="/shaman/analyzer/chainheal/">
+          Overhealing Analyzer
+        </b-dropdown-item>
+      </b-nav-item-dropdown>
+    </b-nav>
     <router-view/>
   </div>
 </template>

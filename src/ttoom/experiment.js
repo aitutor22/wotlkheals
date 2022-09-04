@@ -66,7 +66,8 @@ class Experiment {
         let currentTime = nextEvent._timestamp,
             hotSpellKey = nextEvent._subEvent,
             hotSpellData = player.classInfo['spells'].find((_spell) => _spell['key'] === hotSpellKey);
-        eventHeap.addIntervalEvents(currentTime, 'HOT_TICK', hotSpellKey, hotSpellData['numIntervals'], hotSpellData['secsBetweenInterval'], hotSpellData['startAtTimestamp']);
+        eventHeap.addIntervalEvents(currentTime, 'HOT_TICK', hotSpellKey, hotSpellData['numIntervals'], hotSpellData['secsBetweenInterval'], hotSpellData['startAtTimestamp'], spellIndex);
+        this.logger.log(`Initialising ${hotSpellKey} HoTs`, 2);
     }
 
     // handle hots like sacred shield
@@ -169,7 +170,7 @@ class Experiment {
                 let cooldownInfo = DATA['manaCooldowns'][nextEvent._subEvent];
 
                 if (cooldownInfo['category'] === 'interval') {
-                    eventHeap.addIntervalEvents(currentTime, 'MANA_TICK', nextEvent._subEvent, cooldownInfo['numIntervals'], cooldownInfo['secsBetweenInterval'], cooldownInfo['startAtTimestamp']);
+                    eventHeap.addIntervalEvents(currentTime, 'MANA_TICK', nextEvent._subEvent, cooldownInfo['numIntervals'], cooldownInfo['secsBetweenInterval'], cooldownInfo['startAtTimestamp'], spellIndex);
                 }
                 player.addNonHealingSpellsWithGcdToStatistics()
                 this.logger.log(`${currentTime}s: Used ${nextEvent._subEvent}`, 2);
