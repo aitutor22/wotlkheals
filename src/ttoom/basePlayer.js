@@ -32,7 +32,7 @@ class BasePlayer {
         // adds buffs and consumes to int
         this._unbuffedInt = options['unbuffedInt'];
         let intAfterRaidBuffs = options['unbuffedInt'] + DATA['constants']['intRaidBuffs'] +
-            DATA['battleConsumables']['flaskDistilled']['base']['int'];
+            (options['flask'] === 'distilledWisdom' ? DATA['battleConsumables']['flaskDistilled']['base']['int'] : 0);
         this._buffedInt = Math.floor(intAfterRaidBuffs * this.classInfo['intModifier']);
 
         // first 20 points of int gives 1 mana, 15 mana thereafter (note that we already multiplifed by int modifier above)
@@ -42,7 +42,10 @@ class BasePlayer {
         this._baseMaxMana = baseMaxMana;
         this._baseCritChance = options['critChance'] + this.classInfo['baseCritChanceModifier'] + DATA['constants']['critChanceRaidBuffs'] + 
             this._buffedInt * DATA['constants']['critChanceFromOneInt'] + this.classInfo['baseCritChance'];
-        this._baseSpellPower = Math.floor(options['unbuffedSpellPower'] + this._buffedInt * this.classInfo['spellPowerFromInt'] + DATA['constants']['spellPowerRaidBuffs']);
+
+        this._baseSpellPower = Math.floor(options['unbuffedSpellPower'] + this._buffedInt * this.classInfo['spellPowerFromInt'] 
+            + DATA['constants']['spellPowerRaidBuffs'] +
+            (options['flask'] === 'frostWyrm' ? DATA['battleConsumables']['flaskFrostWyrm']['base']['spellpower'] : 0));
 
         // loops through the trinkets selected, and adds base stat values - currently only supports int and spellpower and crit
         for (let key of this._options['trinkets']) {

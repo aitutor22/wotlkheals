@@ -93,6 +93,13 @@ const data = {
                 int: 65,
             },
         },
+        flaskFrostWyrm: {
+            name: 'Flask of the Frost Wyrm',
+            itemType: 'consumable',
+            base: {
+                spellpower: 125,
+            },
+        },
     },
     // if a trinket is strictly overshadowed (e.g eog is worse than soup)
     // then we do not need to consider it in simulations, except when together (e.g. soup + eog)

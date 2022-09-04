@@ -283,6 +283,15 @@
                   </div>
                 </div>
 
+                <hr>
+                <h6>Flask of ...</h6>
+                <b-form-group>
+                  <b-form-radio v-model="oomOptions['flask']" name="some-radios" value="distilledWisdom"
+                    v-b-tooltip.hover.left title="Increases Intellect by 65">Distilled Wisdom</b-form-radio>
+                  <b-form-radio v-model="oomOptions['flask']" name="some-radios" value="frostWyrm"
+                    v-b-tooltip.hover.left title="Increases Spell Power by 125">Frost Wyrm</b-form-radio>
+                </b-form-group>
+
               </b-card-text></b-tab>
             </b-tabs>
           </b-card>

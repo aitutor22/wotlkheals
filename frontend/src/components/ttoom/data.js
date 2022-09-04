@@ -91,6 +91,7 @@ const data = {
           '2pT7': true,
           '4pT7': true,
         },
+        flask: 'distilledWisdom',
       },
     },
     shaman: {
@@ -175,6 +176,7 @@ const data = {
           '2pT7': true,
           '4pT7': true,
         },
+        flask: 'frostWyrm',
         finalGlyph: 'lesserHealingWave',
         lesserHealingWaveCastPercentageOnEarthShield: 50,
         minEarthShieldTicksBeforeConsuming: 2, // for riptide
