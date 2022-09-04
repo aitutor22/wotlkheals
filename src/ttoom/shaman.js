@@ -12,6 +12,7 @@ const Utility = require('../common/utilities');
     - This is different from Sacred Shield - which can proc soup only on cast, and all subsequent hits cannot proc soup (cannot crit too)
 */
 
+
 class Shaman extends BasePlayer {
     // note that maxMana doesn't include mana pool from dmcg
     constructor(options, rng, thresholdItemsToCreate, maxMinsToOOM) {
@@ -44,10 +45,6 @@ class Shaman extends BasePlayer {
         this.initialiseManaCooldowns(options['manaCooldowns']);
         // tracks ES for crit
         this._earthShieldHitIndex = 0;
-        // tracks the timestamp when riptide buff is available to be used
-        
-
-
     }
 
     // due to water shield being more complicated, we overwrite parent function
