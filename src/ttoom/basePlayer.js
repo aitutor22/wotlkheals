@@ -726,22 +726,7 @@ class BasePlayer {
         return procs;
     }
 
-    calculate_statistics_after_sim_ends(total_time) {
-        // for spell in self._statistics['spells']:
-        //     this._statistics['spells'][spell]['hps'] = this._statistics['spells'][spell]['total_healing'] / total_time
-        //     total_casts = self._statistics['spells'][spell]['normal'] + this._statistics['spells'][spell]['crit']
-        //     this._statistics['spells'][spell]['cpm'] = total_casts / total_time * 60
-        //     this._statistics['spells'][spell]['crit_rate'] = 0 if total_casts == 0 else self._statistics['spells'][spell]['crit'] / total_casts
-        //     this._statistics['overall']['total_healing'] += this._statistics['spells'][spell]['total_healing']
-        // # self._statistics['spells'][key]['soup'] += 1
-
-        // this._statistics['overall']['mps'] = this._statistics['overall']['total_mana_used'] / total_time
-        // this._statistics['overall']['hps'] = this._statistics['overall']['total_healing'] / total_time
-        // console.log(this._spells);
-        // if (logger) logger.log(this._statistics, 2);
-        // console.log('printing statistics');
-        // console.log(this._statistics);
-
+    calculate_statistics_after_sim_ends(totalTime) {
         let toReturn = {manaGenerated: [], spellsCasted: []};
         for (let key in this._statistics['manaGenerated']) {
             // poor code: manually converts certain keys to what is shown on client's table
@@ -749,7 +734,7 @@ class BasePlayer {
             // the keys here are what is shown on the client table, hence the weird notation
             toReturn['manaGenerated'].push({
                 'source': newKey,
-                'MP5': Math.floor(this._statistics['manaGenerated'][key] / total_time * 5),
+                'MP5': Math.floor(this._statistics['manaGenerated'][key] / totalTime * 5),
             });
         }
 
@@ -780,10 +765,10 @@ class BasePlayer {
             toReturn['spellsCasted'].push({
                 // converts HOLY_LIGHT to Holy Light
                 'spell': key.split('_').map(k => Utility.capitalizeFirstLetter(k.toLowerCase())).join(' '),
-                'cpm': Utility.roundDp(totalCasts / total_time * 60, 1),
+                'cpm': Utility.roundDp(totalCasts / totalTime * 60, 1),
                 'avgManaCost': Math.floor(totalManaSpent / totalCasts),
                 'hpet': hpet,
-                'hps': Math.floor((this._statistics['healing'][key] / total_time)),
+                'hps': Math.floor((this._statistics['healing'][key] / totalTime)),
                 'hpm': totalManaSpent > 0 ? Math.floor(this._statistics['healing'][key] / totalManaSpent) : 0,
             });
         }

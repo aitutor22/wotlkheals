@@ -315,33 +315,54 @@ class Experiment {
         }
         let minXAxis = binResults[0].minNum, maxXAxis = binResults[binResults.length - 1].maxNum;
 
-        // gets the hps, mana cost and cpm of spells casted, and combines it into a single list
-        let cpmSummary = Utility.medianStatistics(spellsCastedStatistics, 'spell', 'cpm', '1dp'),
-            manaCostSummary = Utility.medianStatistics(spellsCastedStatistics, 'spell', 'avgManaCost', 'floor'),
-            hpetSummary = Utility.medianStatistics(spellsCastedStatistics, 'spell', 'hpet', 'floor'),
-            hpsSummary = Utility.medianStatistics(spellsCastedStatistics, 'spell', 'hps', 'floor'),
-            hpmSummary = Utility.medianStatistics(spellsCastedStatistics, 'spell', 'hpm', 'floor');
 
-        let castProfileSummary = [];
-        for (let cpmEntry of cpmSummary) {
-            let _spell = cpmEntry['spell'],
-                manaEntry = manaCostSummary.find((_m) => _m['spell'] === _spell),
-                hpetEntry = hpetSummary.find((_m) => _m['spell'] === _spell),
-                hpsEntry = hpsSummary.find((_m) => _m['spell'] === _spell),
-                hpmEntry = hpmSummary.find((_m) => _m['spell'] === _spell);
+        let castProfileSummary = [],
+            summaries = {};
 
-            castProfileSummary.push({
-                spell: cpmEntry['spell'],
-                'CPM': cpmEntry['cpm'],
-                // hpet and hps are both extremely large numbers, so add thousand separator 
-                // though note that this converts it to a string
-                'HPET': Utility.formatNumber(hpetEntry['hpet']),
-                'HPS': Utility.formatNumber(hpsEntry['hps']),
-                'Cost': manaEntry['avgManaCost'],
-                'HPM': hpmEntry['hpm'],
-            });
+        const METRICS = [
+            {key: 'cpm', roundingMethod: '1dp'},
+            {key: 'hpet', roundingMethod: 'floor'},
+            {key: 'hps', roundingMethod: 'floor'},
+            {key: 'avgManaCost', roundingMethod: 'floor'},
+            {key: 'hpm', roundingMethod: 'floor'},
+        ];
 
+        // metrics are like cpm, avgManaCost, hpet, etc
+        // for each key metric, we find the median value
+        /* example would be
+          cpm: [
+            { spell: 'Chain Heal', cpm: 18.6 },
+            { spell: 'Lesser Healing Wave', cpm: 8.3 },
+            { spell: 'Riptide', cpm: 7.8 },
+            { spell: 'Earth Shield', cpm: 1.1 },
+            { spell: 'Healing Wave', cpm: 1 }
+          ],
+        */
+
+        for (let metric of METRICS) {
+            summaries[metric['key']] = Utility.medianStatistics(spellsCastedStatistics, 'spell', metric['key'], metric['roundingMethod']);
         };
+
+        // loops through each of the spell, and pulls out the relevant metric for each one of them
+        for (let _spell of summaries['cpm'].map((row) => row['spell'])) {
+            let toAddToCastProfileSummary = {'SPELL': _spell};
+            for (let metric of METRICS) {
+                let key = metric['key'],
+                    temp = {},
+                    title = key, // what is actually shown on frontend
+                    entry;
+
+                entry = summaries[key].find((_m) => _m['spell'] === _spell);
+                if (title === 'avgManaCost') {
+                    title = 'COST';
+                } else {
+                    title = title.toUpperCase();
+                }
+                // adds thousand modifier if >= 1000
+                toAddToCastProfileSummary[title] = entry[key] >= 1000 ? Utility.formatNumber(entry[key]) : entry[key];
+            };
+            castProfileSummary.push(toAddToCastProfileSummary);
+        }
 
         // we run a single iteration of the median seed to get log info
         // first argument is logLevel - 2 shows most details but ommits crti details

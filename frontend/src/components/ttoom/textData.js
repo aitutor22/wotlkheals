@@ -13,7 +13,8 @@ const textData = {
   },
   implementationAssumptions: {
     paladin: [
-      'The following have NOT been implented yet: Divine Favour, FoL Infusion of Light (currently the system will automatically prioritise HL when Infusion of Light is up), and standalone gcds used for Beacon and Sacred Shield.',
+      'The following have NOT been implented yet: Divine Favour, FoL Infusion of Light (currently the system will automatically prioritise HL when Infusion of Light is up), and standalone gcds used for Beacon.',
+      'Mana cost shown above is after EoG/Soup and Illumination',
       'Judgement is not casted in the sim, but two SoW procs is automatically calculated every 60s (Judgement counts as 2 hits).',
       'Soup and EoG procs are directly subtracted from the spell that procced it rather than the following spell. This is both for implemention simplicity and also to reflect that spells with multiple chances to proc soup will have lower blended mana cost.',
       'For instants to proc SoW, the player might to pause for a very short while to allow the hit to go off when using a 1.8 speed weapon. Currently, the system does not implement this delay as more work needs to be done to determine how long, if any, a pause is required.',
@@ -23,6 +24,7 @@ const textData = {
     ],
     shaman: [
       'Healing Stream Totem is not implemented',
+      'Mana cost shown above is after Soup and Water Shield',
       'Only two points are taken in Ancestral Knowledge.',
       'Selecting Bloodlust will not affect the amount of spells casted as that is determined by CPM; rather, casting Bloodlust is aimed at properly evaluating mana usage since Bloodlust is an expensive spell.',
       'The first Earth Shield is assumed to be precasted just before entering battle',
