@@ -48,12 +48,17 @@ class Paladin extends BasePlayer {
 
 
     // we overwrite createSpellQueue function for paladin as it's more complicated
-    // we add a fake spell for melee swing
+    // if user selects melee weaving, then we need to change our entire approach
+    // usually we don't consider haste, and just adjust cast times based on the user input cpm
+    // however for melee weaving, we calculate the amount of downtime for melee based on haste
+    // and work in MELEE_SWING, which is a fake spell that costs 0 mana and can proc sow
     createSpellQueue(rng) {
         // if user hasn't select melee weave, we can just use the parent function
         if (!this._options['meleeWeave']) return super.createSpellQueue(rng);
 
         let castProfile = {},
+            totalTimeUsed = 0,
+            freeTimeForMelee,
             spellInfo;
 
         // paladins get a 30% bonus
@@ -69,29 +74,30 @@ class Paladin extends BasePlayer {
             if (spellInfo['cooldown'] === 0) {
                 castProfile[key] = this._options['cpm'][key];
             }
-            // // instants are considered to have 0 cast time, but we need to account it when calculating haste factor since it still invokes gcd
-            // // baseGCD is 1.5, hence
-            // hasteNumerator += this._options['cpm'][key] * Math.max(spellInfo['baseCastTime'], DATA['constants']['baseGCD']);
+            totalTimeUsed += this._options['cpm'][key] * Math.max(spellInfo['baseCastTime'], DATA['constants']['baseGCD']);
         }
-        // we need to also consider cooldowns like divine plea - which appear in the simulation but are not under the spells portion
-        // hasteNumerator += this.classInfo['numGcdsPerMinNotCountedUnderSpells'] * DATA['constants']['baseGCD'];
-        // this._hasteFactor = hasteNumerator / 60;
-        // gcd is also reduced by haste factor
-        // this._gcd /= this._hasteFactor;
-        // this._gcd = Math.max(1, this._gcd); // gcd cannot be below 1s
+        this._gcd = Math.max(1, this._gcd / this._haste); // gcd cannot go below 1s
+
+        totalTimeUsed /= this._haste;
+        freeTimeForMelee = 60 - totalTimeUsed;
+        // we first find how many melees in perfect condition
+        // then we reduce according to melee weaving, and then inflat the melee cast time
+        // this is to ensure that in low melee weaving periods, the other spells aren't inflated
+        let baseMeleeCastTime = this._spells.find((_spell) => _spell['key'] === 'MELEE_SWING')['baseCastTime']
+        let numMeleesPerfectCondition = freeTimeForMelee / (baseMeleeCastTime / this._meleeHaste);
+        // we also enforce that there must be at least 1 melee
+        let realNumMelees = Math.max(1, Math.floor(numMeleesPerfectCondition * this._options['meleeWeaveUptime'] / 100));
+        
         for (let i in this._spells) {
             if (this._spells[i]['key'] !== 'MELEE_SWING') {
                 this._spells[i]['castTime'] = this._spells[i]['baseCastTime'] / this._haste;
             } else {
-                console.log(this._meleeHaste, this._spells[i]['baseCastTime'])
-                this._spells[i]['castTime'] = this._spells[i]['baseCastTime'] / this._meleeHaste;
+                if (realNumMelees === 0) continue;
+                this._spells[i]['castTime'] = freeTimeForMelee / realNumMelees;
             }
-            
         }
-        // testing of melee swing
-        // console.log(castProfile);
-        castProfile['MELEE_SWING'] = 5;
-        console.log(this._spells)
+        
+        castProfile['MELEE_SWING'] = realNumMelees;
         return new SpellQueue(castProfile, rng);
     }
 
@@ -150,8 +156,10 @@ class Paladin extends BasePlayer {
         let status, manaUsed, currentMana, errorMessage, offset, isCrit, msg, modifiedCritChance, sanctifiedLightCritChance, amountHealed;
 
         let spellInfo = this.classInfo['spells'].find(_spell => _spell['key'] === spellKey);
-        // other spells include "fake melee swing spel"
-        if (spellInfo['category'] === 'others') {
+        
+        // this is for the fake swings we added in when we introduce melee weaving
+        if (spellKey === 'MELEE_SWING') {
+            this.checkForAndHandleSoWProc(timestamp, spellIndex, logger, 'normal');
             return this.castOtherSpell(spellKey, timestamp, spellIndex, logger);
         }
 

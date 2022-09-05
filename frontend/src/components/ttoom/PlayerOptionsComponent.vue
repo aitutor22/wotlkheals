@@ -181,6 +181,10 @@
                   <span class="input-group-text" id="basic-addon1">Haste Rating </span>
                   <input type="text" class="form-control" v-model.number="oomOptions['charSheetStats']['hasteRating']">
                 </div>
+               <div v-if="oomOptions['meleeWeave']" class="col-md-4 mt-2 no-pad-left" style="width: 100%">
+                  <span id="basic-addon1">Melee weave uptime %</span>
+                  <vue-slider v-model="oomOptions['meleeWeaveUptime']"></vue-slider>
+                </div>
               </b-card-text></b-tab>
 
               <!-- options that apply to specific classes; we use v-if to show the correct one -->
@@ -483,6 +487,10 @@ export default {
 
 .full-screen-modal .close {
   font-size: 3em;
+}
+
+.no-pad-left {
+  padding-left: 0px;
 }
 
 .vs--single.vs--open .vs__selected { position: inherit; }

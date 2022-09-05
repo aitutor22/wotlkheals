@@ -1,6 +1,10 @@
 const textData = {
   changeLogs: {
     paladin: [
+    // {
+    //   dateAdded: '05/09/22',
+    //   text: 'Added Soul of the Dead',
+    // },
     {
       dateAdded: '03/09/22',
       text: 'For convenience, users can now input int & crit rating taken from 80upgrades. Added presets taken from Light Club.',

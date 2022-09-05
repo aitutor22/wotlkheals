@@ -98,6 +98,7 @@ const data = {
         },
         flask: 'distilledWisdom',
         meleeWeave: false,
+        meleeWeaveUptime: 50, // need to divide by 100 on backend
       },
     },
     shaman: {

@@ -105,7 +105,7 @@ exports.ttoom = (req, res) => {
     try {
         // second argument is where logs are sent - 0 for console.log, 1 to an arr that is returned to the client
         let experiment = new Experiment(options, 1);
-        let result = experiment.runBatch(1, batchSeed, playerClass);
+        let result = experiment.runBatch(400, batchSeed, playerClass);
         // console.log('Time taken: ' + (new Date() - time) / 1000);
         res.send(result);
     } catch (error) {
