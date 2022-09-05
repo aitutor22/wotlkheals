@@ -46,7 +46,6 @@ class BasePlayer {
         // note: we don't use haste for spell cast times typically - we use cpm instead
         // however, we still use the haste rating for certain tasks, like for melee weaving for paladins
         this._haste = options['haste'] * DATA['constants']['hasteRaidBuffs'] * this.classInfo['otherHasteBuff'];
-        console.log(this._haste);
 
         this._baseSpellPower = Math.floor(options['unbuffedSpellPower'] + this._buffedInt * this.classInfo['spellPowerFromInt'] 
             + DATA['constants']['spellPowerRaidBuffs']
@@ -100,7 +99,6 @@ class BasePlayer {
             }
         }
 
-
         this._manaCooldowns = [];
         this._rngThresholds = {};
         this.createRngThresholds(rng, thresholdItemsToCreate, maxMinsToOOM);
@@ -145,6 +143,7 @@ class BasePlayer {
         this._hasteFactor = hasteNumerator / 60;
         // gcd is also reduced by haste factor
         this._gcd /= this._hasteFactor;
+        this._gcd = Math.max(1, this._gcd); // gcd cannot be below 1s
         for (let i in this._spells) {
             this._spells[i]['castTime'] = this._spells[i]['baseCastTime'] / this._hasteFactor;
         }

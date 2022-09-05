@@ -118,6 +118,7 @@ const data = {
         critChanceRaidBuffs: 0.05, // moonkin aura
         hasteRaidBuffs: 1.03 * 1.05, // moonkin, WoA (haste buffs are all multiplicative, so we add 1 to each butt)
         hasteRatingConversion: 32.79,
+        meleeHasteBonusFactor: 0.3, // paladin, shamans, death knights and druids gain 30% more haste from rating
         spellPowerRaidBuffs: 280 + 46, // totem of wrath and spellpower food
         mp5RaidBuffs: 109, // blessing of wisdom 
     },
@@ -172,6 +173,17 @@ const data = {
                 numIntervals: 10,
                 secsBetweenInterval: 6,
                 startAtTimestamp: false,
+            },
+            {
+                'key': 'MELEE_SWING',
+                'name': 'Melee Swing Placeholder',
+                'cooldown': 0,
+                'instant': false,
+                'baseCastTime': 1.8, //base weapon is 1.8s swing timer
+                'baseManaCost': 0,
+                baseHeal: 0,
+                coefficient: 0,
+                category: 'others',
             },
             {
                 'key': 'HOLY_LIGHT',

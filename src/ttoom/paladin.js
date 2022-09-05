@@ -1,6 +1,7 @@
 const BasePlayer = require('./basePlayer');
 const DATA = require('./gamevalues');
 const Utility = require('../common/utilities');
+const SpellQueue = require('./spellqueue');
 
 // helper function - given an object, check if a key exists and whether it is true/false
 function getKeyBoolean(obj, key) {
@@ -43,6 +44,55 @@ class Paladin extends BasePlayer {
             'critChance': this.critChance,
             'mp5': this._otherMP5,
         };
+    }
+
+
+    // we overwrite createSpellQueue function for paladin as it's more complicated
+    // we add a fake spell for melee swing
+    createSpellQueue(rng) {
+        // if user hasn't select melee weave, we can just use the parent function
+        if (!this._options['meleeWeave']) return super.createSpellQueue(rng);
+
+        let castProfile = {},
+            spellInfo;
+
+        // paladins get a 30% bonus
+        let meleeHasteRatingConversion = DATA['constants']['hasteRatingConversion']  / (1 + DATA['constants']['meleeHasteBonusFactor']);
+        // melee hit haste for SoW
+        this._meleeHaste = 1 + (this._options['statsBeforeTrinket']['hasteRating'] / meleeHasteRatingConversion) / 100;
+        this._meleeHaste *= (1.20 * 1.03 * 1.15); //icy talon, moonkin, jotp
+
+        // we only want want to include spells with non-cd in spellqueue
+        // cooldown spells are automatically casted on cooldown
+        for (let key in this._options['cpm']) {
+            spellInfo = this.classInfo['spells'].find(_spell => _spell['key'] === key)
+            if (spellInfo['cooldown'] === 0) {
+                castProfile[key] = this._options['cpm'][key];
+            }
+            // // instants are considered to have 0 cast time, but we need to account it when calculating haste factor since it still invokes gcd
+            // // baseGCD is 1.5, hence
+            // hasteNumerator += this._options['cpm'][key] * Math.max(spellInfo['baseCastTime'], DATA['constants']['baseGCD']);
+        }
+        // we need to also consider cooldowns like divine plea - which appear in the simulation but are not under the spells portion
+        // hasteNumerator += this.classInfo['numGcdsPerMinNotCountedUnderSpells'] * DATA['constants']['baseGCD'];
+        // this._hasteFactor = hasteNumerator / 60;
+        // gcd is also reduced by haste factor
+        // this._gcd /= this._hasteFactor;
+        // this._gcd = Math.max(1, this._gcd); // gcd cannot be below 1s
+        for (let i in this._spells) {
+            if (this._spells[i]['key'] !== 'MELEE_SWING') {
+                this._spells[i]['castTime'] = this._spells[i]['baseCastTime'] / this._haste;
+            } else {
+                console.log(this._meleeHaste, this._spells[i]['baseCastTime'])
+                this._spells[i]['castTime'] = this._spells[i]['baseCastTime'] / this._meleeHaste;
+            }
+            
+        }
+        // testing of melee swing
+        // console.log(castProfile);
+        castProfile['MELEE_SWING'] = 5;
+        console.log(this._spells)
+        return new SpellQueue(castProfile, rng);
     }
 
     // majority of spell selection is done in basePlayer's selectSpellHelper
@@ -99,6 +149,12 @@ class Paladin extends BasePlayer {
             eventsToCreate = [];
         let status, manaUsed, currentMana, errorMessage, offset, isCrit, msg, modifiedCritChance, sanctifiedLightCritChance, amountHealed;
 
+        let spellInfo = this.classInfo['spells'].find(_spell => _spell['key'] === spellKey);
+        // other spells include "fake melee swing spel"
+        if (spellInfo['category'] === 'others') {
+            return this.castOtherSpell(spellKey, timestamp, spellIndex, logger);
+        }
+
         // checks for soup, and eog procs
         // holy light has more hits; all other spells have 2 hits (due to beacon)
         procs = this.getSoupEogProcs(spellIndex, spellKey === 'HOLY_LIGHT' ? this._numHitsPerHolyLight : 2);
@@ -121,7 +177,6 @@ class Paladin extends BasePlayer {
         statMsg += `Spellpower: ${this.spellPower}`;
         logger.log(statMsg, 3);
 
-        let spellInfo = this.classInfo['spells'].find(_spell => _spell['key'] === spellKey);
         // all pally direcHeals spells have 1 chance to crit (beacon just mirrors the spell cast); hots cannot crit
         isCrit = spellInfo['category'] === 'directHeal' ? this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance) : false;
 
