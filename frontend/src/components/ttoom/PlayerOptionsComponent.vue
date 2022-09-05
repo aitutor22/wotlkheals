@@ -5,6 +5,9 @@
 -->
 <template>
   <section id="options-modal" class="full-screen-modal" :class="{active: isShow}">
+    <div v-if="oomOptions">
+      {{ oomOptions['charSheetStats'] }}      
+    </div>
     <div class="container">
       <div class="row">
         <div class="col-12 text-right">
@@ -157,6 +160,27 @@
                     v-b-tooltip.hover title="Number of talent points in Enlightened Judgements (0 to 2)">#pts (Enl. Judgements)</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['talents']['enlightenedJudgements']">
                 </div>
+                <hr>
+                <h6>Advanced Gameplay Choices</h6>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="canSoW" v-model="oomOptions['manaOptions']['canSoW']">
+                  <label class="form-check-label" for="canSoW"
+                    v-b-tooltip.hover title="Is HPLD in melee range and thus able to proc Seal of Wisdom for mana?">Can SoW?</label>
+                </div>
+                <div v-if="oomOptions['manaOptions']['canSoW']" class="form-check">
+                  <input class="form-check-input" type="checkbox" id="meleeWeave" v-model="oomOptions['meleeWeave']" :value="true">
+                  <label class="form-check-label" for="meleeWeave"
+                    v-b-tooltip.hover title="">
+                    Additional melee weave and delay spell casts
+                  </label>
+                </div>
+                <p v-if="oomOptions['meleeWeave']">
+                  This sim usually disregards haste rating and relies on CPM to determine cast times. The system will normally only melee during instant casts, and when selecting melee weave, the sim weaves in additional melees between spell casts based on your haste. This increases mana regen while also <b>increasing the gaps between healing spells and the risk of a tank death</b>.
+                </p>
+<!--                 <div v-if="oomOptions['meleeWeave']" class="input-group mb-2" style="width: 100%">
+                  <span class="input-group-text" id="basic-addon1">Haste Rating </span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['charSheetStats']['hasteRating']">
+                </div> -->
               </b-card-text></b-tab>
 
               <!-- options that apply to specific classes; we use v-if to show the correct one -->
@@ -244,11 +268,6 @@
                 </div>
 
                 <!-- class specific -->
-                <div v-if="playerClass === 'paladin'" class="form-check">
-                  <input class="form-check-input" type="checkbox" id="canSoW" v-model="oomOptions['manaOptions']['canSoW']">
-                  <label class="form-check-label" for="canSoW"
-                    v-b-tooltip.hover title="Is HPLD in melee range and thus able to proc Seal of Wisdom for mana?">Can SoW?</label>
-                </div>
                 <div v-if="playerClass === 'paladin'" class="form-check">
                   <input class="form-check-input" type="checkbox" id="divinePlea" v-model="oomOptions['manaOptions']['divinePlea']">
                   <label class="form-check-label" for="divinePlea">Divine Plea</label>
@@ -356,6 +375,7 @@ export default {
     // need to use a deep watcher here since it's watching the whole object
     '$store.state.ttoom.oomOptions.charSheetStats': {
       handler: function(newValue, oldValue) {
+        console.log(this.oomOptions)
         if (typeof oldValue === 'undefined') return;
         this.hasChangedPreset = true;
         this.loopThroughTrinkets(this.oomOptions['charSheetStats'], true, (stat, newValue) => {
@@ -373,7 +393,7 @@ export default {
         return a + b;
       }
 
-      for (let stat of ['int', 'spellpower', 'critRating', 'mp5FromGear']) {
+      for (let stat of ['int', 'spellpower', 'critRating', 'hasteRating', 'mp5FromGear']) {
         let newValue = originalValues[stat];
         // loops through selected trinkets, and subtracts from the appropraite stat
         for (let trinket of this.oomOptions['trinkets']) {

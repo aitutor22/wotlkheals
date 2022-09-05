@@ -116,6 +116,8 @@ const data = {
         replenishment: 0.01, // returns 1% of mana pool every 5s
         intRaidBuffs: 60 + 51, // arcane intellect and mark of the wild
         critChanceRaidBuffs: 0.05, // moonkin aura
+        hasteRaidBuffs: 1.03 * 1.05, // moonkin, WoA (haste buffs are all multiplicative, so we add 1 to each butt)
+        hasteRatingConversion: 32.79,
         spellPowerRaidBuffs: 280 + 46, // totem of wrath and spellpower food
         mp5RaidBuffs: 109, // blessing of wisdom 
     },
@@ -124,6 +126,7 @@ const data = {
             // https://wowwiki-archive.fandom.com/wiki/Spell_critical_strike
             baseCritChance: 0.03336,
             baseMana: 4394,
+            otherHasteBuff: 1.15, // jotp (haste buffs are all multiplicative, so we add 1 to each butt)
             // when we calculate hasteFactor, we also need to consider the number of spells that
             // are not healing spells (e.g. divine plea) but are casted
             // otherwise we will undercount the haste factor
@@ -239,6 +242,7 @@ const data = {
             // https://wowwiki-archive.fandom.com/wiki/Spell_critical_strike
             baseCritChance: 0.022,
             baseMana: 4396,
+            otherHasteBuff: 1, // (haste buffs are all multiplicative; shaman has no buff, so this is just 1
             eightyUpgradesIntConversionFactor: 1.04, // 80upgrades character screen includes 2 pts in ancestral intellect; so we need to divide it out
             // when we calculate hasteFactor, we also need to consider the number of spells that
             // are not healing spells (e.g. divine plea) but are casted

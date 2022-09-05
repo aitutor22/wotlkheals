@@ -19,6 +19,7 @@ const data = {
           int: 1332,
           spellpower: 1971,
           critRating: 333,
+          hasteRating: 574,
           mp5FromGear: 174,
         },
         trinkets: ['soup', 'owl'],
@@ -36,6 +37,7 @@ const data = {
           int: 1425,
           spellpower: 2035,
           critRating: 425,
+          hasteRating: 620,
           mp5FromGear: 156,
         },
         trinkets: ['soup', 'dmcg'],
@@ -53,6 +55,7 @@ const data = {
           spellpower: 2035,
           critRating: 425,
           mp5FromGear: 117,
+          hasteRating: 0,
         },
         // we store player stats before trinkets
         // these are the real values that are passed to the backend
@@ -60,6 +63,8 @@ const data = {
           int: 0,
           critRating: 0,
           spellpower: 0,
+          mp5FromGear: 0,
+          hasteRating: 0,
         },
         seed: '',
         cpm: {
@@ -92,6 +97,7 @@ const data = {
           '4pT7': true,
         },
         flask: 'distilledWisdom',
+        meleeWeave: false,
       },
     },
     shaman: {
@@ -111,6 +117,7 @@ const data = {
           spellpower: 1981,
           critRating: 349,
           mp5FromGear: 264,
+          hasteRating: 633,
         },
         trinkets: ['soup', 'soulDead'],
         tier: {
@@ -129,6 +136,7 @@ const data = {
           spellpower: 1934,
           critRating: 312,
           mp5FromGear: 275,
+          hasteRating: 608,
         },
         trinkets: ['soup', 'soulDead'],
         tier: {
@@ -143,6 +151,7 @@ const data = {
           spellpower: 2035,
           critRating: 425,
           mp5FromGear: 117,
+          hasteRating: 0,
         },
         // we store player stats before trinkets
         // these are the real values that are passed to the backend
@@ -150,6 +159,8 @@ const data = {
           int: 0,
           critRating: 0,
           spellpower: 0,
+          hasteRating: 0,
+          mp5FromGear: 0,
         },
         seed: '',
         cpm: {

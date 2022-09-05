@@ -43,6 +43,11 @@ class BasePlayer {
         this._baseCritChance = options['critChance'] + this.classInfo['baseCritChanceModifier'] + DATA['constants']['critChanceRaidBuffs'] + 
             this._buffedInt * DATA['constants']['critChanceFromOneInt'] + this.classInfo['baseCritChance'];
 
+        // note: we don't use haste for spell cast times typically - we use cpm instead
+        // however, we still use the haste rating for certain tasks, like for melee weaving for paladins
+        this._haste = options['haste'] * DATA['constants']['hasteRaidBuffs'] * this.classInfo['otherHasteBuff'];
+        console.log(this._haste);
+
         this._baseSpellPower = Math.floor(options['unbuffedSpellPower'] + this._buffedInt * this.classInfo['spellPowerFromInt'] 
             + DATA['constants']['spellPowerRaidBuffs']
             + (options['flask'] === 'frostWyrm' ? DATA['battleConsumables']['flaskFrostWyrm']['base']['spellpower'] : 0));
@@ -61,6 +66,10 @@ class BasePlayer {
 
             if (typeof item['base']['critRating'] !== 'undefined') {
                 this._baseCritChance += (item['base']['critRating'] / DATA['constants']['critRatingConversion']) / 100;
+            }
+
+            if (typeof item['base']['hasteRating'] !== 'undefined') {
+                throw new Error('Haste not implemented yet');
             }
         }
 

@@ -25,6 +25,7 @@ function createOptions(playerClass, playerOptions) {
     options['unbuffedInt'] = Math.floor(playerOptions['statsBeforeTrinket']['int'] / DATA['classes'][playerClass]['eightyUpgradesIntConversionFactor']);
     options['mp5FromGear'] = playerOptions['statsBeforeTrinket']['mp5FromGear'];   
     options['critChance'] = (options['statsBeforeTrinket']['critRating'] / DATA['constants']['critRatingConversion']) / 100;
+    options['haste'] = 1 + (options['statsBeforeTrinket']['hasteRating'] / DATA['constants']['hasteRatingConversion']) / 100;
     // copies tier options
     for (const tierKey in playerOptions['tier']) {
         options[tierKey] = playerOptions['tier'][tierKey];
