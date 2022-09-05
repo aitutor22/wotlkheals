@@ -1,1 +1,6 @@
 # when changing bearer tokens, need to udpate in heorku
+
+
+
+to do -> check Soup proc on shaman
+the mp5 im getting is much lower than teamy

@@ -124,6 +124,9 @@ class Paladin extends BasePlayer {
         let spellInfo = this.classInfo['spells'].find(_spell => _spell['key'] === spellKey);
         // all pally direcHeals spells have 1 chance to crit (beacon just mirrors the spell cast); hots cannot crit
         isCrit = spellInfo['category'] === 'directHeal' ? this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance) : false;
+
+        // isCrit = spellInfo['category'] === 'directHeal' ? Math.random() < modifiedCritChance : false;
+
         // directHeals should just calculate actual healing amount, for hots, just cast the spell
         if (spellInfo['category'] === 'directHeal') {
             amountHealed = this.calculateHealing(spellKey, isCrit, this.isBuffActive('divinePlea'));

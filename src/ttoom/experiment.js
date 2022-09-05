@@ -273,14 +273,43 @@ class Experiment {
         } //end while loop
 
 
-        let statistics = player.calculate_statistics_after_sim_ends(lastCastTimestamp),
+        let statistics = player.calculateStatisticsAfterSimEnds(lastCastTimestamp),
             hps = Math.floor(player._statistics['overall']['healing'] / lastCastTimestamp);
+
         return {ttoom: lastCastTimestamp, statistics: statistics, logs: this.logger._resultArr, hps: hps, raidBuffedStats: player._statistics['raidBuffedStats']};
+    }
+
+    
+    calculateCritTrimmedMean(data, percentageToTrim) {
+        let toReturn = {},
+            critCasts,
+            totalCasts;
+
+        for (let spell in data) {
+            critCasts = 0;
+            totalCasts = 0;
+
+            // if (spell !== 'Holy Shock') continue;
+            let newNumEntries = data[spell].length * (1 - percentageToTrim),
+                startIndex = Math.floor((data[spell].length - newNumEntries) / 2);
+
+            // sorts and trims based on crit %
+            let sorted = data[spell].sort((a, b) => a['crit %'] - b['crit %']);
+            sorted = sorted.splice(startIndex, newNumEntries);
+
+            for (let i = 0; i < sorted.length; i++) {
+                critCasts += sorted[i]['critCasts'];
+                totalCasts += sorted[i]['totalCasts'];
+            }
+            toReturn[spell] = Utility.roundDp(critCasts / totalCasts * 100, 1);
+        }
+        return toReturn;
     }
 
     runBatch(batchSize=10, batchSeed=0, playerClass='paladin', logsLevel=0, numBins=30) {
         let timings = [], listOfHPS = [], manaGeneratedStatistics = [], spellsCastedStatistics = [],
             medianEntry, resultSingleLoop, binResults, raidBuffedStats;
+
         // if seed is 0, we get a random number from 1 to 9999 and used it to seed
         if (batchSeed === 0) {
             batchSeed = Math.floor(Math.random() * 10000 + 1)
@@ -339,6 +368,24 @@ class Experiment {
           ],
         */
 
+        // it's better to sum up crit/total casts across all the entire batch before finding crit %
+        // rather than trying to mean crit %, which is not as accurate
+        let trimmedMeanData = {},
+            critMeans;
+        for (let _ of spellsCastedStatistics) {
+            for (let row of _) {
+                let key = row['spell'];
+                if (typeof trimmedMeanData[key] === 'undefined') {
+                    trimmedMeanData[key] = [];
+                }
+                // this is just used for sorting
+                row['crit %'] = row['critCasts'] / row['totalCasts'];
+                trimmedMeanData[key].push(row);
+            }
+        }
+        // trims 10% of extreme values to reduce variance
+        critMeans = this.calculateCritTrimmedMean(trimmedMeanData, 0.1);
+
         for (let metric of METRICS) {
             summaries[metric['key']] = Utility.medianStatistics(spellsCastedStatistics, 'spell', metric['key'], metric['roundingMethod']);
         };
@@ -361,8 +408,19 @@ class Experiment {
                 // adds thousand modifier if >= 1000
                 toAddToCastProfileSummary[title] = entry[key] >= 1000 ? Utility.formatNumber(entry[key]) : entry[key];
             };
+            // add crit % - this is not calculated via median, but instead is calculated by summing all the crit and dividing across all the normal casts
+            // to reduce variance, we do a trimmed mean
+            toAddToCastProfileSummary['CRIT %'] = critMeans[_spell];
             castProfileSummary.push(toAddToCastProfileSummary);
         }
+
+        // console.log(critCasts, totalCasts, critCasts / totalCasts)
+
+        // console.log('testing holy shocks')
+        // console.log(Utility.sum(tempHolyShockCrits) / tempHolyShockCrits.length)
+        // for (let i = 0; i < 4; i++) {
+        //     console.log(tempHolyShockCrits.slice(i*100, (i+1) * 100))
+        // }
 
         // we run a single iteration of the median seed to get log info
         // first argument is logLevel - 2 shows most details but ommits crti details

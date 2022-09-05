@@ -571,6 +571,8 @@ class BasePlayer {
     // subsequently, changed the behaviour to consider each hit separately
     // but leave the code in, in case we need it in future
     checkProcHelper(key, spellIndex, numHits, procChance, allowMultipleHits=false) {
+        console.log(key)
+        console.log(this._rngThresholds[key].length)
         let arr = this._rngThresholds[key].slice(spellIndex * numHits, (spellIndex + 1) * numHits);
         if (arr.length === 0) throw new Error('ran out of rng numbers for ' + key);
         if (!allowMultipleHits) return Utility.anyValueBelowThreshold(arr, procChance);
@@ -726,7 +728,7 @@ class BasePlayer {
         return procs;
     }
 
-    calculate_statistics_after_sim_ends(totalTime) {
+    calculateStatisticsAfterSimEnds(totalTime) {
         let toReturn = {manaGenerated: [], spellsCasted: []};
         for (let key in this._statistics['manaGenerated']) {
             // poor code: manually converts certain keys to what is shown on client's table
@@ -740,9 +742,12 @@ class BasePlayer {
 
         for (let key in this._statistics['spellsCasted']) {
             let totalCasts = this._statistics['spellsCasted'][key]['total'],
+                critCasts = this._statistics['spellsCasted'][key]['crit'],
+                normalCasts = totalCasts - critCasts,
                 totalManaSpent = 0,
                 castTime = this._spells.find((_spell) => _spell['key'] === key)['castTime'],
                 hpet = 0; // healing per effective time
+
 
             // for instants, use gcd to calculate
             if (castTime === 0) {
@@ -762,6 +767,9 @@ class BasePlayer {
 
             hpet = Math.floor((this._statistics['healing'][key] / totalCasts) / castTime)
 
+            // we don't really want to do mean of crit % as that can be inaccurate
+            // instead, we sum up all the crits across the entire batch (e.g. 400 runs)
+            // and then calculate a final crit %
             toReturn['spellsCasted'].push({
                 // converts HOLY_LIGHT to Holy Light
                 'spell': key.split('_').map(k => Utility.capitalizeFirstLetter(k.toLowerCase())).join(' '),
@@ -770,6 +778,8 @@ class BasePlayer {
                 'hpet': hpet,
                 'hps': Math.floor((this._statistics['healing'][key] / totalTime)),
                 'hpm': totalManaSpent > 0 ? Math.floor(this._statistics['healing'][key] / totalManaSpent) : 0,
+                'critCasts': critCasts,
+                'totalCasts': totalCasts,
             });
         }
 

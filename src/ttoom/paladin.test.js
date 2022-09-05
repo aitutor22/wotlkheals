@@ -28,6 +28,7 @@ const defaultOptions = {
       manaTideTotem: false,
     },
     manaCooldowns: [{key: 'RUNIC_MANA_POTION', minimumManaDeficit: 18000, minimumTimeElapsed: 0}],
+    flask: 'distilledWisdom',
 };
 
 const dmcgOptions = {
@@ -53,6 +54,7 @@ const dmcgOptions = {
       manaTideTotem: false,
     },
     manaCooldowns: [{key: 'RUNIC_MANA_POTION', minimumManaDeficit: 18000, minimumTimeElapsed: 0}],
+    flask: 'distilledWisdom',
 };
 
 test('when creating character, first 20 points of int give 1 int only', () => {
@@ -275,7 +277,7 @@ test('selectSpell should not select SacredShield if precasted is set to true', (
 test('casting sacred shield should create INITIALIZE_HOT_EVENTS', () => {
     let options = Object.assign({}, defaultOptions);
     options['cpm']['HOLY_SHOCK'] = 0; // set holy shock to 0 so it is not casted
-    let player = new Paladin(options, rng, thresholdItemsToCreate);
+    let player = new Paladin(options, rng, thresholdItemsToCreate, 10);
 
     // at 61s, we are past the original cooldown, and should pick sacred shield
     let results = player.castSpell('SACRED_SHIELD', 61, 0, logger);
@@ -388,7 +390,7 @@ test('testing addSpellCastToStatistics', () => {
     expect(player._statistics['spellsCasted']['HOLY_LIGHT']).toEqual({'normal': 2, 'crit': 1, 'total': 3});
 });
 
-test('testing calculate_statistics_after_sim_ends', () => {
+test('testing calculateStatisticsAfterSimEnds', () => {
     let options = JSON.parse(JSON.stringify(defaultOptions));
     options['cpm']['HOLY_SHOCK'] = 1;
     let player = new Paladin(options, rng, thresholdItemsToCreate);
@@ -417,7 +419,7 @@ test('testing calculate_statistics_after_sim_ends', () => {
 
     }
 
-    let results = player.calculate_statistics_after_sim_ends(240);
+    let results = player.calculateStatisticsAfterSimEnds(240);
 
     // cpm is rounded to 1 dp
     expect(results['spellsCasted'].length).toBe(2);

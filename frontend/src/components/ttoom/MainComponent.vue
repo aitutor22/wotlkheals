@@ -82,7 +82,7 @@
         <h5>Cast Profile</h5>
         <b-table striped hover :items="this.results['spellsCastedStatistics']"></b-table>
         <i>
-          The values for Cast Profile and Mana Generated are median values over 400 runs, and do not come from the same log. Similarly, HPS, HPET, etc are all median statistics, and do not necessarily add up.
+          The values for Cast Profile and Mana Generated are median values over 400 runs, and do not come from the same log. HPS, HPET, etc are median statistics, and do not necessarily add up. Note: Crit % is calculated by using a 90% trimmed mean to reduce variance.
         </i>
       </div>
     </div>
