@@ -282,12 +282,12 @@ class Experiment {
     
     calculateCritTrimmedMean(data, percentageToTrim) {
         let toReturn = {},
-            critCasts,
-            totalCasts;
+            critHits,
+            totalHits;
 
         for (let spell in data) {
-            critCasts = 0;
-            totalCasts = 0;
+            critHits = 0;
+            totalHits = 0;
 
             // if (spell !== 'Holy Shock') continue;
             let newNumEntries = data[spell].length * (1 - percentageToTrim),
@@ -298,10 +298,10 @@ class Experiment {
             sorted = sorted.splice(startIndex, newNumEntries);
 
             for (let i = 0; i < sorted.length; i++) {
-                critCasts += sorted[i]['critCasts'];
-                totalCasts += sorted[i]['totalCasts'];
+                critHits += sorted[i]['critHits'];
+                totalHits += sorted[i]['totalHits'];
             }
-            toReturn[spell] = Utility.roundDp(critCasts / totalCasts * 100, 1);
+            toReturn[spell] = Utility.roundDp(critHits / totalHits * 100, 1);
         }
         return toReturn;
     }
@@ -379,7 +379,7 @@ class Experiment {
                     trimmedMeanData[key] = [];
                 }
                 // this is just used for sorting
-                row['crit %'] = row['critCasts'] / row['totalCasts'];
+                row['crit %'] = row['critHits'] / row['totalHits'];
                 trimmedMeanData[key].push(row);
             }
         }
@@ -414,7 +414,7 @@ class Experiment {
             castProfileSummary.push(toAddToCastProfileSummary);
         }
 
-        // console.log(critCasts, totalCasts, critCasts / totalCasts)
+        // console.log(critHits, totalHits, critHits / totalHits)
 
         // console.log('testing holy shocks')
         // console.log(Utility.sum(tempHolyShockCrits) / tempHolyShockCrits.length)
@@ -432,11 +432,15 @@ class Experiment {
             batchSeed: batchSeed,
             ttoom: medianEntry['ttoom'],
             hps: Utility.median(listOfHPS),
+            lowerPercentile: {
+                ttoom:  Utility.roundDp(Utility.percentile(timings.map((_t) => _t['ttoom']), 0.25), 2),
+                // cannot do 25% like this - should actually look for 25% entry instead
+                // hps: Utility.percentile(listOfHPS, 0.25),
+            },
             raidBuffedStats: raidBuffedStats,
             logs: resultSingleLoop['logs'],
             manaStatistics: Utility.medianStatistics(manaGeneratedStatistics, 'source', 'MP5', 'floor'),
             spellsCastedStatistics: castProfileSummary,
-            // statistics: resultSingleLoop['statistics'][0],
             chartDetails: {
                 labels: labels,
                 values: values,

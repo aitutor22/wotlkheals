@@ -158,6 +158,8 @@ class Shaman extends BasePlayer {
             options = {};
         if (spellKey === 'EARTH_SHIELD') {
             isCrit = this.checkProcHelper('earthShieldCrit', this._earthShieldHitIndex, 1, this.critChance);
+            // since each earth shield hit can crit, we record separately
+            this.addHitsToStatistics(spellKey, Number(isCrit));
             this._earthShieldHitIndex++;
         } else if (spellKey === 'RIPTIDE') {
             // this is only required for riptide, because it has both a direct heal and a hot
@@ -174,8 +176,7 @@ class Shaman extends BasePlayer {
     // but water shield proc needs to be handled separatedly
     // returns a boolean indicating whether it was crit
     castChainHealHelper(spellKey, timestamp, spellIndex, critChance, logger) {
-        let numCritsTotal = 0, 
-            offset = 0, // since chain heal is not an instant, no offset
+        let offset = 0, // since chain heal is not an instant, no offset
             numChainHealHits = this._numchainHealHits,
             msg;
 
@@ -202,10 +203,10 @@ class Shaman extends BasePlayer {
                 this.checkAndAddManaFromWaterShieldProc(spellKey, spellIndex, logger, chainHealHitIndex, timestamp);
                 let hackedSpellIndex = (spellIndex * 4 + chainHealHitIndex); // super hackish way to ensure each chain heal hit is handled separately
                 this.checkHandleProcsOnCritWithICD(timestamp, hackedSpellIndex, logger);
-                numCritsTotal++;
             }
+            // since chain heal has multiple hits, we need to record the hits separately
+            this.addHitsToStatistics('CHAIN_HEAL', Number(isCrit));
         }
-        return numCritsTotal > 0;
     }
 
     // selectSpell and castSpell work differently
@@ -297,14 +298,22 @@ class Shaman extends BasePlayer {
         // for chainHeal, we handle this separately because the behaviour is more complex
         if (spellKey === 'CHAIN_HEAL') {
             logger.log(`Spent ${originalMana - currentMana} mana on CHAIN_HEAL`, 2);
-            let isChainHealCrit = this.castChainHealHelper(spellKey, timestamp, spellIndex, modifiedCritChance, logger);
-            this.addSpellCastToStatistics(spellKey, isChainHealCrit);
+            this.castChainHealHelper(spellKey, timestamp, spellIndex, modifiedCritChance, logger);
+            // NOTE: WE DO NOT PASS IN CRIT FOR CHAINHEAL
+            this.addSpellCastToStatistics(spellKey, -1);
             // chain heal has 0 offset as it's not instant spell
             return [status, errorMessage, 0, eventsToCreate];
         }
 
         // BE CAREFUL WHERE THIS CODE GOES - if you put it before the oom check, will add 1 to final tally
-        this.addSpellCastToStatistics(spellKey, isCrit);
+        // this is for non-chain heal spells 
+        if (spellKey === 'EARTH_SHIELD') {
+            // for earthshield, don't add to hits as we will handle separately
+            this.addSpellCastToStatistics(spellKey, -1);    
+        } else {
+            this.addSpellCastToStatistics(spellKey, Number(isCrit));
+        }
+        
 
         if (spellInfo['category'].startsWith('directHeal')) {
             msg = isCrit ? `${timestamp}s: **CRIT ${spellKey} for ${amountHealed}** (spent ${originalMana - currentMana} mana)` :

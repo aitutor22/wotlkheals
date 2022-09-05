@@ -1,3 +1,4 @@
+const ss = require('simple-statistics');
 const seedrandom = require('seedrandom');
 
 const helperFunctions = {
@@ -11,6 +12,9 @@ const helperFunctions = {
             if (arr[i] < thresholdValue) return true;
         }
         return false;
+    },
+    percentile(numbers, q) {
+        return ss.quantile(numbers, q);
     },
     median(numbers) {
         const sorted = Array.from(numbers).sort((a, b) => a - b);

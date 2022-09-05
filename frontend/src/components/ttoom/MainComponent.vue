@@ -2,7 +2,10 @@
   <div class="container">
     <div v-if="showExplanation" class="row">
       <p class="text-justify">
-        This tool simulates how long it takes to go OOM (ttoom). Click <b>Edit Options</b>, input stats from 80upgrades (including talents), and click <b>Run Simulation</b>. Unlike dps sims, this tool focuses more on spell choice and gameplay choices than gear, as we believe that has the highest impact on healer performance.
+        This tool simulates how long it takes to go OOM (ttoom). Click <b>Edit Options</b>, input stats from 80upgrades (including talents), and click <b>Run Simulation</b>. Unlike dps sims, this tool focuses more on spell choice and gameplay choices than gear, as we believe that has the highest impact on healer performance. 
+      </p>
+      <p class="text-justify">
+        <b>As a healer, it's extremely important to not only consider your average ttoom, but also situations when you get unlucky with procs resulting in your tank dying</b>. We provide both the median and an unlucky ttoom (25% quartile).
       </p>
       <p class="text-justify">
         Please message <b>Trollhealer#8441</b> on Discord if you see any bugs or have suggestions.
@@ -39,7 +42,11 @@
     <hr>
     <div class="row" v-if="results">
       <div class="col-md-7">
-        <p>Median Time to OOM: <b>{{ results['ttoom'] }}s ({{ formatNumber(results['hps']) }} HPS)</b></p>
+        <p>
+          Time to OOM: <b>{{ results['lowerPercentile']['ttoom'] }}s (Unlucky)</b> vs
+          <b>{{ results['ttoom'] }}s (Median)</b>
+        </p>
+        <p>Median HPS: <b>{{ formatNumber(results['hps']) }} HPS</b></p>
         <p>
           Batch Seed: <b>{{ results['batchSeed'] }} </b>
           <span v-if="oomOptions['seed'] !== '' && oomOptions['seed'] > 0 && oomOptions['seed'] === results['batchSeed']">(Seed currently fixed)</span>
@@ -79,7 +86,7 @@
 
     <div class="row gap-top" v-if="results">
       <div class="col-md-12">
-        <h5>Cast Profile</h5>
+        <h5>Median Cast Profile</h5>
         <b-table striped hover :items="this.results['spellsCastedStatistics']"></b-table>
         <i>
           The values for Cast Profile and Mana Generated are median values over 400 runs, and do not come from the same log. HPS, HPET, etc are median statistics, and do not necessarily add up. Note: Crit % is calculated by using a 90% trimmed mean to reduce variance.
@@ -89,7 +96,7 @@
 
     <div class="row gap-top" v-if="results">
       <div class="col-md-7">
-        <h5>Mana Generation Breakdown</h5>
+        <h5>Median Mana Breakdown</h5>
         <b-table striped hover :items="mp5Data"></b-table>
       </div>
       <div class="col-md-5" v-if="implementationAssumptions.length > 0">

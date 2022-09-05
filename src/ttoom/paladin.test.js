@@ -380,55 +380,75 @@ test('testing useManaCooldown', () => {
 });
 
 test('testing addSpellCastToStatistics', () => {
+    // we first test spells where hits and casts are identical
     let player = new Paladin(defaultOptions, rng, thresholdItemsToCreate);
     expect(player._statistics['spellsCasted']).toEqual({});
-    player.addSpellCastToStatistics('HOLY_LIGHT', false);
-    expect(player._statistics['spellsCasted']['HOLY_LIGHT']).toEqual({'normal': 1, 'crit': 0, 'total': 1});
-    player.addSpellCastToStatistics('HOLY_LIGHT', false);
-    expect(player._statistics['spellsCasted']['HOLY_LIGHT']).toEqual({'normal': 2, 'crit': 0, 'total': 2});
-    player.addSpellCastToStatistics('HOLY_LIGHT', true);
-    expect(player._statistics['spellsCasted']['HOLY_LIGHT']).toEqual({'normal': 2, 'crit': 1, 'total': 3});
-});
+    player.addSpellCastToStatistics('HOLY_LIGHT', 0);
+    expect(player._statistics['spellsCasted']['HOLY_LIGHT']).toEqual({'total': 1, 'totalHits': 1, 'critHits': 0});
 
-test('testing calculateStatisticsAfterSimEnds', () => {
-    let options = JSON.parse(JSON.stringify(defaultOptions));
-    options['cpm']['HOLY_SHOCK'] = 1;
-    let player = new Paladin(options, rng, thresholdItemsToCreate);
-    player._statistics = {
-      manaGenerated: {
-        libramOfRenewal: 10914,
-        illumination: 18757,
-        Replenishment: 10528,
-        otherMP5: 15134,
-        soup: 6736,
-        eog: 6885,
-        divinePlea: 21000,
-        divineIllumination: 5500,
-        RUNIC_MANA_POTION: 4300,
-        sow: 2240
-      },
-      spellsCasted: {
-        HOLY_LIGHT: { normal: 61, crit: 46, total: 107 },
-        HOLY_SHOCK: { normal: 4, crit: 5, total: 9 }
-      },
-      // placeholder values
-      healing: {
-        HOLY_LIGHT: 0,
-        HOLY_SHOCK: 0,
-      }
+    player.addSpellCastToStatistics('HOLY_LIGHT', 0);
+    expect(player._statistics['spellsCasted']['HOLY_LIGHT']).toEqual({'total': 2, 'critHits': 0, 'totalHits': 2});
 
-    }
+    player.addSpellCastToStatistics('HOLY_LIGHT', 1);
+    expect(player._statistics['spellsCasted']['HOLY_LIGHT']).toEqual({'total': 3, 'critHits': 1, 'totalHits': 3});
 
-    let results = player.calculateStatisticsAfterSimEnds(240);
+    // passing in -1 for isCrit doesn't update hits
+    player.addSpellCastToStatistics('CHAIN_HEAL', -1);
+    expect(player._statistics['spellsCasted']['CHAIN_HEAL']).toEqual({'total': 1, 'critHits': 0, 'totalHits': 0});
 
-    // cpm is rounded to 1 dp
-    expect(results['spellsCasted'].length).toBe(2);
-    // expect(results['spellsCasted'].length).toBe(2);
-    expect((Math.abs(results['spellsCasted'][0]['cpm'] - 26.8))).toBeLessThan(1e-2);
-    expect((Math.abs(results['spellsCasted'][1]['cpm'] - 2.3))).toBeLessThan(1e-2);
-    // MP5 is floored
-    expect(results['manaGenerated'].length).toBe(10);
-    expect((Math.abs(results['manaGenerated'][0]['MP5'] - 227))).toBeLessThan(1e-1);
+    // now lets update CHAIN_HEAL 4 times
+    player.addHitsToStatistics('CHAIN_HEAL', 1);
+    player.addHitsToStatistics('CHAIN_HEAL', 1);
+    player.addHitsToStatistics('CHAIN_HEAL', 0);
+    player.addHitsToStatistics('CHAIN_HEAL', 0);
+    // doesn't modfiy total (as that's for casts)
+    expect(player._statistics['spellsCasted']['CHAIN_HEAL']).toEqual({'total': 1, 'critHits': 2, 'totalHits': 4});
+
+    player.addHitsToStatistics('ADHOC', 0);
+    // will create a new entry if no entry existed previously
+    expect(player._statistics['spellsCasted']['ADHOC']).toEqual({'total': 0, 'critHits': 0, 'totalHits': 1});
 
 });
+
+// test('testing calculateStatisticsAfterSimEnds', () => {
+//     let options = JSON.parse(JSON.stringify(defaultOptions));
+//     options['cpm']['HOLY_SHOCK'] = 1;
+//     let player = new Paladin(options, rng, thresholdItemsToCreate);
+//     player._statistics = {
+//       manaGenerated: {
+//         libramOfRenewal: 10914,
+//         illumination: 18757,
+//         Replenishment: 10528,
+//         otherMP5: 15134,
+//         soup: 6736,
+//         eog: 6885,
+//         divinePlea: 21000,
+//         divineIllumination: 5500,
+//         RUNIC_MANA_POTION: 4300,
+//         sow: 2240
+//       },
+//       spellsCasted: {
+//         HOLY_LIGHT: { normal: 61, crit: 46, total: 107 },
+//         HOLY_SHOCK: { normal: 4, crit: 5, total: 9 }
+//       },
+//       // placeholder values
+//       healing: {
+//         HOLY_LIGHT: 0,
+//         HOLY_SHOCK: 0,
+//       }
+
+//     }
+
+//     let results = player.calculateStatisticsAfterSimEnds(240);
+
+//     // cpm is rounded to 1 dp
+//     expect(results['spellsCasted'].length).toBe(2);
+//     // expect(results['spellsCasted'].length).toBe(2);
+//     expect((Math.abs(results['spellsCasted'][0]['cpm'] - 26.8))).toBeLessThan(1e-2);
+//     expect((Math.abs(results['spellsCasted'][1]['cpm'] - 2.3))).toBeLessThan(1e-2);
+//     // MP5 is floored
+//     expect(results['manaGenerated'].length).toBe(10);
+//     expect((Math.abs(results['manaGenerated'][0]['MP5'] - 227))).toBeLessThan(1e-1);
+
+// });
 

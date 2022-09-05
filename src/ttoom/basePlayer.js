@@ -571,8 +571,6 @@ class BasePlayer {
     // subsequently, changed the behaviour to consider each hit separately
     // but leave the code in, in case we need it in future
     checkProcHelper(key, spellIndex, numHits, procChance, allowMultipleHits=false) {
-        console.log(key)
-        console.log(this._rngThresholds[key].length)
         let arr = this._rngThresholds[key].slice(spellIndex * numHits, (spellIndex + 1) * numHits);
         if (arr.length === 0) throw new Error('ran out of rng numbers for ' + key);
         if (!allowMultipleHits) return Utility.anyValueBelowThreshold(arr, procChance);
@@ -704,18 +702,42 @@ class BasePlayer {
         this._statistics['overall']['nonHealingSpellsWithGcd']++;
     }
 
+    // isCrit can be three values
+    // 1 === crits (updates both spellcast and hits)
+    // 0 === no crit (updates both spellcast and hits)
+    // -1 === updates spellcast but not hits (will update this separately -
+    // -1 is for hots that can crit like earthshield or for spells with multiple hits like CH
     addSpellCastToStatistics(spellKey, isCrit) {
         // actual casting
         if (!(spellKey in this._statistics['spellsCasted'])) {
             this._statistics['spellsCasted'][spellKey] = {
-                'normal': 0,
-                'crit': 0,
-                'total': 0,
+                'total': 0, // tracks total spellCasts
+                'totalHits': 0,
+                'critHits': 0,
             }
         }
-        this._statistics['spellsCasted'][spellKey][isCrit ? 'crit' : 'normal']++;
+        // tracks spellcasted
         this._statistics['spellsCasted'][spellKey]['total']++;
         this._statistics['overall']['spellsCasted']++;
+
+        // for normal spells
+        if (isCrit >= 0) {
+            this.addHitsToStatistics(spellKey, isCrit);
+        }
+    }
+
+    // this should be called directly for spells like chain heal with multiple hits
+    // or earthshield
+    addHitsToStatistics(spellKey, isCrit) {
+        if (!(spellKey in this._statistics['spellsCasted'])) {
+            this._statistics['spellsCasted'][spellKey] = {
+                'total': 0, // tracks total spellCasts
+                'totalHits': 0,
+                'critHits': 0,
+            }
+        }
+        this._statistics['spellsCasted'][spellKey]['totalHits']++;
+        this._statistics['spellsCasted'][spellKey]['critHits'] += (isCrit ? 1 : 0);
     }
 
     getSoupEogProcs(spellIndex, numHits) {
@@ -742,8 +764,12 @@ class BasePlayer {
 
         for (let key in this._statistics['spellsCasted']) {
             let totalCasts = this._statistics['spellsCasted'][key]['total'],
-                critCasts = this._statistics['spellsCasted'][key]['crit'],
-                normalCasts = totalCasts - critCasts,
+                // there are spells like chain heal which has multiple hits
+                // or like earth shield which can crit but only on hits and not initial cast
+                // thus, we separate totalCasts from totalHits
+                totalHits = this._statistics['spellsCasted'][key]['totalHits'],
+                critHits = this._statistics['spellsCasted'][key]['critHits'],
+                normalCasts = totalCasts - critHits,
                 totalManaSpent = 0,
                 castTime = this._spells.find((_spell) => _spell['key'] === key)['castTime'],
                 hpet = 0; // healing per effective time
@@ -778,8 +804,8 @@ class BasePlayer {
                 'hpet': hpet,
                 'hps': Math.floor((this._statistics['healing'][key] / totalTime)),
                 'hpm': totalManaSpent > 0 ? Math.floor(this._statistics['healing'][key] / totalManaSpent) : 0,
-                'critCasts': critCasts,
-                'totalCasts': totalCasts,
+                'critHits': critHits,
+                'totalHits': totalHits,
             });
         }
 
