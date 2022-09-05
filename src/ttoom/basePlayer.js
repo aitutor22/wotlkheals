@@ -146,7 +146,11 @@ class BasePlayer {
         this._gcd = Math.max(1, this._gcd); // gcd cannot be below 1s
         for (let i in this._spells) {
             // spellcast times cannot be below 1s
-            this._spells[i]['castTime'] = Math.max(1, this._spells[i]['baseCastTime'] / this._hasteFactor);
+            // but only applies for non instants
+            this._spells[i]['castTime'] =  this._spells[i]['baseCastTime'] / this._hasteFactor;
+            if (!this._spells[i]['instant'] && this._spells[i]['castTime'] < 1 && this._spells[i]['castTime'] > 0) {
+                this._spells[i]['castTime'] = 1
+            }
         }
         return new SpellQueue(castProfile, rng);
     }
