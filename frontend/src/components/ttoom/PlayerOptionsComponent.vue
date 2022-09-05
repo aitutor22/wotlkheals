@@ -190,8 +190,8 @@
                 </div>
 
                 <b-form-group label="Select your final glyph (Glyph of CH and ES assumed to be taken)">
-                  <b-form-radio v-model="oomOptions['finalGlyph']" name="some-radios" value="lesserHealingWave">Lesser Healing Wave</b-form-radio>
-                  <b-form-radio v-model="oomOptions['finalGlyph']" name="some-radios" value="earthliving">Earthliving</b-form-radio>
+                  <b-form-radio v-model="oomOptions['finalGlyph']" name="finalGlyph" value="lesserHealingWave">Lesser Healing Wave</b-form-radio>
+                  <b-form-radio v-model="oomOptions['finalGlyph']" name="finalGlyph" value="earthliving">Earthliving</b-form-radio>
                 </b-form-group>
 
                 <div v-if="oomOptions['finalGlyph'] === 'lesserHealingWave'" class="input-group mb-2" style="width: 100%">

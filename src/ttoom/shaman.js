@@ -76,7 +76,7 @@ class Shaman extends BasePlayer {
         const otherMP5Tick = (this._otherMP5 / 5 * 2);
         const tickAmount = Math.floor(replenishmentTick + otherMP5Tick + this._waterShieldBaseBaseTick);
         // since replenishment might tick outside spellcast, we print timestamp
-        if (logger) logger.log(`${timestamp}s: Gained ${tickAmount} from mana tick`, 2);
+        if (logger) logger.log(`${timestamp}s: Gained ${tickAmount} from mana tick`, 1);
 
         // we record the ticks from replenishment, water shield and othermp5 separately; need to ensure we don't lose values due to floor function
         this.addManaHelper(Math.floor(replenishmentTick), 'Replenishment');
@@ -277,9 +277,9 @@ class Shaman extends BasePlayer {
         }
 
         if (procs['soup']) {
-            logger.log('🥣🥣🥣 SOUP 🥣🥣🥣', 2);
+            logger.log('🥣🥣🥣 SOUP 🥣🥣🥣', 1);
         } else if (procs['eog']) {
-            logger.log('👀 👀 EOG 👀 👀', 2);
+            logger.log('👀 👀 EOG 👀 👀', 1);
         }
 
         // casting CH or riptide should add tidal waves

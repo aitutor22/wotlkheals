@@ -153,8 +153,8 @@ const data = {
         },
         seed: '',
         cpm: {
-          CHAIN_HEAL: 20,
-          LESSER_HEALING_WAVE: 6,
+          CHAIN_HEAL: 18,
+          LESSER_HEALING_WAVE: 8,
           HEALING_WAVE: 1,
           RIPTIDE: 9,
         },

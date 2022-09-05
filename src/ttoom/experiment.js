@@ -339,6 +339,7 @@ class Experiment {
         // first argument is logLevel - 2 shows most details but ommits crti details
         // note that medianEntry['seed'] refers to the specific seed of that run and not the batchSeed
         resultSingleLoop = this.runSingleLoop(3, medianEntry['seed'], playerClass);
+        // resultSingleLoop = this.runSingleLoop(1, medianEntry['seed'], playerClass);
 
         return {
             batchSeed: batchSeed,

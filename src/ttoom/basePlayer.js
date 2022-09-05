@@ -666,7 +666,7 @@ class BasePlayer {
             let msg =  (timestamp !== -1 ? `${timestamp}s: ` : '') +
                 `Gained ${this._currentMana - oldMana} from ${category}`;
 
-            logger.log(msg, 2);
+            logger.log(msg, 1);
         }
         return this._currentMana - oldMana;
     }
@@ -679,7 +679,7 @@ class BasePlayer {
         const otherMP5Tick = (this._otherMP5 / 5 * 2);
         const tickAmount = Math.floor(replenishmentTick + otherMP5Tick);
         // since replenishment might tick outside spellcast, we print timestamp
-        if (logger) logger.log(`${timestamp}s: Gained ${tickAmount} from mana tick`, 2);
+        if (logger) logger.log(`${timestamp}s: Gained ${tickAmount} from mana tick`, 1);
 
         // we record the ticks from replenishment and othermp5 separately; need to ensure we don't lose values due to floor function
         this.addManaHelper(Math.floor(replenishmentTick), 'Replenishment');
