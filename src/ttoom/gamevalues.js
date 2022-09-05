@@ -332,10 +332,10 @@ const data = {
                 'name': 'Healing Wave',
                 'cooldown': 0,
                 'instant': false,
-                'baseCastTime': 2.5,
+                'baseCastTime': 2.5 / 1.3, // for implementation ease, we just assume TW is always up
                 'baseManaCost': 1099,
                 baseHeal: 3250,
-                coefficient: 1.61, // doesn't include TW
+                coefficient: 1.61,
                 category: 'directHeal',
             },
             {

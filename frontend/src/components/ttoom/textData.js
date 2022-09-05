@@ -29,6 +29,7 @@ const textData = {
     shaman: [
       'Healing Stream Totem is not implemented',
       'Mana cost shown above is after Soup and Water Shield',
+      'For implementation ease, Healing Wave will always cast 30% faster, with or without TW as in practise, TW should always be up.',
       'Only two points are taken in Ancestral Knowledge.',
       'Selecting Bloodlust will not affect the amount of spells casted as that is determined by CPM; rather, casting Bloodlust is aimed at properly evaluating mana usage since Bloodlust is an expensive spell.',
       'The first Earth Shield is assumed to be precasted just before entering battle',

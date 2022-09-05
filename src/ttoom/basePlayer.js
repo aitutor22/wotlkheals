@@ -145,7 +145,8 @@ class BasePlayer {
         this._gcd /= this._hasteFactor;
         this._gcd = Math.max(1, this._gcd); // gcd cannot be below 1s
         for (let i in this._spells) {
-            this._spells[i]['castTime'] = this._spells[i]['baseCastTime'] / this._hasteFactor;
+            // spellcast times cannot be below 1s
+            this._spells[i]['castTime'] = Math.max(1, this._spells[i]['baseCastTime'] / this._hasteFactor);
         }
         return new SpellQueue(castProfile, rng);
     }

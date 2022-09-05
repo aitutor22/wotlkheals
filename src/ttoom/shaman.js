@@ -18,6 +18,11 @@ const Utility = require('../common/utilities');
 // thus, BE VERY CAREFUL AND MAKE SURE to consider that effects are handled in both places
 // for instance, this.checkHandleProcsOnCritWithICD(timestamp, spellIndex, logger) needs to be in both functions
 
+// IMPLEMENTATION NOTE FOR HEALING_WAVE INTERACTION WITH TIDAL WAVES
+// todo: improve when free
+// temporary hack: we divide baseCastTime in gamevalues.js by 1.3 to simulate cast time reduction
+// tidal wave stacks will be consumed as per usual when healing wave is cast
+// thus, main problem is if TW stack is not up in system, the HW will still be casted 30% faster
 
 class Shaman extends BasePlayer {
     // note that maxMana doesn't include mana pool from dmcg

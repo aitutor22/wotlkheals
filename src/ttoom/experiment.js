@@ -456,13 +456,8 @@ class Experiment {
         let spellSelected = player.selectSpell(currentTime, spellIndex);
         let spellFinishCastingTimestamp;
 
-        if (spellSelected['key'] === 'HEALING_WAVE' && player.isStackActive('tidalWaves')) {
-            // tidalWave will reduce Healing Wave cast time by 30%
-            // while not ideal to put here, fastest way; refactor in future
-            spellFinishCastingTimestamp = currentTime + spellSelected['castTime'] * (1 - DATA['classes']['shaman']['tidalWaves']['hwCastTimeReduction']) + offset;
-        } else {
-            spellFinishCastingTimestamp = currentTime + spellSelected['castTime'] + offset;
-        }
+
+        spellFinishCastingTimestamp = currentTime + spellSelected['castTime'] + offset;
 
         // self.add_spell_cast_helper(event_heap, selected_spell['name'], is_crit, is_soup_proc, is_sow_proc, is_eog_proc, current_time, cast_time + offset)
         eventHeap.addEvent(spellFinishCastingTimestamp, 'SPELL_CAST', spellSelected['key']);
