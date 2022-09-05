@@ -318,19 +318,27 @@ class Experiment {
         // gets the hps, mana cost and cpm of spells casted, and combines it into a single list
         let cpmSummary = Utility.medianStatistics(spellsCastedStatistics, 'spell', 'cpm', '1dp'),
             manaCostSummary = Utility.medianStatistics(spellsCastedStatistics, 'spell', 'avgManaCost', 'floor'),
-            hpetSummary = Utility.medianStatistics(spellsCastedStatistics, 'spell', 'hpet', 'floor');
+            hpetSummary = Utility.medianStatistics(spellsCastedStatistics, 'spell', 'hpet', 'floor'),
+            hpsSummary = Utility.medianStatistics(spellsCastedStatistics, 'spell', 'hps', 'floor'),
+            hpmSummary = Utility.medianStatistics(spellsCastedStatistics, 'spell', 'hpm', 'floor');
 
         let castProfileSummary = [];
         for (let cpmEntry of cpmSummary) {
             let _spell = cpmEntry['spell'],
                 manaEntry = manaCostSummary.find((_m) => _m['spell'] === _spell),
-                hpetEntry = hpetSummary.find((_m) => _m['spell'] === _spell);
+                hpetEntry = hpetSummary.find((_m) => _m['spell'] === _spell),
+                hpsEntry = hpsSummary.find((_m) => _m['spell'] === _spell),
+                hpmEntry = hpmSummary.find((_m) => _m['spell'] === _spell);
 
             castProfileSummary.push({
                 spell: cpmEntry['spell'],
                 'CPM': cpmEntry['cpm'],
+                // hpet and hps are both extremely large numbers, so add thousand separator 
+                // though note that this converts it to a string
+                'HPET': Utility.formatNumber(hpetEntry['hpet']),
+                'HPS': Utility.formatNumber(hpsEntry['hps']),
                 'Cost': manaEntry['avgManaCost'],
-                'HPET': hpetEntry['hpet'],
+                'HPM': hpmEntry['hpm'],
             });
 
         };

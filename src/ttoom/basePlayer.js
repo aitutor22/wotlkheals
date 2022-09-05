@@ -782,7 +782,9 @@ class BasePlayer {
                 'spell': key.split('_').map(k => Utility.capitalizeFirstLetter(k.toLowerCase())).join(' '),
                 'cpm': Utility.roundDp(totalCasts / total_time * 60, 1),
                 'avgManaCost': Math.floor(totalManaSpent / totalCasts),
-                'hpet': hpet, 
+                'hpet': hpet,
+                'hps': Math.floor((this._statistics['healing'][key] / total_time)),
+                'hpm': totalManaSpent > 0 ? Math.floor(this._statistics['healing'][key] / totalManaSpent) : 0,
             });
         }
 

@@ -78,41 +78,40 @@
     </div>
 
     <div class="row gap-top" v-if="results">
-      <br>
-      <div class="col-md-7">
+      <div class="col-md-12">
         <h5>Cast Profile</h5>
         <b-table striped hover :items="this.results['spellsCastedStatistics']"></b-table>
-      </div>
-
-      <div class="col-md-5">
-        <h5>Mana Generation Breakdown</h5>
-        <b-table striped hover :items="mp5Data"></b-table>
-      </div>
-
-      <div class="pad-bottom">
         <i>
-          The above values for Cast Profile and Mana Generated are median values over 400 runs, and do not come from the same log.
+          The values for Cast Profile and Mana Generated are median values over 400 runs, and do not come from the same log. Similarly, HPS, HPET, etc are all median statistics, and do not necessarily add up.
         </i>
       </div>
     </div>
 
-    <div v-if="results && implementationAssumptions.length > 0" class="row gap-top">
-      <h5>Assumptions & Known Issues</h5>
-      <ol>
-        <li v-for="(assumption, index) in implementationAssumptions" :key="index">
-          {{ assumption }}
-        </li>
-      </ol>
+    <div class="row gap-top" v-if="results">
+      <div class="col-md-7">
+        <h5>Mana Generation Breakdown</h5>
+        <b-table striped hover :items="mp5Data"></b-table>
+      </div>
+      <div class="col-md-5" v-if="implementationAssumptions.length > 0">
+        <h5>Assumptions & Known Issues</h5>
+        <ol>
+          <li v-for="(assumption, index) in implementationAssumptions" :key="index">
+            {{ assumption }}
+          </li>
+        </ol>
+      </div>
     </div>
 
-    <div v-if="results && changeLogs.length > 0" class="row gap-top">
-      <h5>Change Logs</h5>
-      <ul>
-        <li v-for="(changeLog, index) in changeLogs" :key="index">
-          <p><b>{{ changeLog['dateAdded'] }}</b></p>
-          <p>{{ changeLog['text'] }}</p>
-        </li>
-      </ul>
+    <div v-if="results" class="row gap-top">
+      <div v-if="changeLogs.length > 0" class="row gap-top">
+        <h5>Change Logs</h5>
+        <ul>
+          <li v-for="(changeLog, index) in changeLogs" :key="index">
+            <p><b>{{ changeLog['dateAdded'] }}</b></p>
+            <p>{{ changeLog['text'] }}</p>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
