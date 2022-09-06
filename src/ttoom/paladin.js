@@ -91,6 +91,10 @@ class Paladin extends BasePlayer {
         for (let i in this._spells) {
             if (this._spells[i]['key'] !== 'MELEE_SWING') {
                 this._spells[i]['castTime'] = this._spells[i]['baseCastTime'] / this._haste;
+                // spell cast cannot go below gcd
+                if (!this._spells[i]['instant'] && this._spells[i]['castTime'] < 1 && this._spells[i]['castTime'] > 0) {
+                    this._spells[i]['castTime'] = 1;
+                }
             } else {
                 if (realNumMelees === 0) continue;
                 this._spells[i]['castTime'] = freeTimeForMelee / realNumMelees;
