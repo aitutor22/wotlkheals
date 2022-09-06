@@ -31,7 +31,7 @@
     </div>
 
 
-    <div class="row margin-top-40"" v-if="results && results['data'].length === 0">
+    <div class="row margin-top-40" v-if="results && results['data'].length === 0">
       <h3>No multiple rapture opportunities found.</h3>
     </div>
 
