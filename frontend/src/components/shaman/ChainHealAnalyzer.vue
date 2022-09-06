@@ -38,7 +38,8 @@ import axios from 'axios';
 
 export default {
   name: 'ShamanChainHealAnalyzer',
-  props: {
+  metaInfo: {
+    title: 'Chain Heal Analyzer',
   },
   data() {
     return {

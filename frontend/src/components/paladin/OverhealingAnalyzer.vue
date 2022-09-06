@@ -58,7 +58,8 @@ import axios from 'axios';
 
 export default {
   name: 'PaladinOverhealingAnalyzer',
-  props: {
+  metaInfo: {
+    title: 'Paladin Overhealing Analyzer',
   },
   data() {
     return {

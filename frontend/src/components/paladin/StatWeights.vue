@@ -174,7 +174,8 @@ const MANA_OBTAINED_FROM_HL_CRIT = 382
 
 export default {
   name: 'PaladinStatWeights',
-  props: {
+  metaInfo: {
+    title: 'Paladin Stat Weights',
   },
   data() {
     return {
