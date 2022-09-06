@@ -17,6 +17,7 @@
           Overhealing Analyzer
         </b-dropdown-item>
       </b-nav-item-dropdown>
+
       <b-nav-item-dropdown
         id="shaman-dropdown"
         text="Shaman"
@@ -28,6 +29,18 @@
         </b-dropdown-item>
         <b-dropdown-item to="/shaman/analyzer/chainheal/">
           Overhealing Analyzer
+        </b-dropdown-item>
+      </b-nav-item-dropdown>
+
+
+      <b-nav-item-dropdown
+        id="shaman-dropdown"
+        text="Priest"
+        toggle-class="nav-link-custom"
+        left
+      >
+        <b-dropdown-item to="/priest/analyzer/rapture/">
+          Rapture Analyzer
         </b-dropdown-item>
       </b-nav-item-dropdown>
     </b-nav>

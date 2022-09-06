@@ -63,7 +63,8 @@ const helperFunctions = {
             });
     },
     // use this to get the details for a specfic fight
-    getFightDetail(wclCode, fightId) {
+    // takes an optional argument returnFullFightMapData, when we want the rest of the fights data as well
+    getFightDetail(wclCode, fightId, returnFullFightMapData=false) {
         return this.getFightTimes(wclCode)
             .then((data) => {
                 // when user wants to pull the whole report
@@ -74,7 +75,14 @@ const helperFunctions = {
                     }
                 }
                 if (fightId === 'last') fightId = data['lastFightId'];
-                return data.fightsMap[fightId];
+                if (!returnFullFightMapData) {
+                    return data.fightsMap[fightId];
+                }
+
+                return {
+                    fightDetail: data.fightsMap[fightId],
+                    fullFightMapData: data.fightsMap
+                }
             })
             .catch((error) => {
                 console.log('error');

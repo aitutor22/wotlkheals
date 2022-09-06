@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 
 const ttoomController = require('./ttoomController');
-const wclController = require('./shamanAnalyzerController');
+const wclController = require('./wclController');
 
 
 // seed routes are when we pass in a single log seed, and it returns the results just for 1 run
@@ -15,6 +15,7 @@ router.post('/ttoom/shaman/', ttoomController.ttoom);
 
 router.post('/analyzer/shaman/chainheal/', wclController.chainheal);
 router.post('/analyzer/paladin/overhealing/', wclController.overhealing);
+router.post('/analyzer/priest/rapture/', wclController.rapture);
 
 
 router.get('/', function(req, res) {
