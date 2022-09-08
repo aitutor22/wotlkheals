@@ -84,7 +84,7 @@
         </div>
     </div>
 
-    <div class="row gap-top" v-if="results">
+    <div class="row gap-top" v-if="results && !showOptionsModal">
       <div class="col-md-12">
         <h5>Median Cast Profile</h5>
         <b-table striped hover :items="this.results['spellsCastedStatistics']"></b-table>
@@ -94,7 +94,7 @@
       </div>
     </div>
 
-    <div class="row gap-top" v-if="results">
+    <div class="row gap-top" v-if="results && !showOptionsModal">
       <div class="col-md-7">
         <h5>Median Mana Breakdown</h5>
         <b-table striped hover :items="mp5Data"></b-table>
@@ -109,7 +109,7 @@
       </div>
     </div>
 
-    <div v-if="results" class="row gap-top">
+    <div v-if="results && !showOptionsModal" class="row gap-top">
       <div v-if="changeLogs.length > 0" class="row gap-top">
         <h5>Change Logs</h5>
         <ul>

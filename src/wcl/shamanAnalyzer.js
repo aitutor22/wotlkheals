@@ -10,8 +10,8 @@ class Analyzer {
     constructor(data) {
         // be careful not to mutate the passed in object
         this._rawdata = JSON.parse(JSON.stringify(data));
-        this._healingData = this._rawdata['data']['reportData']['report']['healing']['data'];
-        this._natureSwiftnessCastData = this._rawdata['data']['reportData']['report']['natureSwiftness']['data'];
+        this._healingData = this._rawdata['healing']['data'];
+        this._natureSwiftnessCastData = this._rawdata['natureSwiftness']['data'];
     }
 
     // given a list of heals (should be 1-4, each representing hits from a single CH cast)
