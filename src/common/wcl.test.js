@@ -1,3 +1,4 @@
+require('dotenv').config();
 const WclReader = require('./wcl');
 
 
@@ -34,4 +35,19 @@ test('constructor', () => {
         'sourceId': 19,
         'fightId': 'last',
     });
+});
+
+
+test('getFightTimes', async () => {
+    // stores fightId=last
+    wclReader = new WclReader('https://classic.warcraftlogs.com/reports/ZTC3FGfNrL4VY1A9#fight=last&type=healing&source=19');
+    await wclReader.getFightTimes();
+    expect(wclReader._lastFightId).toBe(58);
+    expect(wclReader._fightTimesMap[57]).toEqual({
+        id: 57,
+        encounterID: 101119,
+        name: 'Sapphiron',
+        startTime: 7555420,
+        endTime: 7799498
+      })
 });
