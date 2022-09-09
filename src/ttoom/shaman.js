@@ -163,6 +163,7 @@ class Shaman extends BasePlayer {
             options = {};
         if (spellKey === 'EARTH_SHIELD') {
             isCrit = this.checkProcHelper('earthShieldCrit', this._earthShieldHitIndex, 1, this.critChance);
+
             // since each earth shield hit can crit, we record separately
             this.addHitsToStatistics(spellKey, Number(isCrit));
             this._earthShieldHitIndex++;
@@ -236,7 +237,9 @@ class Shaman extends BasePlayer {
         // however, we also assume that there can be only max of 1 eog/soup proc
         // checks for soup, and eog procs
         // chain heal has more hits; all other spells have 1 hit
-        procs = this.getSoupEogProcs(spellIndex, spellKey === 'CHAIN_HEAL' ? this._numchainHealHits : 1);
+        if (spellInfo['healingSpell']) {
+            procs = this.getSoupEogProcs(spellIndex, spellKey === 'CHAIN_HEAL' ? this._numchainHealHits : 1);
+        }
         modifiedCritChance = this.critChance;
 
         if (this.isStackActive('tidalWaves') && spellKey === 'LESSER_HEALING_WAVE') {
@@ -357,7 +360,7 @@ class Shaman extends BasePlayer {
         // unaffected by tidal focus
         if (spellKey === 'BLOODLUST') {
             otherMultiplicativeTotal = 1;
-        } 
+        }
 
         // Chain Heal gets a further 10% discount on mana cost
         else if (spellKey === 'CHAIN_HEAL' && Utility.getKeyBoolean(this._options, '2pT6')) {

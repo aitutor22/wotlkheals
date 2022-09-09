@@ -97,6 +97,7 @@ const data = {
           '4pT7': true,
         },
         flask: 'distilledWisdom',
+        finalGlyph: 'beacon',
         meleeWeave: false,
         meleeWeaveUptime: 50, // need to divide by 100 on backend
       },

@@ -31,11 +31,22 @@ class Paladin extends BasePlayer {
             'judgement': this.classInfo['sow']['chance'] * judgementHitRate,
         }
 
+        // if beacon is selected, add 30s to cooldown
+        if (options['finalGlyph'] === 'beacon') {
+            this._spells.find((_spell) => _spell.key === 'BEACON_OF_LIGHT')['cooldown'] += this.classInfo['glyphEffects']['beacon'];
+        }
+
         // glyph of SOW reduces healing cost by 5%; note that we don't put 4pt7 here as it only affects HL
         this._baseOtherMultiplicativeTotal = Utility.getKeyBoolean(this._options, 'glyphSOW') ? (1 - this.classInfo['manaCostModifiers']['glyphSOW']) : 1;
         this._numHitsPerHolyLight = Math.floor(2 + this._options['glyphHolyLightHits']) // beacon + original target + glpyh
    
         this.initialiseManaCooldowns(options['manaCooldowns']);
+
+        let loh = this._manaCooldowns.find((_cd) => _cd['key'] === 'LAY_ON_HANDS');
+        if (typeof loh !== 'undefined') {
+            loh['value'] = options['finalGlyph'] === 'divinity' ? 7800 : 1950;
+        }
+        // console.log(this._manaCooldowns);
         // do this here rather than end of basePlayer, as we might make changes to some fields while running the constructor of the specific player class
         this._statistics['raidBuffedStats'] = {
             'int': this._buffedInt,
@@ -161,15 +172,22 @@ class Paladin extends BasePlayer {
 
         let spellInfo = this.classInfo['spells'].find(_spell => _spell['key'] === spellKey);
         
-        // this is for the fake swings we added in when we introduce melee weaving
-        if (spellKey === 'MELEE_SWING') {
-            this.checkForAndHandleSoWProc(timestamp, spellIndex, logger, 'normal');
+        // for melee_swing (placeholder), beacon and judgement
+        // note that beacon cannot proc SoW
+        if (spellInfo['category'] === 'others') {
+            // this is for the fake swings we added in when we introduce melee weaving
+            if (spellKey === 'MELEE_SWING') {
+                this.checkForAndHandleSoWProc(timestamp, spellIndex, logger, 'normal');
+            }
             return this.castOtherSpell(spellKey, timestamp, spellIndex, logger);
         }
 
+
         // checks for soup, and eog procs
         // holy light has more hits; all other spells have 2 hits (due to beacon)
-        procs = this.getSoupEogProcs(spellIndex, spellKey === 'HOLY_LIGHT' ? this._numHitsPerHolyLight : 2);
+        if (spellInfo['healingSpell']) {
+            procs = this.getSoupEogProcs(spellIndex, spellKey === 'HOLY_LIGHT' ? this._numHitsPerHolyLight : 2);
+        }
 
         // 6% crit bonus from sanctified light for HL and HS only
         sanctifiedLightCritChance = ['HOLY_LIGHT', 'HOLY_SHOCK'].indexOf(spellKey) > -1 ? this.classInfo['sanctifiedLightCritChanceModifier'] : 0;
@@ -256,6 +274,11 @@ class Paladin extends BasePlayer {
         // Holy Light gets a further 5% discount on mana cost
         let otherMultiplicativeTotal = (spellKey === 'HOLY_LIGHT' && getKeyBoolean(this._options, '4pT7')) ?
             this._baseOtherMultiplicativeTotal - this.classInfo['manaCostModifiers']['4pT7'] : this._baseOtherMultiplicativeTotal;
+
+        // for beacon, just override otherMultiplicativeTotal as it's not affected by the glyph of SoW
+        if (spellKey === 'BEACON_OF_LIGHT') {
+            otherMultiplicativeTotal = 1
+        }
 
         let baseCostAdditiveFactors = {};
         // gonna assume that all hpals are wearing libramOfRenewal

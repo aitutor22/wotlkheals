@@ -2,6 +2,10 @@ const textData = {
   changeLogs: {
     paladin: [
     {
+      dateAdded: '09/09/22',
+      text: 'Added support for Beacon of Light and related glyphs.',
+    },
+    {
       dateAdded: '05/09/22',
       text: 'Added Melee weaving as an advanced game play option. Added Soul of the Dead to trinket options.',
     },
@@ -17,7 +21,6 @@ const textData = {
   },
   implementationAssumptions: {
     paladin: [
-      'The following have NOT been implented yet: Divine Favour, FoL Infusion of Light (currently the system will automatically prioritise HL when Infusion of Light is up), and standalone gcds used for Beacon.',
       'Mana cost shown above is after EoG/Soup and Illumination',
       'Judgement is not casted in the sim, but two SoW procs is automatically calculated every 60s (Judgement counts as 2 hits).',
       'Soup and EoG procs are directly subtracted from the spell that procced it rather than the following spell. This is both for implemention simplicity and also to reflect that spells with multiple chances to proc soup will have lower blended mana cost.',

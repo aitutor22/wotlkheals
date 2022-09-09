@@ -160,6 +160,18 @@
                     v-b-tooltip.hover title="Number of talent points in Enlightened Judgements (0 to 2)">#pts (Enl. Judgements)</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['talents']['enlightenedJudgements']">
                 </div>
+                <b-form-group label="Select your final glyph (HL and SoW glyphs assumed to be taken)">
+                  <b-form-radio v-model="oomOptions['finalGlyph']" name="finalGlyph" value="beacon">
+                    <span v-b-tooltip.hover title="Increases the duration of Beacon of Light by 30 sec.">
+                      Beacon of Light
+                    </span>
+                  </b-form-radio>
+                  <b-form-radio v-model="oomOptions['finalGlyph']" name="finalGlyph" value="divinity">
+                    <span v-b-tooltip.hover title="Your Lay on Hands grants twice as much mana as normal and also grants you as much mana as it grants your target.">
+                      Divinity
+                    </span>
+                  </b-form-radio>
+                </b-form-group>
                 <hr>
                 <h6>Advanced Gameplay Choices</h6>
                 <div class="form-check">

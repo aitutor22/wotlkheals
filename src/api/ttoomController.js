@@ -78,9 +78,7 @@ function createOptions(playerClass, playerOptions) {
     }
 
     if (playerOptions['manaOptions']['selfLoh']) {
-        // use LoH when left 3k mana as it's last resort
-        let manaDeficit = playerOptions['manaPool'] - 3000;
-        options['manaCooldowns'].push({key: 'LAY_ON_HANDS', minimumManaDeficit: manaDeficit, minimumTimeElapsed: 0});
+        options['manaCooldowns'].push({key: 'LAY_ON_HANDS', minimumManaDeficit: 22000, minimumTimeElapsed: 0});
     }
 
     return options;

@@ -337,7 +337,7 @@ class BasePlayer {
 
             // for precasted hots (e.g. earthshield, sacred shield), system will assume that it is casted just before fight begins
             // will also put the spell on cooldown
-            if (entry['category'] === 'hot' && entry['precasted']) {
+            if (typeof entry['precasted'] !== 'undefined' && entry['precasted']) {
                 entry['availableForUse'] = false;
                 entry['lastUsed'] = 0;    
             } else {
@@ -426,13 +426,13 @@ class BasePlayer {
         let spellInfo = this.classInfo['spells'].find(_spell => _spell['key'] === spellKey);
         let originalMana = this._currentMana;
         let [status, manaUsed, currentMana, errorMessage] = this.subtractMana(spellKey, timestamp, {});
+        let eventsToCreate = [];
 
         if (status === 0) {
             return [status, errorMessage, 0, eventsToCreate];
         }
 
         let offset = this._instantSpells.indexOf(spellKey) > -1 ? this._gcd : 0;
-        let eventsToCreate = [];
         let msg = `${timestamp}s: Casted ${spellKey} (spent ${originalMana - currentMana} mana)`;
         logger.log(msg, 2);
         return [status, errorMessage, offset, eventsToCreate];

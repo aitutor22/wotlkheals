@@ -312,7 +312,14 @@ export default {
             alert('glyphHolyLightHits should be an integer between 0 and 5');
             return; 
         }
-      } else if (this.playerClass === 'shaman') {
+
+        if (this.oomOptions['finalGlyph'] === 'divinity' && !this.oomOptions['manaOptions']['selfLoh']) {
+          alert('You selected Divinity glyph but didn\'t select the option to use LoH on self');
+          return;
+        }
+      }
+
+      else if (this.playerClass === 'shaman') {
         if (this.oomOptions['finalGlyph'] === 'lesserHealingWave') {
           let num = this.oomOptions['lesserHealingWaveCastPercentageOnEarthShield'];
           if (!this.basicNumberValidation(num) || num < 0 || num > 100) {

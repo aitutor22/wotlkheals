@@ -148,6 +148,19 @@ const data = {
             },
             spells: [
             {
+                'key': 'BEACON_OF_LIGHT',
+                'name': 'Beacon of Light',
+                'cooldown': 60,
+                'instant': true,
+                'baseCastTime': 0,
+                'baseManaCost': 1537.9,
+                precasted: true, //should be casted before entering fight
+                baseHeal: 0,
+                coefficient: 0,
+                healingSpell: false,
+                category: 'others',
+            },
+            {
                 'key': 'HOLY_SHOCK',
                 'name': 'Holy Shock',
                 'cooldown': 6, // the actual cooldown of spell
@@ -155,6 +168,7 @@ const data = {
                 'baseManaCost': 790.92,
                 'baseCastTime': 0,
                 category: 'directHeal',
+                healingSpell: true, // affects whether can proc eog/sou
                 baseHeal: 2500,
                 coefficient: 0.807, // tested by currelius, before talents
             },
@@ -169,6 +183,7 @@ const data = {
                 coefficient: 0.7515, // tested by currelius, before talents
                 // following are hot only options
                 category: 'hot',
+                healingSpell: false, // affects whether can proc eog/sou
                 precasted: true, //should be casted at start of fight
                 numIntervals: 10,
                 secsBetweenInterval: 6,
@@ -182,6 +197,7 @@ const data = {
                 'baseCastTime': 1.8, //base weapon is 1.8s swing timer
                 'baseManaCost': 0,
                 baseHeal: 0,
+                healingSpell: false, // affects whether can proc eog/sou
                 coefficient: 0,
                 category: 'others',
             },
@@ -193,6 +209,7 @@ const data = {
                 'baseCastTime': 2, // assumed light's grace
                 'baseManaCost': 1274.26,
                 category: 'directHeal',
+                healingSpell: true, // affects whether can proc eog/sou
                 baseHeal: 5166,
                 coefficient: 1.679, // tested by currelius, before talents
             },
@@ -203,6 +220,7 @@ const data = {
                 'instant': false,
                 'baseCastTime': 1.5,
                 'baseManaCost': 307.58,
+                healingSpell: true, // affects whether can proc eog/sou
                 category: 'directHeal',
                 baseHeal: 835.5,
                 coefficient: 1.009, // tested by currelius, before talents
@@ -212,6 +230,9 @@ const data = {
                 '4pT7': 0.05, // 5% mana discount on HL
                 'glyphSOW': 0.05, // 5% mana discount on all spells
                 'libramOfRenewal': 113, // subtracts 113
+            },
+            glyphEffects: {
+                'beacon': 30, // adds 30s to beacon
             },
             maxSoupHits: 7, //up to 7 for HL
             spellPowerFromInt: 0.2, // holy guidance
@@ -279,6 +300,7 @@ const data = {
                 'baseManaCost': 1142.96,
                 baseHeal: 0,
                 coefficient: 0, // from lovelace
+                healingSpell: false, // affects whether can proc beacon
                 category: 'others',
             },
             {
@@ -293,6 +315,7 @@ const data = {
                 // following are hot only options
                 category: 'hot',
                 canCrit: true,
+                healingSpell: true, // affects whether can proc eog/sou
                 precasted: true, //should be casted at start of fight
                 numIntervals: 8,
                 secsBetweenInterval: 6,
@@ -307,6 +330,7 @@ const data = {
                 'baseManaCost': 791.28,
                 baseHeal: 1670,
                 coefficient: 0.403,
+                healingSpell: true, // affects whether can proc eog/sou
                 hotBaseHeal: 334,
                 hotCoefficient: 0.188,
                 category: 'directHealWithHot',
@@ -322,6 +346,7 @@ const data = {
                 'instant': false,
                 'baseCastTime': 2.5,
                 'baseManaCost': 835.24,
+                healingSpell: true, // affects whether can proc eog/sou
                 // 'baseManaCost': 1274, //this is HL mana cost; changing this to test out if water shield is overcapping
                 baseHeal: 1130,
                 coefficient: 1.34, // from lovelace
@@ -334,6 +359,7 @@ const data = {
                 'instant': false,
                 'baseCastTime': 2.5 * 0.7, // for implementation ease, we just assume TW is always up; note that is is * 0.7 and not / 1.3
                 'baseManaCost': 1099,
+                healingSpell: true, // affects whether can proc eog/sou
                 baseHeal: 3250,
                 coefficient: 1.61,
                 category: 'directHeal',
@@ -345,6 +371,7 @@ const data = {
                 'instant': false,
                 'baseCastTime': 1.5,
                 'baseManaCost': 659.4,
+                healingSpell: true, // affects whether can proc eog/sou
                 baseHeal: 1720,
                 coefficient: 0.806,
                 category: 'directHeal',
@@ -469,7 +496,7 @@ const data = {
         LAY_ON_HANDS: {
             key: 'LAY_ON_HANDS',
             name: 'Lay On Hands (Self)',
-            value: 7800, // we calculate this separately
+            value: 1950, // 7800 with glyph
             cooldown: 11 * 60, // the actual cooldown of spell
             offGcd: false,
             playerClass: 'paladin',
