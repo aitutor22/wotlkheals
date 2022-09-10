@@ -16,15 +16,15 @@ class WclReader {
         this._defaultLinkData = {
             'url': wclLink,
             'code': '',
-            'sourceId': -99,
-            'fightId': -99, // if user passes in last, this is saved as last rather than being converted to actual fightIt
+            'sourceId': null,
+            'fightId': null, // if user passes in last, this is saved as last rather than being converted to actual fightIt
         };
 
         // important variables that will be used by a variety of functions
         //for almost all functions, we require fightTimes to get start and end time of a specific encounter
         // after pulling once, we can reuse across all functions unless we require a repull
         this._fightTimesMap = null;
-        this._lastFightId = -99;
+        this._lastFightId = null;
         this._reportStartTime = 0;
         this._reportEndTime = 0; // in miliseconds, will be updated when we call getFightTimes
 
@@ -43,14 +43,29 @@ class WclReader {
 
         this._defaultLinkData['code'] = found[2];
 
+        // links can either in the format of boss=xxx or fight=yyy
         // careful - if user passes in 'last', this means final boss fight
         if (wclLink.indexOf('fight=') > - 1) {
             if (wclLink.indexOf('fight=last') > -1) {
-                this._defaultLinkData['fightId'] = 'last'
+                this._defaultLinkData['fightId'] = 'last';
             } else {
-                let sourceIdFound = wclLink.match(/.*fight=(\d+).*/)
-                this._defaultLinkData['fightId'] = Number(sourceIdFound[1]);
+                let fightIdFound = wclLink.match(/.*fight=(\d+).*/);
+                this._defaultLinkData['fightId'] = Number(fightIdFound[1]);
             }
+        } else if (wclLink.indexOf('boss=') > -1) {
+                let bossId = Number(wclLink.match(/.*boss=([-\d]+).*/)[1]);
+                if (bossId === 0) {
+                    this._defaultLinkData['fightId'] = 'trash';       
+                } else if (bossId === -3) {
+                    this._defaultLinkData['fightId'] = 'all';       
+                } else if (bossId === -2) {
+                    this._defaultLinkData['fightId'] = 'bosses';       
+                }
+
+                // this._defaultLinkData['fightId'] = Number(bossIdFound[1]);
+        } else {
+            // if neither fight or boss are passed in, default to reading whole report
+            this._defaultLinkData['fightId'] = 'all';
         }
     }
 
@@ -94,7 +109,7 @@ class WclReader {
             if (fightId === null) {
                 fightId = this._defaultLinkData['fightId'];
             }
-
+            console.log(fightId)
             let subQuery = '';
             for (let options of listSubqueriesToCreate) {
                 subQuery += this.createEventsSubqueryHelper(options['key'], fightId, options) + '\n';
@@ -123,7 +138,7 @@ class WclReader {
         // adds sourceId if an argument is passed or if it exists in the initial wcl link
         if (typeof options['sourceID'] !== 'undefined' && options['sourceID'] !== '') {
             otherQueryFields += `, sourceID: ${options['sourceID']}`
-        } else if ((typeof options['sourceID'] === 'undefined') && this._defaultLinkData['sourceId'] !== -99) {
+        } else if ((typeof options['sourceID'] === 'undefined') && this._defaultLinkData['sourceId'] !== null) {
             otherQueryFields += `, sourceID: ${this._defaultLinkData['sourceId']}`;
         }
 
