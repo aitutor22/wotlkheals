@@ -175,11 +175,20 @@ class Paladin extends BasePlayer {
         // for melee_swing (placeholder), beacon and judgement
         // note that beacon cannot proc SoW
         if (spellInfo['category'] === 'others') {
+            let toReturn = this.castOtherSpell(spellKey, timestamp, spellIndex, logger);
             // this is for the fake swings we added in when we introduce melee weaving
             if (spellKey === 'MELEE_SWING') {
                 this.checkForAndHandleSoWProc(timestamp, spellIndex, logger, 'normal');
+            } else if (spellKey === 'JUDGEMENT') {
+                // judgement has 2 opportunites
+                this.checkForAndHandleSoWProc(timestamp, spellIndex, logger, 'normal');
+                // we dont want to use the same spell index; otherwise it will either proc or both not proc always
+                // thus just check from end
+                this.checkForAndHandleSoWProc(timestamp, this._rngThresholds['sow'].length - spellIndex - 1, logger, 'judgement');
             }
-            return this.castOtherSpell(spellKey, timestamp, spellIndex, logger);
+            // need to do the cast first before checking for SoW, otherwise if first cast is judgement and get a sow proc
+            // will gain 0 mana instead of reimbursing the mana cost of the judgement
+            return toReturn;
         }
 
 

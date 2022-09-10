@@ -22,11 +22,10 @@ const textData = {
   implementationAssumptions: {
     paladin: [
       'Mana cost shown above is after EoG/Soup and Illumination',
-      'Judgement is not casted in the sim, but two SoW procs is automatically calculated every 60s (Judgement counts as 2 hits).',
       'Soup and EoG procs are directly subtracted from the spell that procced it rather than the following spell. This is both for implemention simplicity and also to reflect that spells with multiple chances to proc soup will have lower blended mana cost.',
       'For instants to proc SoW, the player might to pause for a very short while to allow the hit to go off when using a 1.8 speed weapon. Currently, the system does not implement this delay as more work needs to be done to determine how long, if any, a pause is required.',
       'When infusion of light is active, Holy Light is always casted unless you have set HL cpm to 0.',
-      'The first Sacred Shield is assumed to be precasted just before entering battle',
+      'The first Sacred Shield and Beacon are assumed to be precasted just before entering battle',
       'There are minor rounding issues which can slightly increase the CPM shown.',
     ],
     shaman: [

@@ -161,6 +161,19 @@ const data = {
                 category: 'others',
             },
             {
+                'key': 'JUDGEMENT',
+                'name': 'Judgement',
+                'cooldown': 60,
+                'instant': true,
+                'baseCastTime': 0,
+                'baseManaCost': 219.9,
+                precasted: false,
+                baseHeal: 0,
+                coefficient: 0,
+                healingSpell: false,
+                category: 'others',
+            },
+            {
                 'key': 'HOLY_SHOCK',
                 'name': 'Holy Shock',
                 'cooldown': 6, // the actual cooldown of spell

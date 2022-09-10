@@ -160,14 +160,14 @@ class Experiment {
         // for now, disregard
         // NEED TO ADDINTERVAL - > should tick for until forver
         if (player._playerClass === 'paladin') {
-            let t = 0;
-            while (t <= maxMinsToOOM * 60) {
-                // judgement
-                eventHeap.addEvent(t + 61, 'MANA_TICK', 'chanceForSealOfWisdomProc_normal');
-                eventHeap.addEvent(t + 61, 'MANA_TICK', 'chanceForSealOfWisdomProc_judgment');
+            // let t = 0;
+            // while (t <= maxMinsToOOM * 60) {
+            //     // judgement
+            //     eventHeap.addEvent(t + 61, 'MANA_TICK', 'chanceForSealOfWisdomProc_normal');
+            //     eventHeap.addEvent(t + 61, 'MANA_TICK', 'chanceForSealOfWisdomProc_judgment');
 
-                t += 60;
-            }
+            //     t += 60;
+            // }
             // manually added (should improve code) sacred shield as it is precasted
             eventHeap.addEvent(0, 'INITIALIZE_HOT_EVENTS', 'SACRED_SHIELD|-1');
         } else if (player._playerClass === 'shaman') {
