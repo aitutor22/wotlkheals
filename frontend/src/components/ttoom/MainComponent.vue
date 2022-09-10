@@ -49,7 +49,9 @@
         <p>Median HPS: <b>{{ formatNumber(results['hps']) }} HPS</b></p>
         <p>
           Batch Seed: <b>{{ results['batchSeed'] }} </b>
-          <span v-if="oomOptions['seed'] !== '' && oomOptions['seed'] > 0 && oomOptions['seed'] === results['batchSeed']">(Seed currently fixed)</span>
+          <font-awesome-icon
+            @click="toggleFixPin"
+            class="pin" :class="{fixed: isFixedPin}" icon="fa-thumbtack" />
         </p>
         <div v-if="playerClass === 'paladin'">
           <p><em>
@@ -153,6 +155,7 @@ export default {
       minXAxis: 0,
       maxXAxis: 0,
       isFixedAxis: false,
+      isFixedPin: false,
     };
   },
   components: {
@@ -162,6 +165,9 @@ export default {
   watch: {
     $route (to, from){
       this.reset();
+    },
+    isFixedPin(to, from) {
+      this.oomOptions['seed'] = to ? this.results['batchSeed'] : '';
     },
   },
   computed: {
@@ -259,6 +265,9 @@ export default {
   },
   methods: {
     ...mapMutations('ttoom', ['setOomOptions']),
+    toggleFixPin() {
+      this.isFixedPin = !this.isFixedPin;
+    },
     formatNumber (num) {
         return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
     },
@@ -337,6 +346,9 @@ export default {
             this.showExplanation = false;
             this.results = response.data;
             console.log(this.results);
+            if (this.oomOptions['seed'] === this.results['batchSeed']) {
+              this.isFixedPin = true;
+            }
             this.selectedLog = response.data['logs'];
             if (!this.isFixedAxis) {
               this.minXAxis = Number(this.results['chartDetails']['minXAxis']);
@@ -390,5 +402,14 @@ export default {
 
 ol {
   width: 100%;
+}
+
+.pin {
+  color: blue;
+  opacity: 0.5;
+}
+
+.pin.fixed {
+  opacity: 1;
 }
 </style>

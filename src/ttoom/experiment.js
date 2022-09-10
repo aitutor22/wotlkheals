@@ -148,26 +148,7 @@ class Experiment {
         // assume first mana tick in 2s
         eventHeap.addEvent(2, 'MANA_TICK', 'replenishment');
 
-
-        // check that ss can proc sow
-
-        // temporary measure -  we set up SoW chances
-        // 2 from judgement (Beacon doesnt proc SoW since it resets, and divine plea/HS SoW is calculated separately)
-        // assumption: first judgement doesnt restore mana since it's our first cast as we are running in
-        // and thus even if sow hits, mana pool is still full
-        // thus, we begin our SoW checks only 60s into the fight
-        // technically, judgement and the melee have different hit chance and judgement can't be blocked
-        // for now, disregard
-        // NEED TO ADDINTERVAL - > should tick for until forver
         if (player._playerClass === 'paladin') {
-            // let t = 0;
-            // while (t <= maxMinsToOOM * 60) {
-            //     // judgement
-            //     eventHeap.addEvent(t + 61, 'MANA_TICK', 'chanceForSealOfWisdomProc_normal');
-            //     eventHeap.addEvent(t + 61, 'MANA_TICK', 'chanceForSealOfWisdomProc_judgment');
-
-            //     t += 60;
-            // }
             // manually added (should improve code) sacred shield as it is precasted
             eventHeap.addEvent(0, 'INITIALIZE_HOT_EVENTS', 'SACRED_SHIELD|-1');
         } else if (player._playerClass === 'shaman') {
