@@ -172,6 +172,7 @@
                     </span>
                   </b-form-radio>
                 </b-form-group>
+                <p v-if="oomOptions['finalGlyph'] === 'divinity' && !oomOptions['manaOptions']['selfLoh']" class="red">Make sure to select Self-LoH under the "Mana" tab</p>
                 <hr>
                 <h6>Advanced Gameplay Choices</h6>
                 <div class="form-check">
@@ -306,7 +307,7 @@
                 <div v-if="playerClass === 'paladin'" class="form-check">
                   <input class="form-check-input" type="checkbox" id="selfLoh" v-model="oomOptions['manaOptions']['selfLoh']">
                   <label class="form-check-label" for="selfLoh"
-                    v-b-tooltip.hover title="Is the HPLD using Glyph of Divinity and casting Lay on Hands on him/herself for additional mana?">Self LoH (Divinity)</label>
+                    v-b-tooltip.hover title="Is the HPLD casting Lay on Hands on him/herself for additional mana?">Self LoH</label>
                 </div>
 
                 <!-- class specific -->
@@ -510,5 +511,9 @@ export default {
   display: inline-block;
   width: auto; 
   min-width: 11em;
+}
+
+.red {
+  color: red;
 }
 </style>
