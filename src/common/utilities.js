@@ -154,7 +154,6 @@ const helperFunctions = {
     getKeyBoolean(obj, key) {
         return (obj && typeof obj[key] !== 'undefined') && obj[key];
     },
-
     // game play functions
     calculateProcBasedMp5(procValue, procICD, procChance, castTime) {
       // what is expected amount of time to get 1 proc? internal_cooldown + cast_time * expected_number_of_casts_required

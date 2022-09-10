@@ -53,14 +53,14 @@ class WclReader {
                 this._defaultLinkData['fightId'] = Number(fightIdFound[1]);
             }
         } else if (wclLink.indexOf('boss=') > -1) {
-                let bossId = Number(wclLink.match(/.*boss=([-\d]+).*/)[1]);
-                if (bossId === 0) {
-                    this._defaultLinkData['fightId'] = 'trash';       
-                } else if (bossId === -3) {
-                    this._defaultLinkData['fightId'] = 'all';       
-                } else if (bossId === -2) {
-                    this._defaultLinkData['fightId'] = 'bosses';       
-                }
+            let bossId = Number(wclLink.match(/.*boss=([-\d]+).*/)[1]);
+            if (bossId === 0) {
+                this._defaultLinkData['fightId'] = 'trash';       
+            } else if (bossId === -3) {
+                this._defaultLinkData['fightId'] = 'all';       
+            } else if (bossId === -2) {
+                this._defaultLinkData['fightId'] = 'bosses';       
+            }
 
                 // this._defaultLinkData['fightId'] = Number(bossIdFound[1]);
         } else {
@@ -84,7 +84,6 @@ class WclReader {
                 }
             }`,
         };
-
         try {
             const response = await axios({
                 url: url,
@@ -109,12 +108,73 @@ class WclReader {
             if (fightId === null) {
                 fightId = this._defaultLinkData['fightId'];
             }
-            console.log(fightId)
-            let subQuery = '';
+            let subQuery = '',
+                results = {}, // for queries that require pagination
+                endTime = fightId === 'all' ? this._reportEndTime : this._fightTimesMap[fightId]['endTime'];
+
             for (let options of listSubqueriesToCreate) {
                 subQuery += this.createEventsSubqueryHelper(options['key'], fightId, options) + '\n';
+                results[options['key']] = [];
             }
-            return this.pullData(subQuery);
+
+            // // for single fights, we dont need pagination
+            // if (fightId !== 'all') return this.pullData(subQuery);
+            let app = this;
+
+            async function paginate(subQuery) {
+                let subreportData = await app.pullData(subQuery);
+                let newSubquery = '';
+
+                for (let key in subreportData) {
+                    let arr = subreportData[key]['data'],
+                        lastTimeStamp = arr.length > 0 ? arr[arr.length - 1]['timestamp'] : null;
+
+                    let needToContinuePulling = true;
+                    if (arr.length === 0) {
+                        needToContinuePulling = false;
+                    } else {
+                        if (arr[0]['timestamp'] === arr[arr.length - 1]['timestamp']) {
+                            needToContinuePulling = false;
+                        };
+
+                        // just a hack - if very few entries, implies we already pulled everything
+                        if (arr.length < 50) {
+                            needToContinuePulling = false;
+                        }
+
+                        if (lastTimeStamp === endTime) {
+                            needToContinuePulling = false;
+                        }
+                    }
+                    
+                    if (!needToContinuePulling) {
+                        results[key].push(...arr);
+                        continue;
+                    }
+
+                    // for pagination, there's the problem of what to do with events on the final timestamp
+                    // because when we pullusing the same timestamp, there will be duplicate events
+                    // so we only add events before timestamp
+                    for (let i = 0; i < arr.length; i++) {
+                        if (arr[i]['timestamp'] < lastTimeStamp) {
+                            results[key].push(arr[i]);
+                        }
+                    }
+
+                    let options = listSubqueriesToCreate.find((_row) => _row['key'] === key);
+                    // we start pulling on lastTimeStamp - this is not included above, but isn't a problem as it will be pulled in next pull
+                    newSubquery += app.createEventsSubqueryHelper(key, fightId, options, lastTimeStamp) + '\n';
+                }
+                return newSubquery;
+            }
+
+            let counter = 0;
+            while (subQuery !== '') {
+                subQuery = await paginate(subQuery);
+                counter++;
+            }
+            return results;
+
         } catch (error) {
             console.log('error with runquery');
             console.log(error);
@@ -123,17 +183,30 @@ class WclReader {
 
     // note that WCL fields have a tendency to capitalise ID
     // for options, we follow this notation to make it easier to copy from insomania
-    // healing: events(startTime: ${fightTime.startTime}, endTime: ${fightTime.endTime}, dataType: Healing, useAbilityIDs: true, sourceID: ${sourceId}, limit:10000, filterExpression: "ability.name='Chain Heal'") { data }
-    createEventsSubqueryHelper(key, fightId, options) {
+    // takes an optional overrideStartTime (for pagination)
+    createEventsSubqueryHelper(key, fightId, options, overrideStartTime=null) {
         if (fightId === 'last') fightId = this._lastFightId;
         if (typeof options === 'undefined') options = {};
         if (typeof options['dataType'] !== 'undefined' && EVENT_TYPES.indexOf(options['dataType']) === -1) {
             throw new Error('Invalid field for dataType: ' + options['dataType']);
         }
 
-        let startTime = this._fightTimesMap[fightId]['startTime'],
-            endTime = this._fightTimesMap[fightId]['endTime'],
-            otherQueryFields = '';
+        let otherQueryFields = '',
+            startTime,
+            endTime;
+
+        // if (fightId !== 'all' && overrideStartTime !== null) {
+        //     throw new Error('overrideStartTime passed even though fightID is not all');
+        // }
+
+        // checks to see if we should use the user inputted startTime (for pagination)
+        if (overrideStartTime !== null) {
+            startTime = overrideStartTime;
+        } else {
+            startTime = fightId === 'all' ? this._reportStartTime : this._fightTimesMap[fightId]['startTime'];
+        }
+
+        endTime = fightId === 'all' ? this._reportEndTime : this._fightTimesMap[fightId]['endTime'];
 
         // adds sourceId if an argument is passed or if it exists in the initial wcl link
         if (typeof options['sourceID'] !== 'undefined' && options['sourceID'] !== '') {
@@ -148,6 +221,10 @@ class WclReader {
                 otherQueryFields += (key !== 'filterExpression') ? `, ${key}: ${options[key]}` :
                     `, ${key}: "${options[key]}"`;
             }
+        }
+
+        if (typeof options['limit'] === 'undefined') {
+            otherQueryFields += `, limit: 10000`;
         }
 
         let subQuery = `${key}: events(startTime: ${startTime}, endTime: ${endTime}${otherQueryFields}) { data }`
@@ -172,6 +249,7 @@ class WclReader {
 
         try {
             let report = await this.pullData(subQuery);
+
             this._fightTimesMap = {};
             // note that startTime and endTime for the whole report is in unix timestamp format
             // the first fight starts at 0; hence we need to zero out the startTime/endTime of the report

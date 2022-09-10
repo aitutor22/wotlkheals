@@ -80,27 +80,27 @@ test('constructor', () => {
 //       })
 // });
 
-// test('createEventsSubqueryHelper', async () => {
-//     // stores fightId=last
-//     wclReader = new WclReader('https://classic.warcraftlogs.com/reports/ZTC3FGfNrL4VY1A9#fight=last&type=healing&source=19');
-//     await wclReader.getFightTimes();
-//     let results = wclReader.createEventsSubqueryHelper('healing', 35)
-//     // with no options passed in
-//     expect(results).toBe('healing: events(startTime: 4629571, endTime: 4629604, sourceID: 19) { data }');
+test('createEventsSubqueryHelper', async () => {
+    // stores fightId=last
+    wclReader = new WclReader('https://classic.warcraftlogs.com/reports/ZTC3FGfNrL4VY1A9#fight=last&type=healing&source=19');
+    await wclReader.getFightTimes();
+    let results = wclReader.createEventsSubqueryHelper('healing', 35)
+    // with no options passed in; note limit: 10000 is default
+    expect(results).toBe('healing: events(startTime: 4629571, endTime: 4629604, sourceID: 19, limit: 10000) { data }');
 
-//     results = wclReader.createEventsSubqueryHelper('healing', 35, {dataType: 'Healing'})
-//     expect(results).toBe('healing: events(startTime: 4629571, endTime: 4629604, sourceID: 19, dataType: Healing) { data }');
+    results = wclReader.createEventsSubqueryHelper('healing', 35, {dataType: 'Healing'})
+    expect(results).toBe('healing: events(startTime: 4629571, endTime: 4629604, sourceID: 19, dataType: Healing, limit: 10000) { data }');
 
-//     // passing in blank value for sourceId will cause it not to apepar in subquery
-//     results = wclReader.createEventsSubqueryHelper('healing', 35, {dataType: 'Healing', sourceID: ''})
-//     expect(results).toBe('healing: events(startTime: 4629571, endTime: 4629604, dataType: Healing) { data }');
+    // passing in blank value for sourceId will cause it not to apepar in subquery
+    results = wclReader.createEventsSubqueryHelper('healing', 35, {dataType: 'Healing', sourceID: ''})
+    expect(results).toBe('healing: events(startTime: 4629571, endTime: 4629604, dataType: Healing, limit: 10000) { data }');
 
-//     results = wclReader.createEventsSubqueryHelper('healing', 35, {dataType: 'Healing', sourceID: '', useAbilityIDs: true})
-//     expect(results).toBe('healing: events(startTime: 4629571, endTime: 4629604, dataType: Healing, useAbilityIDs: true) { data }');
+    results = wclReader.createEventsSubqueryHelper('healing', 35, {dataType: 'Healing', sourceID: '', useAbilityIDs: true})
+    expect(results).toBe('healing: events(startTime: 4629571, endTime: 4629604, dataType: Healing, useAbilityIDs: true, limit: 10000) { data }');
 
-//     results = wclReader.createEventsSubqueryHelper('healing', 35, {dataType: 'Healing', sourceID: '', useAbilityIDs: false, limit: 1000})
-//     expect(results).toBe('healing: events(startTime: 4629571, endTime: 4629604, dataType: Healing, useAbilityIDs: false, limit: 1000) { data }');
-// });
+    results = wclReader.createEventsSubqueryHelper('healing', 35, {dataType: 'Healing', sourceID: '', useAbilityIDs: false, limit: 1000})
+    expect(results).toBe('healing: events(startTime: 4629571, endTime: 4629604, dataType: Healing, useAbilityIDs: false, limit: 1000) { data }');
+});
 
 // healing: events(startTime: ${fightTime.startTime}, endTime:  ${fightTime.endTime}, dataType: Healing, useAbilityIDs: true, sourceID: ${sourceId}, limit:10000, filterExpression: "(ability.id != 66922) and (ability.name='Holy Light' or ability.name='Flash of Light' or ability.name='Sacred Shield' or ability.name='Beacon of Light' or ability.id=54968 or ability.name='Holy Shock')")  { data }
 
@@ -114,11 +114,19 @@ test('constructor', () => {
 
 // });
 
-// // testing pull all events
-// test('pulling events from whole report', async () => {
+// test('pulling pagination', async () => {
+//     jest.setTimeout(30000);
 //     // stores fightId=last
-//     wclReader = new WclReader('https://classic.warcraftlogs.com/reports/ZTC3FGfNrL4VY1A9#boss=-3&difficulty=0&type=healing&source=49');
-//     let result = await wclReader.runQuery([{key: 'healing', dataType: 'Healing'}]);
-//     // console.log(result);
+//     wclReader = new WclReader('https://classic.warcraftlogs.com/reports/dVhMH1Pqb6KaDRL9#fight=38');
+//     let result = await wclReader.runQuery([{key: 'damageTaken', dataType: 'DamageTaken', limit: 100}]);
+//     expect(result['damageTaken'].length).toBe(635);
+// }, 30000);
 
-// });
+test('pulling pagination2', async () => {
+    // stores fightId=last
+    // 
+    wclReader = new WclReader('https://classic.warcraftlogs.com/reports/dVhMH1Pqb6KaDRL9#fight=59');
+    let result = await wclReader.runQuery([{key: 'damageTaken', dataType: 'DamageTaken', limit: 200}, {key: 'healing', dataType: 'Healing', limit: 800}]);
+    expect(result['damageTaken'].length).toBe(353);
+    expect(result['healing'].length).toBe(8427);
+}, 60000);
