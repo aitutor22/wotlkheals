@@ -131,7 +131,7 @@ const data = {
             // when we calculate hasteFactor, we also need to consider the number of spells that
             // are not healing spells (e.g. divine plea) but are casted
             // otherwise we will undercount the haste factor
-            numGcdsPerMinNotCountedUnderSpells: 2, // divine plea + sacred shield
+            numGcdsPerMinNotCountedUnderSpells: 3, // divine plea + sacred shield + judgement (but first SS is precasted)
             eightyUpgradesIntConversionFactor: 1.1, // 80upgrades character screen includes divine intellect; so we need to divide it out
             intModifier: 1.1 * 1.1, // blessing of kings and divine intellect
             baseCritChanceModifier: 0.05, // 5% additional crit chance from holy power

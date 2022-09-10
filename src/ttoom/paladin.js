@@ -88,6 +88,8 @@ class Paladin extends BasePlayer {
             totalTimeUsed += this._options['cpm'][key] * Math.max(spellInfo['baseCastTime'], DATA['constants']['baseGCD']);
         }
         this._gcd = Math.max(1, this._gcd / this._haste); // gcd cannot go below 1s
+        // we need to also consider cooldowns like divine plea - which appear in the simulation but are not under the spells portion
+        // totalTimeUsed += this.classInfo['numGcdsPerMinNotCountedUnderSpells'] * DATA['constants']['baseGCD'];
 
         totalTimeUsed /= this._haste;
         freeTimeForMelee = 60 - totalTimeUsed;
@@ -112,6 +114,7 @@ class Paladin extends BasePlayer {
             }
         }
         
+        // hack - but this form of calculation will lead to
         castProfile['MELEE_SWING'] = realNumMelees;
         return new SpellQueue(castProfile, rng);
     }

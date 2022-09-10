@@ -3,7 +3,7 @@ const textData = {
     paladin: [
     {
       dateAdded: '09/09/22',
-      text: 'Added support for Beacon of Light and related glyphs.',
+      text: 'Added support for Beacon of Light and related glyphs. Improve melee weaving options.',
     },
     {
       dateAdded: '05/09/22',
