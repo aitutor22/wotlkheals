@@ -1,9 +1,5 @@
 const testData = {
-    "data": {
-        "reportData": {
-            "report": {
-                "healing": {
-                    "data": [
+                "healing": [
                         {
                             "timestamp": 1449897,
                             "type": "heal",
@@ -236,14 +232,8 @@ const testData = {
                             "amount": 3977,
                             "targetMarker": 2
                         }
-                    ]
-                },
-                "natureSwiftness": {
-                    "data": []
-                }
-            }
-        }
-    }
+                    ],
+                "natureSwiftness": [],
 }
 
 module.exports = testData;

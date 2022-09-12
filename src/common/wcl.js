@@ -114,11 +114,12 @@ class WclReader {
 
             for (let options of listSubqueriesToCreate) {
                 subQuery += this.createEventsSubqueryHelper(options['key'], fightId, options) + '\n';
-                results[options['key']] = [];
+                results[options['key']] = {data: []};
             }
 
             // // for single fights, we dont need pagination
-            // if (fightId !== 'all') return this.pullData(subQuery);
+
+            if (fightId !== 'all') return this.pullData(subQuery);
             let app = this;
 
             async function paginate(subQuery) {
@@ -126,6 +127,11 @@ class WclReader {
                 let newSubquery = '';
 
                 for (let key in subreportData) {
+                    if (subreportData[key] === null) {
+                        console.log('skipping because null')
+                        continue;
+                    }
+
                     let arr = subreportData[key]['data'],
                         lastTimeStamp = arr.length > 0 ? arr[arr.length - 1]['timestamp'] : null;
 
@@ -137,10 +143,10 @@ class WclReader {
                             needToContinuePulling = false;
                         };
 
-                        // just a hack - if very few entries, implies we already pulled everything
-                        if (arr.length < 50) {
-                            needToContinuePulling = false;
-                        }
+                        // // just a hack - if very few entries, implies we already pulled everything
+                        // if (arr.length < 50) {
+                        //     needToContinuePulling = false;
+                        // }
 
                         if (lastTimeStamp === endTime) {
                             needToContinuePulling = false;
@@ -148,7 +154,7 @@ class WclReader {
                     }
                     
                     if (!needToContinuePulling) {
-                        results[key].push(...arr);
+                        results[key]['data'].push(...arr);
                         continue;
                     }
 
@@ -157,7 +163,7 @@ class WclReader {
                     // so we only add events before timestamp
                     for (let i = 0; i < arr.length; i++) {
                         if (arr[i]['timestamp'] < lastTimeStamp) {
-                            results[key].push(arr[i]);
+                            results[key]['data'].push(arr[i]);
                         }
                     }
 

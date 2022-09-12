@@ -6,6 +6,26 @@ const PriestRaptureAnalyzer = require('../wcl/priestRaptureAnalyzer');
 
 const analyzerOptions = require('../wcl/analyzerOptions');
 
+// // rapture
+// // https://classic.warcraftlogs.com/reports/nXarWYFR3tx1dJBH#type=resources&fight=4&view=events&pins=2%24Off%24%23244F4B%24expression%24ability.name%3D%22Rapture%22&spell=101
+// async function a() {
+//         let wclReader = new WclReader('https://classic.warcraftlogs.com/reports/VHDhf31kNR4rcCpm#type=resources&source=31');
+//         let reportData = await wclReader.runQuery([
+//             {key: 'revitalize', dataType: 'Resources', includeResources: false, filterExpression: "ability.name='Revitalize'"}
+//         ]);
+//         // console.log(reportData['revitalize']['data'])
+//         // console.log(reportData['revitalize']['data'].length)
+//         fs = require('fs');
+//         console.log(reportData['revitalize']['data'].length)
+//         let text = JSON.stringify(reportData['revitalize']['data']);
+//         fs.writeFile('data.txt', text, function (err) {
+//           if (err) return console.log(err);
+//           console.log('finshed saving');
+//           // console.log('Hello World > helloworld.txt');
+//         });
+// }
+
+// a();
 
 exports.chainheal = async (req, res) => {
     const link = req.body.wclLink;
@@ -25,6 +45,7 @@ exports.chainheal = async (req, res) => {
     }
 };
 
+// paladin
 // doesn't support pagination currently, need to add in future
 exports.overhealing = (req, res) => {
     const link = req.body.wclLink;

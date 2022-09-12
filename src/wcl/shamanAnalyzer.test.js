@@ -7,9 +7,8 @@ const loathebTestData = require('./testdata/loathebChainHeal');
 
 
 test('Analyzer base', () => {
-    let data = shortTestData.data.reportData.report;
-    let analyzer = new Analyzer(data);
-    // expect(analyzer._healingData.length).toBe(6);
+    let analyzer = new Analyzer(shortTestData);
+    expect(analyzer._healingData.length).toBe(7);
     let results = analyzer.categorizeChainHeal(3);
     expect(results['counter'][1]).toBe(4);
     expect(results['counter'][3]).toBe(1);
@@ -17,8 +16,7 @@ test('Analyzer base', () => {
 });
 
 test('Analyzer adding two casts', () => {
-    let data = shortTestData.data.reportData.report;
-    let analyzer = new Analyzer(data);
+    let analyzer = new Analyzer(shortTestData);
     let results = analyzer.categorizeChainHeal(3);
     expect(results['counter'][1]).toBe(4);
     expect(results['counter'][3]).toBe(1);
@@ -57,9 +55,7 @@ test('Analyzer adding two casts', () => {
 });
 
 test('Analyzer adding two casts with nature swiftness', () => {
-    let data = shortTestData.data.reportData.report;
-    let analyzer = new Analyzer(data);
-    // expect(analyzer._healingData.length).toBe(6);
+    let analyzer = new Analyzer(shortTestData);
     let results = analyzer.categorizeChainHeal(3);
     expect(results['counter'][1]).toBe(4);
     expect(results['counter'][3]).toBe(1);
@@ -106,8 +102,7 @@ test('Analyzer adding two casts with nature swiftness', () => {
 
 
 test('Analyzer lovelace', () => {
-    let data = shortLovelaceTestData.data.reportData.report;
-    let analyzer = new Analyzer(data);
+    let analyzer = new Analyzer(shortLovelaceTestData);
     let results = analyzer.categorizeChainHeal(3);
     expect(results['counter'][1]).toBe(4);
     expect(results['counter'][2]).toBe(2);
@@ -117,10 +112,9 @@ test('Analyzer lovelace', () => {
 
 
 test('Analyzer loatheb', () => {
-    let data = loathebTestData.data.reportData.report;
-    let analyzer = new Analyzer(data);
+    let analyzer = new Analyzer(loathebTestData);
     let results = analyzer.categorizeChainHeal(4);
-    // expect(results['counter'][1]).toBe(4);
-    // expect(results['counter'][3]).toBe(1);
-    // expect(results['totalCasts']).toBe(5);
+    expect(results['counter'][1]).toBe(4);
+    expect(results['counter'][3]).toBe(1);
+    expect(results['totalCasts']).toBe(5);
 });

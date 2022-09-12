@@ -58,8 +58,8 @@ class Analyzer {
             overhealingCounter = {1: {rawHeal: 0, overheal: 0}, 2: {rawHeal: 0, overheal: 0}, 3: {rawHeal: 0, overheal: 0}, 4: {rawHeal: 0, overheal: 0}},
             currentCastHealingEvents = [];
         // we sort all data first as it's possible that timestamps are jumbled up
-        // looking at logs, NS will always come before the spell it is used on, so don't need a second sort condition
-        combined.sort((a, b) => a['timestamp'] - b['timestamp']);
+        // if CH and NS are at the same timestamp, want NS to be considered first; NS' abilityGameID is less than CH
+        combined.sort((a, b) => ((a['timestamp'] - b['timestamp']) || (a['abilityGameID'] - b['abilityGameID'])));
 
 
         // initializes the counter to track the num of chain heals
@@ -80,6 +80,11 @@ class Analyzer {
                     Analyzer.calculateOverhealing(currentCastHealingEvents, overhealingCounter);
                     currentCastHealingEvents = [];
                 }
+                // if (entry['abilityGameID'] === NATURE_SWIFTNESS_ID) {
+                //     // console.log('wtf')
+                //     // console.log(currentHits)
+                //     break;
+                // }
 
                 // if NS is casted, then we want to ensure that the next CH cast will always be considered, so we set timestamp to a low number
                 if (entry['abilityGameID'] === NATURE_SWIFTNESS_ID) {
@@ -107,13 +112,19 @@ class Analyzer {
         }
 
         for (let key in counter) {
-            castBreakdown.push({
-                targetsHit: key,
-                amount: counter[key],
-                percentage: counter[key] / totalCasts,
-                overhealingPercent: overhealingCounter[key]['rawHeal'] > 0 ?
-                    overhealingCounter[key]['overheal'] / overhealingCounter[key]['rawHeal'] : 0,
-            })
+            try {
+                castBreakdown.push({
+                    targetsHit: key,
+                    amount: counter[key],
+                    percentage: counter[key] / totalCasts,
+                    overhealingPercent: overhealingCounter[key]['rawHeal'] > 0 ?
+                        overhealingCounter[key]['overheal'] / overhealingCounter[key]['rawHeal'] : 0,
+                })
+            } catch (err) {
+                console.log('error');
+                console.log(err)
+                console.log(key, overhealingCounter)
+            }
         }
         return {counter: counter, totalCasts: totalCasts, castBreakdown: castBreakdown, overhealingCounter: overhealingCounter};
     }

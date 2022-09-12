@@ -1,9 +1,5 @@
 const testData = {
-    "data": {
-        "reportData": {
-            "report": {
-                "healing": {
-                    "data": [
+                "healing": [
                         {
                             "timestamp": 4454771,
                             "type": "heal",
@@ -146,6 +142,17 @@ const testData = {
                             "overheal": 7068,
                             "targetMarker": 6
                         },
+
+
+
+
+
+
+
+
+
+
+                        
                         {
                             "timestamp": 4600567,
                             "type": "heal",
@@ -205,10 +212,8 @@ const testData = {
                             "overheal": 6964,
                             "targetMarker": 6
                         }
-                    ]
-                },
-                "natureSwiftness": {
-                    "data": [
+                    ],
+                "natureSwiftness": [
                         {
                             "timestamp": 4600535,
                             "type": "cast",
@@ -218,10 +223,6 @@ const testData = {
                             "fight": 36
                         }
                     ]
-                }
-            }
-        }
-    }
 }
 
 module.exports = testData;
