@@ -9,7 +9,7 @@ class Analyzer {
     constructor(data) {
         // be careful not to mutate the passed in object
         this._rawdata = JSON.parse(JSON.stringify(data));
-        this._damageTakenData = this._rawdata['data']['reportData']['report']['damageTaken']['data'];
+        this._damageTakenData = this._rawdata['damageTaken']['data'];
     }
 
     run(fightStartTimestamp) {
@@ -17,7 +17,6 @@ class Analyzer {
             results = [];
 
         for (let entry of this._damageTakenData) {
-            // console.log(entry);
             let name = entry['ability']['name'],
                 timestamp = Number(entry['timestamp']) - fightStartTimestamp,
                 unshieldedAmount;

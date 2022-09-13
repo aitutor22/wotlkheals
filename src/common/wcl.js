@@ -12,7 +12,7 @@ const EVENT_TYPES = ['All', 'Buffs', 'Casts', 'CombatantInfo', 'DamageDone', 'Da
 
 class WclReader {
     // given a link, we try to split into code, sourceId and fightId
-    constructor(wclLink) {
+    constructor(wclLink, overrideFightId=null) {
         this._defaultLinkData = {
             'url': wclLink,
             'code': '',
@@ -27,11 +27,22 @@ class WclReader {
         this._lastFightId = null;
         this._reportStartTime = 0;
         this._reportEndTime = 0; // in miliseconds, will be updated when we call getFightTimes
+        this._overrideFightId = overrideFightId;
+        this._selectedFightId = null;
+
+        // encounterID filter doesn't work very well
+        // use fightIDs instead to filter between trash/bosses if required
+        this._fightIds = {
+            'bosses': [],
+            'trash': [],
+        };
+
+        // to pass to frontend, allows user to select between fights
+        this._otherFightOptions = [];
 
         // code starts here - extract info fromlink
         let getWclCodeRegex = '',
             found = false;
-
         if (wclLink.indexOf('source=') > - 1) {
             getWclCodeRegex = /(.*reports\/)?(\w{16}).*source=(\d+).*/;
             found = wclLink.match(getWclCodeRegex);
@@ -59,13 +70,25 @@ class WclReader {
             } else if (bossId === -3) {
                 this._defaultLinkData['fightId'] = 'all';       
             } else if (bossId === -2) {
-                this._defaultLinkData['fightId'] = 'bosses';       
+                this._defaultLinkData['fightId'] = 'bosses';
             }
-
-                // this._defaultLinkData['fightId'] = Number(bossIdFound[1]);
         } else {
             // if neither fight or boss are passed in, default to reading whole report
             this._defaultLinkData['fightId'] = 'all';
+        }
+    }
+
+    // start getters
+    get fightTime() {
+        if (['all', 'bosses', 'trash'].indexOf(this._selectedFightId) > -1) {
+            return {
+                startTime: this._reportStartTime,
+                endTime: this._reportEndTime,
+            }
+        }       
+        return {
+            startTime: this._fightTimesMap[this._selectedFightId]['startTime'],
+            endTime: this._fightTimesMap[this._selectedFightId]['endTime'],
         }
     }
 
@@ -104,22 +127,29 @@ class WclReader {
         try {
             // we always start by getting fight times - if it's already pulled, we wont call server again
             await this.getFightTimes();
-            // if no fightId is passed, then we extract from url
-            if (fightId === null) {
-                fightId = this._defaultLinkData['fightId'];
+            // overrideFightId always take precedence (this is useful when player is swapping fights via a select input)
+            // but isn't changing the wcl link
+            if (this._overrideFightId !== null) {
+                fightId = this._overrideFightId;
+            } else {
+                // if no fightId is passed, then we extract from url
+                if (fightId === null) {
+                    fightId = this._defaultLinkData['fightId'];
+                }
             }
+            
+            this._selectedFightId = fightId;
             let subQuery = '',
                 results = {}, // for queries that require pagination
-                endTime = fightId === 'all' ? this._reportEndTime : this._fightTimesMap[fightId]['endTime'];
+                endTime = (['bosses', 'all', 'trash'].indexOf(fightId) > -1) ? this._reportEndTime : this._fightTimesMap[fightId]['endTime'];
 
             for (let options of listSubqueriesToCreate) {
                 subQuery += this.createEventsSubqueryHelper(options['key'], fightId, options) + '\n';
                 results[options['key']] = {data: []};
             }
 
-            // // for single fights, we dont need pagination
-
-            if (fightId !== 'all') return this.pullData(subQuery);
+            // for single fights, we dont need pagination
+            if (['bosses', 'all', 'trash'].indexOf(fightId) === -1) return this.pullData(subQuery);
             let app = this;
 
             async function paginate(subQuery) {
@@ -174,10 +204,8 @@ class WclReader {
                 return newSubquery;
             }
 
-            let counter = 0;
             while (subQuery !== '') {
                 subQuery = await paginate(subQuery);
-                counter++;
             }
             return results;
 
@@ -201,18 +229,15 @@ class WclReader {
             startTime,
             endTime;
 
-        // if (fightId !== 'all' && overrideStartTime !== null) {
-        //     throw new Error('overrideStartTime passed even though fightID is not all');
-        // }
-
         // checks to see if we should use the user inputted startTime (for pagination)
         if (overrideStartTime !== null) {
             startTime = overrideStartTime;
         } else {
-            startTime = fightId === 'all' ? this._reportStartTime : this._fightTimesMap[fightId]['startTime'];
+
+            startTime = (['bosses', 'all', 'trash'].indexOf(fightId) > -1) ? this._reportStartTime : this._fightTimesMap[fightId]['startTime'];
         }
 
-        endTime = fightId === 'all' ? this._reportEndTime : this._fightTimesMap[fightId]['endTime'];
+        endTime = (['bosses', 'all', 'trash'].indexOf(fightId) > -1) ? this._reportEndTime : this._fightTimesMap[fightId]['endTime'];
 
         // adds sourceId if an argument is passed or if it exists in the initial wcl link
         if (typeof options['sourceID'] !== 'undefined' && options['sourceID'] !== '') {
@@ -231,6 +256,13 @@ class WclReader {
 
         if (typeof options['limit'] === 'undefined') {
             otherQueryFields += `, limit: 10000`;
+        }
+
+        // filters trash/bosses
+        if (fightId === 'trash') {
+            otherQueryFields += `, fightIDs: [${this._fightIds['trash']}]`;   
+        } else if (fightId === 'bosses') {
+            otherQueryFields += `, fightIDs: [${this._fightIds['bosses']}]`;   
         }
 
         let subQuery = `${key}: events(startTime: ${startTime}, endTime: ${endTime}${otherQueryFields}) { data }`
@@ -265,12 +297,41 @@ class WclReader {
             for (let entry of report['fights']) {
                 this._fightTimesMap[Number(entry['id'])] = entry;
 
+                // categorises fights into trash/bosses
+                if (entry['encounterID'] === 0) {
+                    this._fightIds['trash'].push(entry['id']);
+                } else {
+                    this._fightIds['bosses'].push(entry['id']);
+                }
+
+                // adds options to select other fights
+                let fightLength = Math.floor((entry['endTime'] - entry['startTime']) / 1000);
+                // hackish code - doesn't work for fights that last >= 10mins; refactor and add to utilities in future
+                let timeString = new Date(fightLength * 1000).toISOString().substr(14, 5);
+                this._otherFightOptions.push({
+                    label: `${entry['name']} (${timeString})`,
+                    fightId: entry['id'],
+                });
+
                 // for last fight, id isn't passed, and instead the string 'last' is used instead
                 // # NOTE: last refers to LAST BOSS FIGHT (trash not included)
                 if (Number(entry['encounterID']) > 0) {
                     this._lastFightId = Number(entry['id']);
                 }
             }
+
+            this._otherFightOptions.push({
+                label: 'Trash',
+                fightId: 'trash',
+            });
+            this._otherFightOptions.push({
+                label: 'Bosses',
+                fightId: 'bosses',
+            });
+            this._otherFightOptions.push({
+                label: 'All',
+                fightId: 'all',
+            });
             return this._fightTimesMap;
 
         } catch (error) {
