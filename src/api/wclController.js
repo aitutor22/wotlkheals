@@ -69,7 +69,12 @@ exports.overhealing = async (req, res) => {
 
 // doesn't support pagination currently, need to add
 exports.rapture = async (req, res) => {
-    const link = req.body.wclLink;
+    let link = req.body.wclLink;
+    // rapture shouldnt have sourceId -> will screw up the analyser as it will only returns damage hitting the source target
+    if (link.indexOf('source=') > -1) {
+        link = link.replace(/source=[-\d]+/, '');
+    }
+
     let overrideFightId = null;
 
     // if a specific fightId is passed, then use it
@@ -77,8 +82,6 @@ exports.rapture = async (req, res) => {
         overrideFightId = Number(req.body['fightId'])
     } 
 
-
-    console.log(overrideFightId);
     try {
         let wclReader = new WclReader(link, overrideFightId);
         let reportData = await wclReader.runQuery([
