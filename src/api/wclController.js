@@ -3,27 +3,28 @@ const WclReader = require('../common/wcl');
 const ShamanAnalyzer = require('../wcl/shamanAnalyzer');
 const PaladinOverhealingAnalyzer = require('../wcl/paladinOverhealingAnalyzer');
 const PriestRaptureAnalyzer = require('../wcl/priestRaptureAnalyzer');
+const DruidRevitalizeAnalyzer = require('../wcl/druidAnalyzer');
 
 const analyzerOptions = require('../wcl/analyzerOptions');
 
-// // rapture
-// https://classic.warcraftlogs.com/reports/nXarWYFR3tx1dJBH#type=resources&fight=4&view=events&pins=2%24Off%24%23244F4B%24expression%24ability.name%3D%22Rapture%22&spell=101
-async function a() {
-        let wclReader = new WclReader('https://classic.warcraftlogs.com/reports/qtZMRdhV43K7fc28#boss=-2&difficulty=0&type=deaths');
-        let reportData = await wclReader.runQuery([
-            {key: 'deaths', dataType: 'Deaths'}
-        ]);
-        console.log(reportData['deaths']['data'].length)
-        // console.log(reportData['revitalize']['data'])
-        // console.log(reportData['revitalize']['data'].length)
-        // fs = require('fs');
-        // let text = JSON.stringify(reportData['revitalize']['data']);
-        // fs.writeFile('data.txt', text, function (err) {
-        //   if (err) return console.log(err);
-        //   console.log('finshed saving');
-        //   // console.log('Hello World > helloworld.txt');
-        // });
-}
+// // // rapture
+// // https://classic.warcraftlogs.com/reports/nXarWYFR3tx1dJBH#type=resources&fight=4&view=events&pins=2%24Off%24%23244F4B%24expression%24ability.name%3D%22Rapture%22&spell=101
+// async function a() {
+//         let wclReader = new WclReader('https://classic.warcraftlogs.com/reports/qtZMRdhV43K7fc28#boss=-2&difficulty=0&type=deaths');
+//         let reportData = await wclReader.runQuery([
+//             {key: 'deaths', dataType: 'Deaths'}
+//         ]);
+//         console.log(reportData['deaths']['data'].length)
+//         // console.log(reportData['revitalize']['data'])
+//         // console.log(reportData['revitalize']['data'].length)
+//         // fs = require('fs');
+//         // let text = JSON.stringify(reportData['revitalize']['data']);
+//         // fs.writeFile('data.txt', text, function (err) {
+//         //   if (err) return console.log(err);
+//         //   console.log('finshed saving');
+//         //   // console.log('Hello World > helloworld.txt');
+//         // });
+// }
 
 // a();
 
@@ -95,6 +96,42 @@ exports.rapture = async (req, res) => {
             otherFightOptions: wclReader._otherFightOptions,
             currentFightId: wclReader._selectedFightId,
         });
+    } catch (error) {
+        res.status(400).send(error.message)
+    }
+};
+
+exports.revitalize = async (req, res) => {
+    let link = req.body.wclLink;
+    // revitalize shouldnt have sourceId
+    if (link.indexOf('source=') > -1) {
+        link = link.replace(/source=[-\d]+/, '');
+    }
+
+    let overrideFightId = null;
+    // if a specific fightId is passed, then use it
+    if (req.body['fightId']) {
+        overrideFightId = Number(req.body['fightId'])
+    } 
+
+    try {
+        let wclReader = new WclReader(link, overrideFightId);
+        let reportData = await wclReader.runQuery([
+            {key: 'revitalize', dataType: 'Resources', useAbilityIDs: true, limit: 10000, filterExpression: "ability.name= 'Revitalize'"},
+            {key: 'wildgrowth', dataType: 'Healing', useAbilityIDs: true, limit: 10000, filterExpression: "ability.name= 'Wild Growth'"},
+            {key: 'rejuvenation', dataType: 'Healing', useAbilityIDs: true, limit: 10000, filterExpression: "ability.name= 'Rejuvenation'"},
+        ]);
+        // fs = require('fs');
+        // let text = JSON.stringify(reportData);
+        // fs.writeFile('data.txt', text, function (err) {
+        //   if (err) return console.log(err);
+        //   console.log('finshed saving');
+        //   // console.log('Hello World > helloworld.txt');
+        // });
+
+        let analyzer = new DruidRevitalizeAnalyzer(reportData);
+        let results = analyzer.run(wclReader.fightTime['startTime']);
+        res.send(results);
     } catch (error) {
         res.status(400).send(error.message)
     }

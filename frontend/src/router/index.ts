@@ -19,6 +19,9 @@ import ShamanChainHealAnalyzer from
 import PriestRaptureAnalyzer from
   '../components/priest/RaptureAnalyzer.vue';
 
+import DruidRevitalizeAnalyzer from
+  '../components/druid/RevitalizeAnalyzer.vue';
+
 Vue.use(VueRouter);
 
 
@@ -55,6 +58,11 @@ const routes: Array<RouteConfig> = [
     path: '/priest/analyzer/rapture/',
     name: 'priest-rapture-analyzer',
     component: PriestRaptureAnalyzer,
+  },
+  {
+    path: '/druid/analyzer/revitalize/',
+    name: 'druid-revitalize-analyzer',
+    component: DruidRevitalizeAnalyzer,
   },
   {
     path: '/',

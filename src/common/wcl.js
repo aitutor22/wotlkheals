@@ -138,7 +138,9 @@ class WclReader {
                 }
             }
             
+            if (fightId === 'last') fightId = this._lastFightId;
             this._selectedFightId = fightId;
+
             let subQuery = '',
                 results = {}, // for queries that require pagination
                 endTime = (['bosses', 'all', 'trash'].indexOf(fightId) > -1) ? this._reportEndTime : this._fightTimesMap[fightId]['endTime'];
