@@ -11,8 +11,8 @@
     <div class="row" v-if="results">
       <ul>
         <li>Total Procs: {{ results['total'] }}</li>
-        <li>Wild Growth Procs: {{ results['wildGrowth'] }} ({{ results['wildGrowth'] / results['total'] * 100}}%)</li>
-        <li>Rejuvenation Procs: {{ results['rejuvenation'] }} ({{ results['rejuvenation'] / results['total'] * 100}}%)</li>
+        <li>Wild Growth Procs: {{ results['wildGrowth'] }} </li>
+        <li>Rejuvenation Procs: {{ results['rejuvenation'] }} </li>
       </ul>
     </div>
   </div>

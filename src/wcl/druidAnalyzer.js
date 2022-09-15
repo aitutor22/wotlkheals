@@ -12,8 +12,9 @@ class Analyzer {
         this._rejuvenationData = this._rawdata['rejuvenation']['data'];
     }
 
-    run(fightStartTimestamp) {
+    run(fightStartTimestamp, petIds) {
         let combined = [];
+        let resultsBreakdown = {total: {pet: 0, player: 0, total: 0}};
         let results = {wildGrowth: 0, rejuvenation: 0, total: 0};
         for (let entry of this._wildGrowthData) {
             entry['spell'] = 'wildGrowth';
@@ -39,6 +40,39 @@ class Analyzer {
 
         this._revitalizeData.sort((a, b) => (a['timestamp'] - b['timestamp']));
 
+        function updateResults(entry) {
+            try {
+                let targetId = entry['targetID'],
+                    spell = entry['spell'];
+
+                let onPet = petIds.indexOf(targetId) > -1;
+                results['total']++;
+                results[spell]++;
+                resultsBreakdown['total']['total']++;       
+                if (onPet) {
+                    resultsBreakdown['total']['pet']++;
+                } else {
+                    resultsBreakdown['total']['player']++;
+                }
+
+                if (typeof resultsBreakdown[spell] === 'undefined') {
+                    resultsBreakdown[spell] = {pet: 0, player: 0, total: 0};
+                }
+
+                resultsBreakdown[spell]['total']++;       
+                if (onPet) {
+                    resultsBreakdown[spell]['pet']++;
+                } else {
+                    resultsBreakdown[spell]['player']++;
+                }
+            } catch (error) {
+                console.log('error with update results in druid');
+                console.log(error)
+                throw error;
+            }
+
+        }
+
         // tracker for combined (healing spells)
         let index = 0;
         for (let [revitalizeIndex, revitalizeProc] of this._revitalizeData.entries()) {
@@ -50,8 +84,9 @@ class Analyzer {
                     continue;
                 }
                 if (healingHit['timestamp'] === revitalizeProc['timestamp']) {
-                    results[healingHit['spell']]++;
-                    results['total']++;
+                    updateResults(healingHit);
+                    // results[healingHit['spell']]++;
+                    // results['total']++;
                     break;
                 }
 
@@ -60,19 +95,22 @@ class Analyzer {
 
                 // when index is 0, we don't test for i - 1
                 if (index === 0) {
-                    results[healingHit['spell']]++;
-                    results['total']++;
+                    updateResults(healingHit);
+                    // results[healingHit['spell']]++;
+                    // results['total']++;
                     break;
                 }
 
                 if ((healingHit['timestamp'] - revitalizeProc['timestamp']) < 
-                    (revitalizeProc['timestamp'] - combined[index - 1]['timestamp'])) {
-                    results[healingHit['spell']]++;
-                    results['total']++;
+                        (revitalizeProc['timestamp'] - combined[index - 1]['timestamp'])) {
+                    updateResults(healingHit);
+                    // results[healingHit['spell']]++;
+                    // results['total']++;
                     break;
                 } else {
-                    results[combined[index - 1]['spell']]++;
-                    results['total']++;
+                    updateResults(combined[index - 1]);
+                    // results[combined[index - 1]['spell']]++;
+                    // results['total']++;
                     break;
                 }
             }
@@ -81,10 +119,11 @@ class Analyzer {
 
         // occurs when final revitalize proc occurs after the final healing hit
         if (results['total'] < this._revitalizeData.length) {
-            results[combined[combined.length - 1]['spell']]++;
-            results['total']++;
+            updateResults(combined[combined.length - 1]);
+            // results[combined[combined.length - 1]['spell']]++;
+            // results['total']++;
         }
-        return results;
+        return resultsBreakdown;
     }
 }
 

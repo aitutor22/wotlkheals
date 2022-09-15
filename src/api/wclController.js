@@ -121,16 +121,9 @@ exports.revitalize = async (req, res) => {
             {key: 'wildgrowth', dataType: 'Healing', useAbilityIDs: true, limit: 10000, filterExpression: "ability.name= 'Wild Growth'"},
             {key: 'rejuvenation', dataType: 'Healing', useAbilityIDs: true, limit: 10000, filterExpression: "ability.name= 'Rejuvenation'"},
         ]);
-        // fs = require('fs');
-        // let text = JSON.stringify(reportData);
-        // fs.writeFile('data.txt', text, function (err) {
-        //   if (err) return console.log(err);
-        //   console.log('finshed saving');
-        //   // console.log('Hello World > helloworld.txt');
-        // });
 
         let analyzer = new DruidRevitalizeAnalyzer(reportData);
-        let results = analyzer.run(wclReader.fightTime['startTime']);
+        let results = analyzer.run(wclReader.fightTime['startTime'], wclReader._petIds);
         res.send(results);
     } catch (error) {
         res.status(400).send(error.message)

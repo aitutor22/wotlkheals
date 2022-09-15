@@ -20,6 +20,8 @@ class WclReader {
             'fightId': null, // if user passes in last, this is saved as last rather than being converted to actual fightIt
         };
 
+        this._petIds = [];
+
         // important variables that will be used by a variety of functions
         //for almost all functions, we require fightTimes to get start and end time of a specific encounter
         // after pulling once, we can reuse across all functions unless we require a repull
@@ -107,6 +109,7 @@ class WclReader {
                 }
             }`,
         };
+
         try {
             const response = await axios({
                 url: url,
@@ -284,16 +287,24 @@ class WclReader {
                 encounterID,
                 name,
                 startTime, endTime,
-            }
+                friendlyPets {petOwner, id}
+            },
         `;
 
         try {
             let report = await this.pullData(subQuery);
-
             this._fightTimesMap = {};
             // note that startTime and endTime for the whole report is in unix timestamp format
             // the first fight starts at 0; hence we need to zero out the startTime/endTime of the report
             this._reportEndTime = report['endTime'] - report['startTime'];
+
+            // this._petIds = report.;
+            let temp = report['fights'].map((fight) => fight['friendlyPets'].map((row) => row['id']));
+            for (let v of temp) {
+                this._petIds.push(...v);
+            }
+            // removes duplicates
+            this._petIds = [...new Set(this._petIds)];
 
             // creates a map for fightTimes
             for (let entry of report['fights']) {
