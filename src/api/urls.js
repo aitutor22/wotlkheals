@@ -15,6 +15,7 @@ router.post('/ttoom/shaman/', ttoomController.ttoom);
 
 router.post('/analyzer/shaman/chainheal/', wclController.chainheal);
 router.post('/analyzer/paladin/overhealing/', wclController.overhealing);
+router.post('/analyzer/paladin/divineplea/', wclController.divinePlea);
 router.post('/analyzer/priest/rapture/', wclController.rapture);
 router.post('/analyzer/druid/revitalize/', wclController.revitalize);
 

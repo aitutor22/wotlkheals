@@ -247,32 +247,6 @@ test('selectSpell overrideSpellSelection', () => {
     expect(spell['key']).toBe('HOLY_LIGHT');
 });
 
-test('selectSpell', () => {
-    let options = Object.assign({}, defaultOptions);
-    options['cpm']['HOLY_SHOCK'] = 1;
-    let player = new Paladin(options, rng, thresholdItemsToCreate);
-    let spell = player.selectSpellHelper(1, 0);
-    // if we don't override, then first spell should be holy shock
-    expect(spell['key']).toBe('HOLY_SHOCK');
-    let holyShockSpell = player._spells.find((_spell) => _spell['key'] === 'HOLY_SHOCK');
-    expect(holyShockSpell['lastUsed']).toBe(1);
-    expect(holyShockSpell['availableForUse']).toBe(false);
-
-    spell = player.selectSpellHelper(3.5, 1);
-    expect(spell['key']).toBe('HOLY_LIGHT');
-});
-
-test('selectSpell should not select SacredShield if precasted is set to true', () => {
-    let options = Object.assign({}, defaultOptions);
-    options['cpm']['HOLY_SHOCK'] = 0; // set holy shock to 0 so it is not casted
-    let player = new Paladin(options, rng, thresholdItemsToCreate);
-    let spell = player.selectSpellHelper(1, 0);
-    expect(spell['key']).not.toBe('SACRED_SHIELD');
-
-    // at 61s, we are past the original cooldown, and should pick sacred shield
-    spell = player.selectSpellHelper(61, 0);
-    expect(spell['key']).toBe('SACRED_SHIELD');
-});
 
 test('casting sacred shield should create INITIALIZE_HOT_EVENTS', () => {
     let options = Object.assign({}, defaultOptions);

@@ -2,6 +2,7 @@ const WclService = require('../common/wclservices');
 const WclReader = require('../common/wcl');
 const ShamanAnalyzer = require('../wcl/shamanAnalyzer');
 const PaladinOverhealingAnalyzer = require('../wcl/paladinOverhealingAnalyzer');
+const PaladinDivinePleaAnalyzer = require('../wcl/paladinDivinePleaAnalyzer');
 const PriestRaptureAnalyzer = require('../wcl/priestRaptureAnalyzer');
 const DruidRevitalizeAnalyzer = require('../wcl/druidAnalyzer');
 
@@ -67,6 +68,33 @@ exports.overhealing = async (req, res) => {
     }
 };
 
+exports.divinePlea = async (req, res) => {
+    const link = req.body.wclLink;
+    if (link.indexOf('fight=') === -1) {
+        return res.status(400).send({message: 'Invalid url link'});
+    }
+
+    try {
+        let wclReader = new WclReader(link);
+        let reportData = await wclReader.runQuery([
+            {key: 'damageTaken', dataType: 'DamageTaken', useAbilityIDs: true, limit: 10000, filterExpression: "effectiveDamage > 0"},
+        ]);
+        // console.log(reportData)
+        let analyzer = new PaladinDivinePleaAnalyzer(reportData);
+        // fs = require('fs');
+        // let text = JSON.stringify(reportData['damageTaken']['data']);
+        // fs.writeFile('data.txt', text, function (err) {
+        //   if (err) return console.log(err);
+        //   console.log('finshed saving');
+        //   // console.log('Hello World > helloworld.txt');
+        // });
+        res.send(analyzer.run(wclReader.fightTime['startTime']));
+    } catch (error) {
+        res.status(400).send(error.message)
+    }
+};
+
+
 
 // doesn't support pagination currently, need to add
 exports.rapture = async (req, res) => {
@@ -129,80 +157,3 @@ exports.revitalize = async (req, res) => {
         res.status(400).send(error.message)
     }
 };
-
-// // doesn't support pagination currently, need to add
-// exports.rapture = (req, res) => {
-//     const link = req.body.wclLink;
-
-//     try {
-//         // looks for wclCode, and sourceId
-//         const getWclCodeRegex = /(.*reports\/)?(\w{16}).*/;
-//         const found = link.match(getWclCodeRegex);
-//         const wclCode = found[2];
-
-//         // fightId needs to be found separately because it's possbile that user passes in "last" as a value
-//         let fightId;
-
-//         // if a specific fightId is passed, then use it
-//         if (req.body['fightId']) {
-//             fightId = Number(req.body['fightId'])
-//         } 
-//         // otherwise get fightId from url
-//         else {
-//             if (link.indexOf('fight=') === -1) {
-//                 fightId = 'all'; // search whole report
-//             } else if (link.indexOf('fight=last') > -1) {
-//                 fightId = 'last';
-//             } else {
-//                 let fightIdFound = link.match(/.*fight=(\d+).*/)
-//                 fightId = fightIdFound[1];
-//             }
-//         }
-
-//         WclService.getFightDetail(wclCode, fightId, true)
-//             .then((_fightData) => {
-//                 let fightTime = _fightData['fightDetail'];
-
-//                 // converts the fight map data into a selection
-//                 // [{label: 'Canada', code: 'ca'}]
-//                 let otherFightOptions = Object.values(_fightData['fullFightMapData']).map((entry) => {
-//                     let fightLength = Math.floor((entry['endTime'] - entry['startTime']) / 1000);
-//                     // hackish code - doesn't work for fights that last >= 10mins; refactor and add to utilities in future
-//                     let timeString = new Date(fightLength * 1000).toISOString().substr(14, 5);
-//                     return {
-//                         label: `${entry['name']} (${timeString})`,
-//                         fightId: entry['id'],
-//                     }
-//                 });
-
-//                 let body =  { 
-//                     query: `
-//                         query {
-//                             reportData {
-//                                 report(code: "${wclCode}") {
-//                                     damageTaken: events(startTime: ${fightTime.startTime}, endTime:  ${fightTime.endTime}, dataType: DamageTaken, useAbilityIDs: false, limit:10000, filterExpression: "ability.name != 'Melee'")  { data }
-//                                 }
-//                             }
-//                         }
-//                     `,
-//                 };
-//                 return WclService.pullData(body)
-//                     .then((wclResponse) => {
-//                         // console.log(wclResponse.data);
-//                         // let healingEvents = wclResponse.data.data.reportData.report.damageTaken.data;
-//                         // console.log(healingEvents.length)
-//                         let analyzer = new PriestRaptureAnalyzer(wclResponse.data);
-//                         let results = analyzer.run(fightTime['startTime']);
-//                         res.send({
-//                             data: results,
-//                             otherFightOptions: otherFightOptions,
-//                             // use this rather than fightId above because fightId could be last
-//                             // fightTime['id'] is already converted to a number even for last fight
-//                             currentFightId: fightTime['id'],
-//                         });
-//                     })
-//             })
-//     } catch (error) {
-//         res.status(400).send(error.message)
-//     }
-// };

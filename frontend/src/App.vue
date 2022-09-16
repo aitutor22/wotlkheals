@@ -16,6 +16,9 @@
         <b-dropdown-item to="/paladin/analyzer/overhealing/">
           Overhealing Analyzer
         </b-dropdown-item>
+        <b-dropdown-item to="/paladin/analyzer/divinecum/">
+          Divine Plea Analyzer
+        </b-dropdown-item>
       </b-nav-item-dropdown>
 
       <b-nav-item-dropdown

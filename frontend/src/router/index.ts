@@ -12,6 +12,9 @@ import PaladinStatWeights from
 
 import PaladinOverhealingAnalyzer from
   '../components/paladin/OverhealingAnalyzer.vue';
+
+import PaladinDivinePleaAnalyzer from
+  '../components/paladin/DivinePleaAnalyzer.vue';
   
 import ShamanChainHealAnalyzer from
   '../components/shaman/ChainHealAnalyzer.vue';
@@ -53,6 +56,11 @@ const routes: Array<RouteConfig> = [
     path: '/paladin/analyzer/overhealing/',
     name: 'paladin-overhealing-analyzer',
     component: PaladinOverhealingAnalyzer,
+  },
+  {
+    path: '/paladin/analyzer/divinecum/',
+    name: 'paladin-divine-cum-analyzer',
+    component: PaladinDivinePleaAnalyzer,
   },
   {
     path: '/priest/analyzer/rapture/',

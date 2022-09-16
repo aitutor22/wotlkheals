@@ -1,7 +1,4 @@
 const data = {
-    "data": {
-        "reportData": {
-            "report": {
                 "healing": {
                     "data": [
                         {
@@ -4875,8 +4872,5 @@ const data = {
                     ]
                 }
             }
-        }
-    }
-}
 
 module.exports = data;
