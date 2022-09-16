@@ -77,7 +77,7 @@ exports.divinePlea = async (req, res) => {
     try {
         let wclReader = new WclReader(link);
         let reportData = await wclReader.runQuery([
-            {key: 'damageTaken', dataType: 'DamageTaken', useAbilityIDs: true, limit: 10000, filterExpression: "effectiveDamage > 0"},
+            {key: 'damageTaken', dataType: 'DamageTaken', useAbilityIDs: false, limit: 10000, filterExpression: "effectiveDamage > 0"},
         ]);
         // console.log(reportData)
         let analyzer = new PaladinDivinePleaAnalyzer(reportData);

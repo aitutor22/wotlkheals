@@ -18,7 +18,7 @@
         <footer class="blockquote-footer">Algorithm provided by Lovelace (explanation paraphrased)</footer>
       </blockquote>
       <p>
-        Much thanks to Karmakazi for providing the original idea, and to Lovelace for providing the algorithm.
+        Much thanks to Pynkie for providing the original idea, and to Lovelace for providing the algorithm.
       </p>
     </div>
 
@@ -53,6 +53,16 @@
         <h4>Best Times to Plea</h4>
         <ul>
           <li v-for="(entry, index) in divinePleaTimings" :key="index">{{ entry }}s</li>
+        </ul>
+      </div>
+    </div>
+    <div class="row" v-if="results">
+      <div class="col-md-12">
+        <h4>Damage Events</h4>
+        <ul>
+          <li v-for="(entry, index) in results['rawData']" :key="index">
+            {{ entry['editedTimestamp'] }}s: {{ entry['ability']['name']}} hit for {{ entry['amount'] }}
+        </li>
         </ul>
       </div>
     </div>
