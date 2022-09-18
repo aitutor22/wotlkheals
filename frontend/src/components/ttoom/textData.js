@@ -2,6 +2,10 @@ const textData = {
   changeLogs: {
     paladin: [
     {
+      dateAdded: '18/09/22',
+      text: 'Splits out mana regen due to DMCG.',
+    },
+    {
       dateAdded: '09/09/22',
       text: 'Added support for Beacon of Light and related glyphs. Improve melee weaving options.',
     },
@@ -22,6 +26,7 @@ const textData = {
   implementationAssumptions: {
     paladin: [
       'Mana cost shown above is after EoG/Soup and Illumination',
+      'If DMCG is equipped, mana generated due to the increased crit and mana pool is tracked separately (e.g. Illumination tracks the mana regen from base crit, whiel Illumination (DMCG) tracks mana regen from crits that occur due to DMCG',
       'Soup and EoG procs are directly subtracted from the spell that procced it rather than the following spell. This is both for implemention simplicity and also to reflect that spells with multiple chances to proc soup will have lower blended mana cost.',
       'For instants to proc SoW, the player might to pause for a very short while to allow the hit to go off when using a 1.8 speed weapon. Currently, the system does not implement this delay as more work needs to be done to determine how long, if any, a pause is required.',
       'When infusion of light is active, Holy Light is always casted unless you have set HL cpm to 0.',

@@ -46,7 +46,6 @@ class Paladin extends BasePlayer {
         if (typeof loh !== 'undefined') {
             loh['value'] = options['finalGlyph'] === 'divinity' ? 7800 : 1950;
         }
-        // console.log(this._manaCooldowns);
         // do this here rather than end of basePlayer, as we might make changes to some fields while running the constructor of the specific player class
         this._statistics['raidBuffedStats'] = {
             'int': this._buffedInt,
@@ -222,8 +221,6 @@ class Paladin extends BasePlayer {
         // all pally direcHeals spells have 1 chance to crit (beacon just mirrors the spell cast); hots cannot crit
         isCrit = spellInfo['category'] === 'directHeal' ? this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance) : false;
 
-        // isCrit = spellInfo['category'] === 'directHeal' ? Math.random() < modifiedCritChance : false;
-
         // directHeals should just calculate actual healing amount, for hots, just cast the spell
         if (spellInfo['category'] === 'directHeal') {
             amountHealed = this.calculateHealing(spellKey, isCrit, this.isBuffActive('divinePlea'));
@@ -263,7 +260,15 @@ class Paladin extends BasePlayer {
 
         // after spell is casted, add effects
         if (isCrit) {
-            this.addManaFromIllumination(spellKey, logger);
+            let critDueToDMCG = false;
+            // if we crit while dmcg is active we want to determine if the crit was due to dmcg
+            if (this.isBuffActive('dmcg') &&
+                    !this.checkProcHelper('crit', spellIndex, 1, modifiedCritChance - this.incrementalCritChanceFromDmcgProc)) {
+                critDueToDMCG = true;
+                logger.log('crit due to DMCG', 3);
+            }
+
+            this.addManaFromIllumination(spellKey, logger, critDueToDMCG);
             // holy shock crits triggers infusion of light
             if (spellKey === 'HOLY_SHOCK') {
                 this.setBuffActive('infusionOfLight', true, timestamp, logger);
@@ -307,18 +312,21 @@ class Paladin extends BasePlayer {
         return this.subtractManaHelper(spellKey, timestamp, baseCostMultiplicativeFactors, baseCostAdditiveFactors, otherMultiplicativeTotal);
     }
 
-    addManaFromIllumination(spellKey, logger=null) {
+    // in order to properly categorise the mana savings of dmcg, we want to track if a crit would have happened without dmcg proc
+    // NOTE: the base value of dmcg (90 int) is included in both comparisons and what we want to see if this proc would have happened if dmcg had not procced
+    addManaFromIllumination(spellKey, logger=null, critDueToDMCG=false) {
         let baseManaCost = this.classInfo['spells'].find((_spell) => _spell['key'] === spellKey)['baseManaCost'];
         let amount = Math.floor(baseManaCost * 0.3);
-        
-        if (typeof this._statistics['illumination'] === 'undefined') {
-            this._statistics['illumination'] = {};
+        let key = critDueToDMCG ? 'illuminationDMCG' : 'illumination';
+
+        if (typeof this._statistics[key] === 'undefined') {
+            this._statistics[key] = {};
         }
-        if (!(spellKey in this._statistics['illumination'])) {
-            this._statistics['illumination'][spellKey] = 0;
+        if (!(spellKey in this._statistics[key])) {
+            this._statistics[key][spellKey] = 0;
         }
-        this._statistics['illumination'][spellKey] += amount;
-        return this.addManaHelper(amount, 'illumination', logger);
+        this._statistics[key][spellKey] += amount;
+        return this.addManaHelper(amount, key, logger);
     }
 
     // checks if there is a sow proc, and adds mana if there is
@@ -328,8 +336,9 @@ class Paladin extends BasePlayer {
         let hasProc = this.checkProcHelper('sow', spellIndex, 1, this._sowProcChace[normalOrJudgement]);
 
         if (hasProc) {
-            let amount = Math.floor(this.maxMana * this.classInfo['sow']['value']);
-            this.addManaHelper(amount, 'sow', logger, timestamp);
+            // let amount = Math.floor(this.maxMana * this.classInfo['sow']['value']);
+            // this.addManaHelper(amount, 'sow', logger, timestamp);
+            this.addManaRegenPercentageOfManaPool(timestamp, this.classInfo['sow']['value'], 'sow', logger);
         }
         return hasProc;
     }

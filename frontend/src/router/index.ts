@@ -7,6 +7,9 @@ import PaladinCalculator from
 import TTOOM from
   '../components/ttoom/MainComponent.vue';
 
+import DeathAnalyzer from
+  '../components/tankdeath/MainComponent.vue';
+
 import PaladinStatWeights from
   '../components/paladin/StatWeights.vue';
 
@@ -72,10 +75,15 @@ const routes: Array<RouteConfig> = [
     name: 'druid-revitalize-analyzer',
     component: DruidRevitalizeAnalyzer,
   },
+  // {
+  //   path: '/',
+  //   name: 'tank-death-analyzer',
+  //   component: DeathAnalyzer,
+  // },
   {
     path: '/',
-    name: 'home',
-    component: PaladinCalculator
+    name: 'paladin-calculator',
+    component: PaladinCalculator,
   },
 ]
 

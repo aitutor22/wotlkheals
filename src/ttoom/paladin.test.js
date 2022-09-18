@@ -203,6 +203,13 @@ test('system should add crit from 90 int if dmcg is selected', () => {
     expect((Math.abs(player.critChance - 0.33985378701))).toBeLessThan(1e-5);
 });
 
+test('dmcg proc values', () => {
+    let player = new Paladin(dmcgOptions, rng, thresholdItemsToCreate);
+    expect(player.incrementalManaFromDmcgProc).toBe(5445);
+    console.log(player.incrementalManaFromDmcgProc);
+    expect((Math.abs(player.incrementalCritChanceFromDmcgProc - 0.021779956440087123))).toBeLessThan(1e-5);
+});
+
 test('testing setting dmcg to true', () => {
     let player = new Paladin(dmcgOptions, rng, thresholdItemsToCreate);
     player.setBuffActive('dmcg', true, 2);
@@ -384,45 +391,56 @@ test('testing addSpellCastToStatistics', () => {
 
 });
 
-// test('testing calculateStatisticsAfterSimEnds', () => {
-//     let options = JSON.parse(JSON.stringify(defaultOptions));
-//     options['cpm']['HOLY_SHOCK'] = 1;
-//     let player = new Paladin(options, rng, thresholdItemsToCreate);
-//     player._statistics = {
-//       manaGenerated: {
-//         libramOfRenewal: 10914,
-//         illumination: 18757,
-//         Replenishment: 10528,
-//         otherMP5: 15134,
-//         soup: 6736,
-//         eog: 6885,
-//         divinePlea: 21000,
-//         divineIllumination: 5500,
-//         RUNIC_MANA_POTION: 4300,
-//         sow: 2240
-//       },
-//       spellsCasted: {
-//         HOLY_LIGHT: { normal: 61, crit: 46, total: 107 },
-//         HOLY_SHOCK: { normal: 4, crit: 5, total: 9 }
-//       },
-//       // placeholder values
-//       healing: {
-//         HOLY_LIGHT: 0,
-//         HOLY_SHOCK: 0,
-//       }
+test('testing calculateStatisticsAfterSimEnds', () => {
+    let options = JSON.parse(JSON.stringify(defaultOptions));
+    options['cpm']['HOLY_SHOCK'] = 1;
+    let player = new Paladin(options, rng, thresholdItemsToCreate);
+    player._statistics = {
+      manaGenerated: {
+        libramOfRenewal: 10914,
+        illumination: 18757,
+        Replenishment: 10528,
+        otherMP5: 15134,
+        soup: 6736,
+        eog: 6885,
+        divinePlea: 21000,
+        divineIllumination: 5500,
+        RUNIC_MANA_POTION: 4300,
+        sow: 2240
+      },
+      spellsCasted: {
+        HOLY_LIGHT: { normal: 61, crit: 46, total: 107 },
+        HOLY_SHOCK: { normal: 4, crit: 5, total: 9 }
+      },
+      // placeholder values
+      healing: {
+        HOLY_LIGHT: 0,
+        HOLY_SHOCK: 0,
+      }
 
-//     }
+    }
 
-//     let results = player.calculateStatisticsAfterSimEnds(240);
+    let results = player.calculateStatisticsAfterSimEnds(240);
 
-//     // cpm is rounded to 1 dp
-//     expect(results['spellsCasted'].length).toBe(2);
-//     // expect(results['spellsCasted'].length).toBe(2);
-//     expect((Math.abs(results['spellsCasted'][0]['cpm'] - 26.8))).toBeLessThan(1e-2);
-//     expect((Math.abs(results['spellsCasted'][1]['cpm'] - 2.3))).toBeLessThan(1e-2);
-//     // MP5 is floored
-//     expect(results['manaGenerated'].length).toBe(10);
-//     expect((Math.abs(results['manaGenerated'][0]['MP5'] - 227))).toBeLessThan(1e-1);
+    // cpm is rounded to 1 dp
+    expect(results['spellsCasted'].length).toBe(2);
+    // expect(results['spellsCasted'].length).toBe(2);
+    expect((Math.abs(results['spellsCasted'][0]['cpm'] - 26.8))).toBeLessThan(1e-2);
+    expect((Math.abs(results['spellsCasted'][1]['cpm'] - 2.3))).toBeLessThan(1e-2);
+    // MP5 is floored
+    expect(results['manaGenerated'].length).toBe(10);
+    expect((Math.abs(results['manaGenerated'][0]['MP5'] - 227))).toBeLessThan(1e-1);
+});
 
-// });
 
+test('testing meteoriteCrystal', () => {
+    let options = JSON.parse(JSON.stringify(defaultOptions));
+    options['trinkets'] = ['meteoriteCrystal'];
+    options['manaCooldowns'] = [];
+    options['manaCooldowns'].push({key: 'METEORITE_CRYSTAL', minimumManaDeficit: 0, minimumTimeElapsed: 0})
+    let player = new Paladin(options, rng, thresholdItemsToCreate);
+    expect(player._manaCooldowns.length).toBe(1);
+    expect(player._manaCooldowns[0]['key']).toBe('METEORITE_CRYSTAL');
+
+
+});

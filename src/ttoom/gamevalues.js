@@ -83,7 +83,15 @@ const data = {
                 mana: 600,
                 createsBuff: false,
             },
-        }
+        },
+        // mana effect is tracked under mana cooldowns
+        meteoriteCrystal: {
+            name: 'Meteorite Crystal',
+            itemType: 'trinket',
+            base: {
+                int: 111,
+            }
+        },
     },
     battleConsumables: {
         flaskDistilled: {
@@ -505,7 +513,6 @@ const data = {
             category: 'buff',
             duration: 15,
         },
-        // assumes you self LoH together with glyph
         LAY_ON_HANDS: {
             key: 'LAY_ON_HANDS',
             name: 'Lay On Hands (Self)',
@@ -525,6 +532,19 @@ const data = {
             playerClass: 'all',
             category: 'immediate',
             subCategory: 'percentageManaPool',
+        },
+        METEORITE_CRYSTAL: {
+            key: 'METEORITE_CRYSTAL',
+            name: 'Meteorite Crystal',
+            value: 0, // initial value is 0
+            cooldown: 60 * 2,
+            offGcd: true,
+            category: 'buff',
+            subCategory: 'stackCount', // mp5 gains is based off stacks
+            duration: 20,
+            maxStacks: 20,
+            stackCondition: 'spellCast',
+            mp1PerStack: 60 / 5, // converts to mp1 for more accurate calculation
         },
         // technically a 12s 2340 mana regen; but just assume you get it all at one shot for simplicity
         OWL: {
@@ -569,11 +589,17 @@ const data = {
         'LAY_ON_HANDS': 'Lay on Hands',
         'INNERVATE': 'Innervate',
         'ManaTideTotem': 'Mana Tide Totem',
-        'ARCANE_TORRENT': 'Arcane Torrent',
+        'arcaneTorrent': 'Arcane Torrent',
         'totemOfForestGrowth': 'Totem of Forest Growth',
         'waterShieldProc': 'Improved Water Shield',
         'manaTideTotem': 'Mana Tide Totem',
         'soulDead': 'Soul of the Dead',
+        'illuminationDMCG': 'Illumination (DMCG)',
+        'divinePleaDMCG': 'Divine Plea (DMCG)',
+        'arcaneTorrentDMCG': 'Arcane Torrent (DMCG)',
+        'manaTideTotemDMCG': 'Mana Tide Totem (DMCG)',
+        'replenishmentDMCG': 'Replenishment (DMCG)',
+        'sowDMCG': 'Seal of Wisdom (DMCG)',
     },
 }
 

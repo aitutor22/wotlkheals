@@ -164,18 +164,28 @@ class BasePlayer {
         }
     }
 
+    // split this into a separate function as we want to use this to work out dmcg proc benefit
+    get incrementalManaFromDmcgProc() {
+        return this.manaIncreaseFromInt(DATA['items']['dmcg']['proc']['int']);
+    }
+
     // checks for whether dmcg buff is active; if so, then uses the increased mana pool
     get maxMana() {
         if ((typeof this._buffs['dmcg'] !== 'undefined') && this._buffs['dmcg']['active']) {
-            return this._baseMaxMana + this.manaIncreaseFromInt(DATA['items']['dmcg']['proc']['int']);
+            return this._baseMaxMana + this.incrementalManaFromDmcgProc;
         } else {
             return this._baseMaxMana;
         }
     }
 
+    // split this into a separate function as we want to use this to work out dmcg proc benefit
+    get incrementalCritChanceFromDmcgProc() {
+        return this.critIncreaseFromInt(DATA['items']['dmcg']['proc']['int']);
+    }
+
     get critChance() {
         if ((typeof this._buffs['dmcg'] !== 'undefined') && this._buffs['dmcg']['active']) {
-            return this._baseCritChance + this.critIncreaseFromInt(DATA['items']['dmcg']['proc']['int']);
+            return this._baseCritChance + this.incrementalCritChanceFromDmcgProc;
         } else {
             return this._baseCritChance;
         }
@@ -482,17 +492,17 @@ class BasePlayer {
         }
 
         if (cooldownSelected['category'] === 'immediate') {
-            let value = cooldownSelected['value'];
             // e.g. arcane torrent uses % of max mana pool rather than fixed amount
             if (cooldownSelected['subCategory'] === 'percentageManaPool') {
-                value = Math.floor(this.maxMana * value);
+                this.addManaRegenPercentageOfManaPool(timestamp, cooldownSelected['value'], cooldownSelected['key'], logger);
+            } else {
+                let value = cooldownSelected['value'];
+                // checks for injector bonus if runic mana potion
+                if (cooldownSelected['key'] === 'RUNIC_MANA_POTION' && this._options['manaOptions']['injector']) {
+                    value *= (1 + DATA['manaCooldowns']['RUNIC_MANA_POTION']['injectorBonus']);
+                }
+                this.addManaHelper(value, cooldownSelected['key'], logger);
             }
-            // checks for injector bonus if runic mana potion
-            if (cooldownSelected['key'] === 'RUNIC_MANA_POTION' && this._options['manaOptions']['injector']) {
-                value *= (1 + DATA['manaCooldowns']['RUNIC_MANA_POTION']['injectorBonus']);
-            }
-
-            this.addManaHelper(value, cooldownSelected['key'], logger);
         }
         cooldownSelected['lastUsed'] = timestamp;
         cooldownSelected['availableForUse'] = false;
@@ -652,12 +662,26 @@ class BasePlayer {
         }
     }
 
+    // for mana cooldowns that are based off max manapool, we need to check if dmcg was active
     addManaRegenPercentageOfManaPool(timestamp, percentage, category, logger=null) {
-        let key = category;
+        // console.log('mana regen percentage: ' + category);
+        let key = category,
+            manaRegenExcludingDMCG = Math.floor(percentage * this.maxMana);
+        
         if (key.indexOf('_') > -1) {
             key = Utility.camalize(key);
         }
-        this.addManaHelper(Math.floor(percentage * this.maxMana), key, logger, timestamp);
+
+        // if dmcg is active, we split out the dmcg and non-dmcg portions and report both
+        if (this.isBuffActive('dmcg')) {
+            // console.log(category);
+            let manaRegenFromDMCG = Math.floor(percentage * this.incrementalManaFromDmcgProc);
+            let dmcgKey = key + 'DMCG';
+            manaRegenExcludingDMCG -= manaRegenFromDMCG;
+            this.addManaHelper(manaRegenFromDMCG, dmcgKey, logger, timestamp);    
+        }
+
+        this.addManaHelper(manaRegenExcludingDMCG, key, logger, timestamp);
     }
 
     // timestamp should be optional; if we don't pass anything here, then it just doesnt print out timestamp
@@ -687,15 +711,16 @@ class BasePlayer {
     // normally this function is in basePlayer
     // but due to water shield being tricky behaviour, we override the function instead
     addManaRegenFromReplenishmentAndOtherMP5(logger=null, timestamp=null) {
-        // we could use a cached value, but DMCG increases max mana pool, so for time being, we recalculate each time we call this
-        const replenishmentTick = (this.maxMana * DATA['constants']['replenishment'] / 5 * 2 * this._options['manaOptions']['replenishmentUptime']);
+        const replenishmentFactor = DATA['constants']['replenishment'] / 5 * 2 * this._options['manaOptions']['replenishmentUptime'];
+        const replenishmentTick = this.maxMana * replenishmentFactor;
         const otherMP5Tick = (this._otherMP5 / 5 * 2);
         const tickAmount = Math.floor(replenishmentTick + otherMP5Tick);
         // since replenishment might tick outside spellcast, we print timestamp
-        if (logger) logger.log(`${timestamp}s: Gained ${tickAmount} from mana tick`, 1);
+        if (logger) logger.log(`${timestamp}s: Gained ${tickAmount} from mana tick (replenishment + others)`, 1);
 
         // we record the ticks from replenishment and othermp5 separately; need to ensure we don't lose values due to floor function
-        this.addManaHelper(Math.floor(replenishmentTick), 'Replenishment');
+        this.addManaRegenPercentageOfManaPool(timestamp, replenishmentFactor, 'replenishment', logger);
+        // this.addManaHelper(Math.floor(replenishmentTick), 'Replenishment');
         this.addManaHelper(tickAmount - Math.floor(replenishmentTick), 'otherMP5');
     }
 
@@ -792,16 +817,16 @@ class BasePlayer {
             if (castTime === 0) {
                 castTime = this._gcd;
             }
+
             // trying to calculate how much mana we spent on average
             totalManaSpent = (typeof this._statistics['manaSpent'] !== 'undefined') && (typeof this._statistics['manaSpent'][key] !== 'undefined')
                 ? this._statistics['manaSpent'][key] : 0;
             // only applicable for paladin & shaman - subtract mana saved from illumination / water shield
-            if ((typeof this._statistics['illumination'] !== 'undefined') &&
-                    (typeof this._statistics['illumination'][key] !== 'undefined')) {
-                totalManaSpent -= this._statistics['illumination'][key];
-            } if ((typeof this._statistics['waterShieldProc'] !== 'undefined') &&
-                    (typeof this._statistics['waterShieldProc'][key] !== 'undefined')) {
-                totalManaSpent -= this._statistics['waterShieldProc'][key];
+            for (let manaSavingKey of ['illumination', 'illuminationDMCG', 'waterShieldProc', 'waterShieldProcDMCG']) {
+                if ((typeof this._statistics[manaSavingKey] !== 'undefined') &&
+                        (typeof this._statistics[manaSavingKey][key] !== 'undefined')) {
+                    totalManaSpent -= this._statistics[manaSavingKey][key];
+                }       
             }
 
             hpet = Math.floor((this._statistics['healing'][key] / totalCasts) / castTime)

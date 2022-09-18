@@ -95,7 +95,6 @@ exports.divinePlea = async (req, res) => {
 };
 
 
-
 // doesn't support pagination currently, need to add
 exports.rapture = async (req, res) => {
     let link = req.body.wclLink;

@@ -76,15 +76,16 @@ class Shaman extends BasePlayer {
     // due to water shield being more complicated, we overwrite parent function
     // converts mp5 to a mp2 tick value
     addManaRegenFromReplenishmentAndOtherMP5(logger=null, timestamp=null) {
-        // we could use a cached value, but DMCG increases max mana pool, so for time being, we recalculate each time we call this
-        const replenishmentTick = (this.maxMana * DATA['constants']['replenishment'] / 5 * 2 * this._options['manaOptions']['replenishmentUptime']);
+        const replenishmentFactor = DATA['constants']['replenishment'] / 5 * 2 * this._options['manaOptions']['replenishmentUptime'];
+        const replenishmentTick = this.maxMana * replenishmentFactor;
         const otherMP5Tick = (this._otherMP5 / 5 * 2);
         const tickAmount = Math.floor(replenishmentTick + otherMP5Tick + this._waterShieldBaseBaseTick);
         // since replenishment might tick outside spellcast, we print timestamp
-        if (logger) logger.log(`${timestamp}s: Gained ${tickAmount} from mana tick`, 1);
+        if (logger) logger.log(`${timestamp}s: Gained ${tickAmount} from mana tick (replenishment + others)`, 1);
 
         // we record the ticks from replenishment, water shield and othermp5 separately; need to ensure we don't lose values due to floor function
-        this.addManaHelper(Math.floor(replenishmentTick), 'Replenishment');
+        // this.addManaHelper(Math.floor(replenishmentTick), 'Replenishment');
+        this.addManaRegenPercentageOfManaPool(timestamp, replenishmentFactor, 'replenishment', logger);
         this.addManaHelper(Math.floor(this._waterShieldBaseBaseTick), 'Water Shield Base');
         this.addManaHelper(tickAmount - Math.floor(replenishmentTick) - Math.floor(this._waterShieldBaseBaseTick), 'otherMP5');
     }
