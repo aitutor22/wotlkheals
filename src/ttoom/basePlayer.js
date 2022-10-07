@@ -483,6 +483,14 @@ class BasePlayer {
                 continue;
             }
 
+            // specifically for dmcg, if player says we always wait for dmcg, then we need to check if it satisfies the minimum buff duration left
+            if (cd['waitForBuff'] === 'dmcg' && this._options['manaOptions']['useDivinePleaWithDmcg'] === 'alwaysWait') {
+                const remainingDMCGDuration = DATA['items']['dmcg']['proc']['duration'] - (timestamp - this._icds['dmcg']['lastUsed']);
+                if (remainingDMCGDuration <= this._options['manaOptions']['usePleaOnlyIfMinimumAmountOfDMCGSecs']) {
+                    continue;
+                }
+            }
+
             // e.g. if we want to limit the number of uses in a fight
             if (cd['maxNumUsesPerFight'] !== '' && cd['numTimesUsed'] >= cd['maxNumUsesPerFight']) {
                 continue;

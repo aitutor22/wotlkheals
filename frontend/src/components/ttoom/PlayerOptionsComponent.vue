@@ -98,10 +98,10 @@
                   <input class="form-check-input" type="checkbox" id="eog" v-model="oomOptions['trinkets']" value="eog">
                   <label class="form-check-label" for="eog">Eye of Gruul</label>
                 </div>
-                <div class="form-check">
+<!--                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" id="solace" v-model="oomOptions['trinkets']" value="solace">
                   <label class="form-check-label" for="solace">Solace of the Fallen (P3)</label>
-                </div>
+                </div> -->
 
 
                 <hr>
@@ -357,21 +357,27 @@
                     </span>
                   </b-form-radio>
                   <b-form-radio v-model="oomOptions['manaOptions']['useDivinePleaWithDmcg']" name="useDivinePleaWithDmcg" value="alwaysWait">
-                    <span v-b-tooltip.hover title="Always wait for DMCG to be up (minimum of 10s duration left) before using Diving Plea. This will likely result in fewer Divine Plea being used so TTOOM might be lower, while HPS is higher.">
+                    <span v-b-tooltip.hover title="Always wait for DMCG to be up (assuming it satisfies minimum duration below) before using Diving Plea. This will likely result in fewer Divine Plea being used so TTOOM might be lower, while HPS is higher.">
                       Always wait for DMCG (will result in fewer Divine Pleas)
                     </span>
                   </b-form-radio>
-                  <b-form-radio v-model="oomOptions['manaOptions']['useDivinePleaWithDmcg']" name="useDivinePleaWithDmcg" value="waitIfICDAlmostUp">
+<!--                   <b-form-radio v-model="oomOptions['manaOptions']['useDivinePleaWithDmcg']" name="useDivinePleaWithDmcg" value="waitIfICDAlmostUp">
                     <span v-b-tooltip.hover title="If DMCG internal cooldown is less than 10s, wait for it before using Divine Plea. Otherwise just go ahead and use Divine plea if minmum mana deficit has been satisfied.">
                       Only wait for DMCG if its ICD is < 10s
                     </span>
-                  </b-form-radio>
+                  </b-form-radio> -->
                 </b-form-group>
 
                 <div v-if="hasDmcg && oomOptions['manaOptions']['divinePlea']" class="input-group mb-2" style="width: 100%">
                   <span class="input-group-text" id="basic-addon1"
                     v-b-tooltip.hover title="Use trinket swapping to delay DMCG first usage. This allows DMCG + plea to occur at a more optimal time than right at the start of the fight, which will waste mana.">Delay DMCG first proc until after X secs</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['manaOptions']['dmcgFirstProcDelayedUntil']">
+                </div>
+
+                <div v-if="hasDmcg && oomOptions['manaOptions']['divinePlea'] && oomOptions['manaOptions']['useDivinePleaWithDmcg'] === 'alwaysWait'" class="input-group mb-2" style="width: 100%">
+                  <span class="input-group-text" id="basic-addon1"
+                    v-b-tooltip.hover title="If divine plea comes off cooldown while DMCG proc is active, what is the minimum amount of DMCG duration before we use Divine Plea?">Use plea only if there are at least X secs of DMCG</span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['manaOptions']['usePleaOnlyIfMinimumAmountOfDMCGSecs']">
                 </div>
 
               </b-card-text></b-tab>

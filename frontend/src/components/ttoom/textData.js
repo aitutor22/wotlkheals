@@ -2,6 +2,14 @@ const textData = {
   changeLogs: {
     paladin: [
     {
+      dateAdded: '07/10/22',
+      text: 'Added support for more fine-tuning of DMCG + Plea usage. By default, will assume the player uses trinket swapping to ensure DMCG will only proc after 15s (thank you @Euroflip for the idea). Added an option for Divine Plea to only be used during DMCG (this typically skips a plea, and increases throughput at the expense of ttoom).',
+    },
+    {
+      dateAdded: '05/10/22',
+      text: 'Added support for player to start at less than full mana (for speedrunning)',
+    },
+    {
       dateAdded: '18/09/22',
       text: 'Splits out mana regen due to DMCG.',
     },

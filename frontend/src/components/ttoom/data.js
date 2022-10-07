@@ -91,6 +91,7 @@ const data = {
           useArcaneTorrentWithDmcg: false,
           useDivinePleaWithDmcg: 'no',
           dmcgFirstProcDelayedUntil: 15,
+          usePleaOnlyIfMinimumAmountOfDMCGSecs: 6,
           manaNotFull: false,
           startingMana: 20000,
         },
