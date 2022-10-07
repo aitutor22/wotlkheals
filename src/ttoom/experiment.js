@@ -156,6 +156,9 @@ class Experiment {
             eventHeap.addEvent(0, 'INITIALIZE_HOT_EVENTS', 'EARTH_SHIELD|-1');
         }
 
+        // TEMPORARY CHANGE
+        // maxMinsToOOM = 0.5
+
         while (eventHeap.hasElements() && currentTime <= maxMinsToOOM * 60) {
             nextEvent = eventHeap.pop();
             currentTime = nextEvent._timestamp;
@@ -205,11 +208,11 @@ class Experiment {
                 lastCastTimestamp = currentTime;
                 // castSpell passes HoT creation events, etc
                 this.addEventsToEventHeap(eventHeap, eventsToCreate);
-                // for (let evt of eventsToCreate) {
-                //     console.log('creating event');
-                //     console.log(evt);
-                //     eventHeap.addEvent(evt['timestamp'], evt['eventType'], evt['subEvent']);
-                // }
+
+                // we reconcile proc based effects like dmcg before checking for manacooldowns (as this will affect whether we use divine plea on next cast or following cast)
+                // note that for chain heal, this means that we assume it only has 1 chance to proc per CH cast, rather than x4 from 4 bounces
+                eventsToCreate = player.checkHandleProcsOnCastWithICD(currentTime, spellIndex, this.logger);
+                this.addEventsToEventHeap(eventHeap, eventsToCreate);
 
                 // not oom, so continue the simulation
                 // before casting, check if we can use a mana cooldown
@@ -218,7 +221,6 @@ class Experiment {
                 // 2 implies it slows down gcd
                 let useManaCooldownStatus, useManaCooldownEvents;
                 [useManaCooldownStatus, useManaCooldownEvents] = player.useManaCooldown(currentTime + offset, this.logger);
-
                 // useManaCooldownEvents include casting mana cooldowns that use gcd (divine plea), or setting up expire buff events (divine illumination)
                 for (let useManaCooldownEvent of useManaCooldownEvents) {
                     eventHeap.addEvent(useManaCooldownEvent['timestamp'], useManaCooldownEvent['eventType'], useManaCooldownEvent['subEvent']);
@@ -229,12 +231,6 @@ class Experiment {
                 if (useManaCooldownStatus === 0 || useManaCooldownStatus === 1) {
                     this.selectSpellAndToEventHeapHelper(eventHeap, player, currentTime, spellIndex, offset);
                 } 
-
-                // this.logger.log(`${player._statistics['overall']['spellsCasted'] / currentTime * 60}`, 3)
-                // this.logger.log(`${player._statistics['overall']['spellsCasted']}`, 3)
-                // note that for chain heal, this means that we assume it only has 1 chance to proc per CH cast, rather than x4 from 4 bounces
-                eventsToCreate = player.checkHandleProcsOnCastWithICD(currentTime, spellIndex, this.logger);
-                this.addEventsToEventHeap(eventHeap, eventsToCreate);
 
                 spellIndex += 1
             } else if (nextEvent._eventType === 'BUFF_EXPIRE') {

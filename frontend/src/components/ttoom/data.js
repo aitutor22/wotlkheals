@@ -89,6 +89,10 @@ const data = {
           manaTideTotem: false,
           arcaneTorrent: false,
           useArcaneTorrentWithDmcg: false,
+          useDivinePleaWithDmcg: 'no',
+          dmcgFirstProcDelayedUntil: 15,
+          manaNotFull: false,
+          startingMana: 20000,
         },
         trinkets: ['soup', 'eog'],
         glyphHolyLightHits: 4,
@@ -181,6 +185,8 @@ const data = {
           innervate: false,
           manaTideTotem: true,
           waterShieldProcsPerMinFromDamage: 2.5,
+          manaNotFull: false,
+          startingMana: 20000,
         },
         trinkets: ['soup',],
         chainHealHits: 4,
@@ -239,6 +245,13 @@ const data = {
             itemType: 'trinket',
             base: {
                 spellpower: 200,
+            },
+        },
+        solace: {
+            name: 'Solace of the Fallen',
+            itemType: 'trinket',
+            base: {
+                spellpower: 168,
             },
         },
     },

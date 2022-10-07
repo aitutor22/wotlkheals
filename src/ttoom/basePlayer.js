@@ -73,7 +73,12 @@ class BasePlayer {
         }
 
         this._otherMP5 = options['mp5FromGear'] + DATA['constants']['mp5RaidBuffs'];
-        this._currentMana = this._baseMaxMana;
+        // checks if user has passed in startingMana
+        if (options['manaOptions']['manaNotFull']) {
+            this._currentMana = Math.min(this._baseMaxMana, options['manaOptions']['startingMana']);
+        } else {
+            this._currentMana = this._baseMaxMana;
+        }
 
         // tracks potential buffs like dmcg (15s duration)
         this._buffs = {};
@@ -261,7 +266,6 @@ class BasePlayer {
     // then we check if it procs
     // and then for each proc, we have a specific effect
     // after a proc, we then return a list of expire buff events (for stuff like dmcg)
-
     checkHandleProcsWithICDHelper(procsToCheck, timestamp, spellIndex, logger) {
         let eventsToCreate = [];
         for (let procName of procsToCheck) {
@@ -484,6 +488,7 @@ class BasePlayer {
                 continue;
             }
             cooldownSelected = cd;
+            break; //ensures if there are two or more potential mana cooldowns, we use the first one 
         }
 
         // no cooldown is available
@@ -514,6 +519,7 @@ class BasePlayer {
         if (cooldownSelected['category'] === 'buff') {
             // sets buff active, and returns an event for buff to expire
             this.setBuffActive(cooldownSelected['key'], true, timestamp, false, logger);
+            if (logger) logger.log(`${Utility.roundDp(timestamp, 2)}s: ${cooldownSelected['key']} used`, 2);
             eventsToCreate.push({timestamp: timestamp + DATA['manaCooldowns'][cooldownSelected['key']]['duration'], eventType: 'BUFF_EXPIRE', subEvent: cooldownSelected['key']});
         }
 

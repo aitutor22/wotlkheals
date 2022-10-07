@@ -98,6 +98,11 @@
                   <input class="form-check-input" type="checkbox" id="eog" v-model="oomOptions['trinkets']" value="eog">
                   <label class="form-check-label" for="eog">Eye of Gruul</label>
                 </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="solace" v-model="oomOptions['trinkets']" value="solace">
+                  <label class="form-check-label" for="solace">Solace of the Fallen (P3)</label>
+                </div>
+
 
                 <hr>
                 <!-- general options that apply to all healers -->
@@ -132,6 +137,19 @@
                   <span class="input-group-text" id="basic-addon1"
                     v-b-tooltip.hover title="If you leave this blank, sim will use random numbers. If you wish to use a specific seed, input an integer">Seed</span>
                   <input type="text" class="form-control" v-model.number="oomOptions['seed']" placeholder="Leave blank to use random seed">
+                </div>
+
+                <hr>
+                <h6>Speedrunning Options</h6>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="manaNotFull" v-model="oomOptions['manaOptions']['manaNotFull']">
+                  <label class="form-check-label" for="manaNotFull"
+                    v-b-tooltip.hover title="In a speedrun, players often do not start fights with full mana, and this could reduces the value of int">Player does not start with full mana?</label>
+                </div>
+                <div v-if="oomOptions['manaOptions']['manaNotFull']" class="input-group mb-2" style="width: 100%">
+                  <span class="input-group-text" id="basic-addon1"
+                    v-b-tooltip.hover title="User will start with this, assuming it is lower than the mana pool implied from int value passed in by user">Starting Mana</span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['manaOptions']['startingMana']">
                 </div>
               </b-card-text></b-tab>
 
@@ -327,6 +345,34 @@
                   <b-form-radio v-model="oomOptions['flask']" name="some-radios" value="frostWyrm"
                     v-b-tooltip.hover.left title="Increases Spell Power by 125">Frost Wyrm</b-form-radio>
                 </b-form-group>
+
+                <hr>
+                <h6 v-if="hasDmcg && oomOptions['manaOptions']['divinePlea']">Advanced Options for DMCG and Divine Plea</h6>
+                <b-form-group
+                  v-if="hasDmcg && oomOptions['manaOptions']['divinePlea']"
+                  label="How should Divine Plea be used in conjunction with DMCG?">
+                  <b-form-radio v-model="oomOptions['manaOptions']['useDivinePleaWithDmcg']" name="useDivinePleaWithDmcg" value="no">
+                    <span v-b-tooltip.hover title="Do not wait for dmcg, use Divine Plea whenever cooldown is up and minimum mana deficit has been satisfied">
+                      Don't wait for DMCG 
+                    </span>
+                  </b-form-radio>
+                  <b-form-radio v-model="oomOptions['manaOptions']['useDivinePleaWithDmcg']" name="useDivinePleaWithDmcg" value="alwaysWait">
+                    <span v-b-tooltip.hover title="Always wait for DMCG to be up (minimum of 10s duration left) before using Diving Plea. This will likely result in fewer Divine Plea being used so TTOOM might be lower, while HPS is higher.">
+                      Always wait for DMCG (will result in fewer Divine Pleas)
+                    </span>
+                  </b-form-radio>
+                  <b-form-radio v-model="oomOptions['manaOptions']['useDivinePleaWithDmcg']" name="useDivinePleaWithDmcg" value="waitIfICDAlmostUp">
+                    <span v-b-tooltip.hover title="If DMCG internal cooldown is less than 10s, wait for it before using Divine Plea. Otherwise just go ahead and use Divine plea if minmum mana deficit has been satisfied.">
+                      Only wait for DMCG if its ICD is < 10s
+                    </span>
+                  </b-form-radio>
+                </b-form-group>
+
+                <div v-if="hasDmcg && oomOptions['manaOptions']['divinePlea']" class="input-group mb-2" style="width: 100%">
+                  <span class="input-group-text" id="basic-addon1"
+                    v-b-tooltip.hover title="Use trinket swapping to delay DMCG first usage. This allows DMCG + plea to occur at a more optimal time than right at the start of the fight, which will waste mana.">Delay DMCG first proc until after X secs</span>
+                  <input type="text" class="form-control" v-model.number="oomOptions['manaOptions']['dmcgFirstProcDelayedUntil']">
+                </div>
 
               </b-card-text></b-tab>
             </b-tabs>

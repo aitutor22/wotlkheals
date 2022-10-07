@@ -33,7 +33,6 @@ function createOptions(playerClass, playerOptions) {
 
     options['manaOptions']['replenishmentUptime'] = options['manaOptions']['replenishmentUptime'] / 100;
 
-
     // start handling of mana options
     // values are currently hardcoded; should improve in future
     // the order we push is important, as the first to be pushed will be evaluated first, assuming same mana deficit
@@ -47,12 +46,19 @@ function createOptions(playerClass, playerOptions) {
     }
 
     if (playerOptions['manaOptions']['divinePlea']) {
-        options['manaCooldowns'].push({
+        let _divinePleaEntry = {
             key: 'DIVINE_PLEA',
             minimumManaDeficit: playerOptions['manaOptions']['divinePleaMinimumManaDeficit'],
             minimumTimeElapsed: 0,
             maxNumUsesPerFight: playerOptions['manaOptions']['maxNumDivinePleaUsesPerFight'],
-        });
+        };
+
+        if (playerOptions['trinkets'].indexOf('dmcg') > -1 && playerOptions['manaOptions']['useDivinePleaWithDmcg'] !== 'no') {
+            _divinePleaEntry['waitForBuff'] = 'dmcg';
+            options['manaCooldowns'].push(_divinePleaEntry);
+        } else {
+            options['manaCooldowns'].push(_divinePleaEntry);
+        }
     }
 
     if (playerOptions['manaOptions']['divineIllumination']) {
@@ -103,7 +109,7 @@ exports.ttoom = (req, res) => {
     try {
         // second argument is where logs are sent - 0 for console.log, 1 to an arr that is returned to the client
         let experiment = new Experiment(options, 1);
-        let result = experiment.runBatch(400, batchSeed, playerClass);
+        let result = experiment.runBatch(1, batchSeed, playerClass);
         // console.log('Time taken: ' + (new Date() - time) / 1000);
         res.send(result);
     } catch (error) {

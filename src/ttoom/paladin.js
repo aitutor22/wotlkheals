@@ -22,6 +22,14 @@ class Paladin extends BasePlayer {
             throw new Error('4PT7 was selected but not 2PT7');
         }
 
+        // we might want to delay dmcg's first proc (e.g. to 15s) to allow dmcg + divine plea  to line up
+        // this can be accomplished by having the player reequip dmcg 30s before pull, which will put the trinket on icd for 45s (aka 15s into battle)
+        if (options['trinkets'].indexOf('dmcg') > -1) {
+            if (options['manaOptions']['dmcgFirstProcDelayedUntil'] > 0) {
+                this._icds['dmcg'] = {availableForUse: false, lastUsed: options['manaOptions']['dmcgFirstProcDelayedUntil'] - 45};
+            }
+        }
+
         // calculates SoW chances
         let normalHitRate = 1 - this.classInfo['sow']['missChance'] - this.classInfo['sow']['dodgeChance'] +
             this.classInfo['sow']['improvementInHitChancePerPointInEnglightenedJudgements'] * options['talents']['enlightenedJudgements']

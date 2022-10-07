@@ -92,6 +92,13 @@ const data = {
                 int: 111,
             }
         },
+        solace: {
+            name: 'Solace of the Fallen',
+            itemType: 'trinket',
+            base: {
+                spellpower: 168,
+            }
+        },
     },
     battleConsumables: {
         flaskDistilled: {
