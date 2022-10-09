@@ -16,6 +16,9 @@ const data = {
             proc: {
                 icd: 45, //internal cooldown (s)
                 chance: 0.35,
+                overwrittenChanceBasedOnClass: {
+                    paladin: 0.7, // paladin has 70% chance for dmcg
+                },
                 int: 300, // how much it increases value by when it procs
                 duration: 15,
                 createsBuff: true, // if this is true, creates a buff with the same name

@@ -283,7 +283,12 @@ class BasePlayer {
             }
 
             if (this._icds[procName]['availableForUse']) {
-                let isProc = this.checkProcHelper(procName, spellIndex, 1, info['chance']);
+                // some proc effects have higher chance based on the class like dmcg
+                const chance = (typeof info['overwrittenChanceBasedOnClass'] !== 'undefined') && (this._playerClass in info['overwrittenChanceBasedOnClass']) ?
+                    info['overwrittenChanceBasedOnClass'][this._playerClass] : info['chance'];
+
+                // pally dmcg is 70% rather than 35% due to beacon
+                let isProc = this.checkProcHelper(procName, spellIndex, 1, chance);
                 if (isProc) {
                     this._icds[procName]['availableForUse'] = false;
                     this._icds[procName]['lastUsed'] = timestamp;

@@ -46,10 +46,19 @@
       <div class="row mt-2" v-if="showHighDamageItemsOnly">
         <div class="input-group mb-2" style="width: 100%">
         <span class="input-group-text" id="basic-addon1"
-        v-b-tooltip.hover title="Only abilities that deal a certain amount of damage will be shown">Minimum damage to show ability</span>
+        v-b-tooltip.hover title="Only abilities that deal a certain amount of damage will be shown">Show abilities that deal >= minimum damage</span>
         <input type="text" class="form-control" v-model.number="damageThreshold">
         </div>
       </div>
+
+      <div class="row">
+        <div class="input-group mb-2" style="width: 100%">
+        <span class="input-group-text" id="basic-addon1"
+        v-b-tooltip.hover title="Only abilities that hit a minimum number of targets will be shown">Show abilities that have >= x hits</span>
+        <input type="text" class="form-control" v-model.number="hitsThreshold">
+        </div>
+      </div>
+
       <div class="row">
         <div class="input-group mb-2" style="width: 100%">
           <span class="input-group-text" id="basic-addon1"
@@ -92,6 +101,7 @@ export default {
       currentFightId: '',
       damageThreshold: 3000, // to determine what to show
       spellPower: 2000,
+      hitsThreshold: 2,
     };
   },
   watch: {
@@ -135,7 +145,7 @@ export default {
 
       if (!this.showHighDamageItemsOnly) return data;
       return data.filter((entry) => {
-        return Number(entry['avgDamageTaken']) >= this.damageThreshold;
+        return (Number(entry['avgDamageTaken']) >= this.damageThreshold) && (Number(entry['numHits']) >= this.hitsThreshold);
       });
     }
   },
