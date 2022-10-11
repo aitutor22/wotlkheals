@@ -3,8 +3,10 @@ const GEM_VALUES = {
 }
 
 const data = {
+    // probably should improve this portion to make it automatic
     itemProcsOnCast: ['dmcg'],
     itemProcsOnCrit: ['soulDead'],
+    itemStacksOnCast: ['meteoriteCrystal'],
     items: {
         // increase int by 300 for 15s
         dmcg: {
@@ -92,8 +94,18 @@ const data = {
             name: 'Meteorite Crystal',
             itemType: 'trinket',
             base: {
-                int: 111,
-            }
+                int: 118, //originally 111, assume +6% ilevel buff
+            },
+            stackEffectOnSpellCast: {
+                requireActivation: true, // will only stack if buff is present
+                // paladin gains stacks twice as fast thanks to beacon
+                stacksGainPerCast: {
+                    paladin: 2,
+                    rest: 1,
+                },
+                duration: 20,
+                maxStacks: 20,
+            },
         },
         solace: {
             name: 'Solace of the Fallen',
@@ -472,6 +484,22 @@ const data = {
         },
     },
     manaCooldowns: {
+        // need to eventually change all manaCooldowns to camel case for consistency
+        meteoriteCrystal: {
+            key: 'meteoriteCrystal',
+            name: 'Meteorite Crystal',
+            value: 0, // initial value is 0
+            cooldown: 60 * 2,
+            offGcd: true,
+            category: 'buff',
+            duration: 20,
+            numIntervals: 20,
+            secsBetweenInterval: 1,
+            startAtTimestamp: false,
+            subCategory: 'stackCount', // mp5 gains is based off stacks; 
+            // converts to mp1 for more accurate calculation
+            mp1PerStack: 60 / 5 * 1.06, // originally 60mp5 per stack, but assume +6% ilevel buff
+        },
         DIVINE_PLEA: {
             key: 'DIVINE_PLEA',
             name: 'Divine Plea',
@@ -484,7 +512,7 @@ const data = {
             secsBetweenInterval: 3,
             startAtTimestamp: false,
             percentageManaPool: 0.05,
-            totalDuration: 15,
+            duration: 15,
             healingPenalty: 0.5,
             playerClass: 'paladin',
         },
@@ -543,19 +571,6 @@ const data = {
             category: 'immediate',
             subCategory: 'percentageManaPool',
         },
-        METEORITE_CRYSTAL: {
-            key: 'METEORITE_CRYSTAL',
-            name: 'Meteorite Crystal',
-            value: 0, // initial value is 0
-            cooldown: 60 * 2,
-            offGcd: true,
-            category: 'buff',
-            subCategory: 'stackCount', // mp5 gains is based off stacks
-            duration: 20,
-            maxStacks: 20,
-            stackCondition: 'spellCast',
-            mp1PerStack: 60 / 5, // converts to mp1 for more accurate calculation
-        },
         // technically a 12s 2340 mana regen; but just assume you get it all at one shot for simplicity
         OWL: {
             key: 'OWL',
@@ -610,6 +625,7 @@ const data = {
         'manaTideTotemDMCG': 'Mana Tide Totem (DMCG)',
         'replenishmentDMCG': 'Replenishment (DMCG)',
         'sowDMCG': 'Seal of Wisdom (DMCG)',
+        'meteoriteCrystal': 'Meteorite Crystal'
     },
 }
 

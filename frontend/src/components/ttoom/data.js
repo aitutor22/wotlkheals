@@ -248,6 +248,13 @@ const data = {
                 spellpower: 200,
             },
         },
+        meteoriteCrystal: {
+            name: 'Meteorite Crystal',
+            itemType: 'trinket',
+            base: {
+                int: 118, //originally 111, assume +6% ilevel buff
+            },
+        },
         solace: {
             name: 'Solace of the Fallen',
             itemType: 'trinket',

@@ -37,6 +37,13 @@ function createOptions(playerClass, playerOptions) {
     // values are currently hardcoded; should improve in future
     // the order we push is important, as the first to be pushed will be evaluated first, assuming same mana deficit
     // to avoid a situation where mana tide totem is always trigged by dmcg, we set both a minimum mana and minimum time requirement for MTT
+
+
+
+    if (playerOptions['trinkets'].indexOf('meteoriteCrystal') > -1) {
+        options['manaCooldowns'].push({key: 'meteoriteCrystal', minimumManaDeficit: 500, minimumTimeElapsed: 0});
+    }
+
     if (playerOptions['manaOptions']['arcaneTorrent']) {
         if (playerOptions['trinkets'].indexOf('dmcg') > -1 && playerOptions['manaOptions']['useArcaneTorrentWithDmcg']) {
             options['manaCooldowns'].push({key: 'ARCANE_TORRENT', minimumManaDeficit: 3000, minimumTimeElapsed: 0, waitForBuff: 'dmcg'});

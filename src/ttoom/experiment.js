@@ -55,8 +55,11 @@ class Experiment {
             let cooldownInfo = DATA['manaCooldowns'][nextEvent._subEvent];
             if (cooldownInfo['subCategory'] === 'percentageManaPool') {
                 player.addManaRegenPercentageOfManaPool(currentTime, DATA['manaCooldowns'][manaSource]['percentageManaPool'], manaSource, this.logger);
-            } if (cooldownInfo['subCategory'] === 'fixed') {
+            } else if (cooldownInfo['subCategory'] === 'fixed') {
                 player.addManaHelper(DATA['manaCooldowns'][manaSource]['tickAmount'], manaSource, this.logger, currentTime);
+            } else if (cooldownInfo['subCategory'] === 'stackCount') {
+                console.log(currentTime)
+                player.addManaBasedOnStackCount(currentTime, DATA['manaCooldowns'][manaSource]['mp1PerStack'], manaSource, this.logger);
             }
         }
     }
@@ -179,12 +182,12 @@ class Experiment {
                     player.checkForAndHandleSoWProc(currentTime, spellIndex, this.logger, 'normal');
                     if (nextEvent._subEvent === 'DIVINE_PLEA') {
                         player.setBuffActive('divinePlea', true, currentTime);
-                        eventHeap.addEvent(currentTime + DATA['manaCooldowns']['DIVINE_PLEA']['totalDuration'], 'BUFF_EXPIRE', 'divinePlea');
+                        eventHeap.addEvent(currentTime + DATA['manaCooldowns']['DIVINE_PLEA']['duration'], 'BUFF_EXPIRE', 'divinePlea');
                     }
                 }
 
                 // shouldn't actually produce events here, but just in case
-                eventsToCreate = player.checkHandleProcsOnCastWithICD(currentTime, spellIndex, this.logger);
+                eventsToCreate = player.resolveEndofSpellCasts(currentTime, spellIndex, this.logger);
                 this.addEventsToEventHeap(eventHeap, eventsToCreate);
 
                 // continues with next spell in simulation
@@ -195,6 +198,13 @@ class Experiment {
             // for mana cooldowns that don't use gcd (e.g. if u are pally, and benefit from mana tide)
             else if (nextEvent._eventType === 'MANA_COOLDOWN_OFF_GCD') {
                 this.handleOffGcdManaCooldown(nextEvent, eventHeap);
+            }
+            // FOR MC
+            else if (nextEvent._eventType === 'CREATION_MANA_TICK_INTERVALS') {
+                let currentTime = nextEvent._timestamp,
+                    manaSource = nextEvent._subEvent,
+                    cooldownInfo = DATA['manaCooldowns'][manaSource];
+                eventHeap.addIntervalEvents(currentTime, 'MANA_TICK', manaSource, cooldownInfo['numIntervals'], cooldownInfo['secsBetweenInterval'], cooldownInfo['startAtTimestamp']);
             }
             else if (nextEvent._eventType === 'SPELL_CAST') {
                 // offset is when we cast an instant spell like holyshock, should put the next spell on gcd
@@ -211,7 +221,8 @@ class Experiment {
 
                 // we reconcile proc based effects like dmcg before checking for manacooldowns (as this will affect whether we use divine plea on next cast or following cast)
                 // note that for chain heal, this means that we assume it only has 1 chance to proc per CH cast, rather than x4 from 4 bounces
-                eventsToCreate = player.checkHandleProcsOnCastWithICD(currentTime, spellIndex, this.logger);
+                eventsToCreate = player.resolveEndofSpellCasts(currentTime, spellIndex, this.logger);
+
                 this.addEventsToEventHeap(eventHeap, eventsToCreate);
 
                 // not oom, so continue the simulation

@@ -294,9 +294,9 @@ class Shaman extends BasePlayer {
 
         // casting CH or riptide should add tidal waves
         if (spellKey === 'CHAIN_HEAL' || spellKey === 'RIPTIDE') {
-            this.modifyStacks('tidalWaves', 'set', this.classInfo['tidalWaves']['maxStacks'], timestamp, logger);
+            this.modifyStacks('tidalWaves', 'set', this.classInfo['tidalWaves']['maxStacks'], timestamp, 100, logger);
         } else if (spellKey === 'LESSER_HEALING_WAVE' || spellKey === 'HEALING_WAVE') {
-            this.modifyStacks('tidalWaves', 'decrement', 1, timestamp, logger);
+            this.modifyStacks('tidalWaves', 'decrement', 1, timestamp, 100, logger);
         }
 
         // adds riptide to tracker for chain heal consumption purposes

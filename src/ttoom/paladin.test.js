@@ -206,7 +206,6 @@ test('system should add crit from 90 int if dmcg is selected', () => {
 test('dmcg proc values', () => {
     let player = new Paladin(dmcgOptions, rng, thresholdItemsToCreate);
     expect(player.incrementalManaFromDmcgProc).toBe(5445);
-    console.log(player.incrementalManaFromDmcgProc);
     expect((Math.abs(player.incrementalCritChanceFromDmcgProc - 0.021779956440087123))).toBeLessThan(1e-5);
 });
 
@@ -441,6 +440,5 @@ test('testing meteoriteCrystal', () => {
     let player = new Paladin(options, rng, thresholdItemsToCreate);
     expect(player._manaCooldowns.length).toBe(1);
     expect(player._manaCooldowns[0]['key']).toBe('METEORITE_CRYSTAL');
-
-
 });
+

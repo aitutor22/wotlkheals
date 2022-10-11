@@ -89,6 +89,7 @@ class BasePlayer {
         // assume all healers are using IED
         this._procsOnCastToCheck = ['ied'];
         this._procsOnCritToCheck = [];
+        this._stacksOnCastToCheck = [];
 
         // checks if player is using items that have procs like dmcg that are checked on cast
         for (let potentialProc of DATA['itemProcsOnCast']) {
@@ -101,6 +102,13 @@ class BasePlayer {
         for (let potentialProc of DATA['itemProcsOnCrit']) {
             if (this._options['trinkets'].indexOf(potentialProc) > -1) {
                 this._procsOnCritToCheck.push(potentialProc);
+            }
+        }
+
+        // checks for stacks like meteorite crystal
+        for (let potentialStack of DATA['itemStacksOnCast']) {
+            if (this._options['trinkets'].indexOf(potentialStack) > -1) {
+                this._stacksOnCastToCheck.push(potentialStack);
             }
         }
 
@@ -229,11 +237,9 @@ class BasePlayer {
     }
 
     // operation can be set, increment, or decrement
-    modifyStacks(stackKey, operation, amount, timestamp, logger=null) {
+    modifyStacks(stackKey, operation, amount, timestamp, maxStacks=100, logger=null) {
         if (typeof this._stacks[stackKey] === 'undefined') {
-            this._stacks[stackKey] = {
-                amount: 0,
-            }
+            this._stacks[stackKey] = 0
         }
 
         if (operation === 'set') {
@@ -243,10 +249,10 @@ class BasePlayer {
             if (logger && amount !== oldAmount) logger.log(`${timestamp}s: setting ${stackKey} stacks to ${amount}`, 2);
         } else if (operation === 'decrement') {
             this._stacks[stackKey] = Math.max(0, this._stacks[stackKey] - amount);
-            if (logger) logger.log(`${timestamp}s: decreasing ${stackKey} stacks to ${amount}`, 2);
+            if (logger) logger.log(`${timestamp}s: decreasing ${stackKey} stacks to ${this._stacks[stackKey]}`, 2);
         } else if (operation === 'increment') {
-            this._stacks[stackKey] += amount;
-            if (logger) logger.log(`${timestamp}s: increasing ${stackKey} stacks to ${amount}`, 2);
+            this._stacks[stackKey] = Math.min(maxStacks, this._stacks[stackKey] + amount)
+            if (logger) logger.log(`${timestamp}s: increasing ${stackKey} stacks to ${this._stacks[stackKey]}`, 2);
         } else {
             throw new Error('Invalid operation: ' + operation);
         }
@@ -309,9 +315,31 @@ class BasePlayer {
         return eventsToCreate;
     }
 
-    // checks procs that arise from cast like IED, dmcg
-    checkHandleProcsOnCastWithICD(timestamp, spellIndex, logger) {
-        return this.checkHandleProcsWithICDHelper(this._procsOnCastToCheck, timestamp, spellIndex, logger);
+    // for now, just do a simple function only for MC -> expand in future
+    // WHEN IT EXPIRED, NEED TO CLEAR STACKS
+    checkHandleStackEffectOnSpellCast(stacksToCheck, timestamp, spellIndex, logger) {
+        let eventsToCreate = [];
+        for (let stackName of stacksToCheck) {
+            let info = DATA['items'][stackName]['stackEffectOnSpellCast'];
+            if (!info['requireActivation']) {
+                throw new Error('Have not coded items that don\'t require activation');
+            }
+            // for stacks that require activation (e.g. MC), check that buff is ready
+            if (!this.isBuffActive(stackName)) return eventsToCreate;
+            if (this._stacks[stackName] >= info['maxStacks']) return;
+            const stacksToAdd = this._playerClass in info['stacksGainPerCast'] ? info['stacksGainPerCast'][this._playerClass] : info['stacksGainPerCast']['rest'];
+            this.modifyStacks(stackName, 'increment', stacksToAdd, timestamp, info['maxStacks'], logger);
+        }
+        return eventsToCreate;
+    }
+
+    resolveEndofSpellCasts(timestamp, spellIndex, logger) {
+        // checks procs that arise from cast like IED, dmcg
+        let eventsToCreate = this.checkHandleProcsWithICDHelper(this._procsOnCastToCheck, timestamp, spellIndex, logger);
+        this.checkHandleStackEffectOnSpellCast(this._stacksOnCastToCheck, timestamp, spellIndex, logger)
+        // hardcoded for Meterite crystal (and maybe pendant of violet eye in future)
+        // hardcode since not many items have this ability
+        return eventsToCreate;
     }
 
     // checks procs that arise from cast like IED, dmcg
@@ -532,8 +560,14 @@ class BasePlayer {
         if (cooldownSelected['category'] === 'buff') {
             // sets buff active, and returns an event for buff to expire
             this.setBuffActive(cooldownSelected['key'], true, timestamp, false, logger);
-            if (logger) logger.log(`${Utility.roundDp(timestamp, 2)}s: ${cooldownSelected['key']} used`, 2);
             eventsToCreate.push({timestamp: timestamp + DATA['manaCooldowns'][cooldownSelected['key']]['duration'], eventType: 'BUFF_EXPIRE', subEvent: cooldownSelected['key']});
+            if (cooldownSelected['subCategory'] === 'stackCount') {
+                eventsToCreate.push({
+                    timestamp: timestamp,
+                    eventType: 'CREATION_MANA_TICK_INTERVALS',
+                    subEvent: 'meteoriteCrystal'
+                });
+            };
         }
 
         // certain spells like divine plea put the system on gcd
@@ -551,9 +585,9 @@ class BasePlayer {
         // first condition: we see if there are spells that are casted by other classes
         // these are always considered offGCD even if they actually require a spell cast since they are casted by another player
         // e.g. if player is pally, mana tide totem falls under this category
-        // second condition -> any sort of cooldown that is off gcd and interval (e.g owl)
+        // second condition -> any sort of cooldown that is off gcd
         if ((cooldownSelected['playerClass'] !== this._playerClass && cooldownSelected['playerClass'] !== 'all') ||
-                (cooldownSelected['offGcd'] && cooldownSelected['category'] === 'interval')) {
+                cooldownSelected['offGcd']) {
             requireGCD = false;
             eventsToCreate.push({
                 timestamp: timestamp, 
@@ -683,7 +717,6 @@ class BasePlayer {
 
     // for mana cooldowns that are based off max manapool, we need to check if dmcg was active
     addManaRegenPercentageOfManaPool(timestamp, percentage, category, logger=null) {
-        // console.log('mana regen percentage: ' + category);
         let key = category,
             manaRegenExcludingDMCG = Math.floor(percentage * this.maxMana);
         
@@ -701,6 +734,14 @@ class BasePlayer {
         }
 
         this.addManaHelper(manaRegenExcludingDMCG, key, logger, timestamp);
+    }
+
+    // for mana cooldowns that are based off max manapool, we need to check if dmcg was active
+    addManaBasedOnStackCount(timestamp, manaPerStack, stackName, logger=null) {
+        const numStacks = (typeof this._stacks[stackName] === 'undefined') ? 0 :
+            this._stacks[stackName];
+        const amount = Math.floor(numStacks * manaPerStack);
+        this.addManaHelper(amount, stackName, logger, timestamp);
     }
 
     // timestamp should be optional; if we don't pass anything here, then it just doesnt print out timestamp
