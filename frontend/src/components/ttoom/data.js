@@ -259,7 +259,7 @@ const data = {
             name: 'Pandora\'s Plea',
             itemType: 'trinket',
             base: {
-                int: 121, //originally 108, assume +12% ilevel buff
+                int: 114, //originally 108, assume +6% ilevel buff
             },
         },
         solace: {
