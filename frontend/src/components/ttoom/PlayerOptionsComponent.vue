@@ -102,6 +102,10 @@
                   <input class="form-check-input" type="checkbox" id="meteoriteCrystal" v-model="oomOptions['trinkets']" value="meteoriteCrystal">
                   <label class="form-check-label" for="meteoriteCrystal">Meteorite Crystal (P2)</label>
                 </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="pandorasPlea" v-model="oomOptions['trinkets']" value="pandorasPlea">
+                  <label class="form-check-label" for="pandorasPlea">Pandora's Plea (P2)</label>
+                </div>
 <!--                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" id="solace" v-model="oomOptions['trinkets']" value="solace">
                   <label class="form-check-label" for="solace">Solace of the Fallen (P3)</label>

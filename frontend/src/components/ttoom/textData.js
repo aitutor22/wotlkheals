@@ -3,7 +3,7 @@ const textData = {
     paladin: [
     {
       dateAdded: '12/10/22',
-      text: 'Added support for Meteroite Crystal (P2), and assume a 6% increase in both int and proc effect inline with upcoming uldar ilevel boost.',
+      text: 'Added support for Meteroite Crystal (P2) and Pandora\'s Plea (P2), and assume a 6-12% increase in both stats and proc effect inline with upcoming Uldar ilevel boost.',
     },
     {
       dateAdded: '10/10/22',

@@ -4,7 +4,7 @@ const GEM_VALUES = {
 
 const data = {
     // probably should improve this portion to make it automatic
-    itemProcsOnCast: ['dmcg'],
+    itemProcsOnCast: ['dmcg', 'pandorasPlea'],
     itemProcsOnCrit: ['soulDead'],
     itemStacksOnCast: ['meteoriteCrystal'],
     items: {
@@ -105,6 +105,23 @@ const data = {
                 },
                 duration: 20,
                 maxStacks: 20,
+            },
+        },
+        pandorasPlea: {
+            name: 'Pandora\'s Plea',
+            itemType: 'trinket',
+            base: {
+                int: 121, // originally 108, assume +12% ilevel buff
+            },
+            proc: {
+                icd: 45, //internal cooldown (s)
+                chance: 0.1,
+                overwrittenChanceBasedOnClass: {
+                    paladin: 0.2, // paladin has 20% chance; assume works similarly to dmcg
+                },
+                spellpower: 841, // originally 751, assume +12% ilevel buff
+                duration: 10,
+                createsBuff: true, // if this is true, creates a buff with the same name
             },
         },
         solace: {

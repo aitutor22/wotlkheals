@@ -170,11 +170,16 @@ class BasePlayer {
 
     // start getters
     get spellPower() {
+        let modifiedSpellPower = this._baseSpellPower;
+
         if ((typeof this._buffs['dmcg'] !== 'undefined') && this._buffs['dmcg']['active']) {
-            return this._baseSpellPower + this.spellPowerIncreaseFromInt(DATA['items']['dmcg']['proc']['int']);
-        } else {
-            return this._baseSpellPower;
+            modifiedSpellPower += this.spellPowerIncreaseFromInt(DATA['items']['dmcg']['proc']['int']);
         }
+
+        if ((typeof this._buffs['pandorasPlea'] !== 'undefined') && this._buffs['pandorasPlea']['active']) {
+            modifiedSpellPower += DATA['items']['pandorasPlea']['proc']['spellpower'];
+        }
+        return modifiedSpellPower;
     }
 
     // split this into a separate function as we want to use this to work out dmcg proc benefit

@@ -255,6 +255,13 @@ const data = {
                 int: 118, //originally 111, assume +6% ilevel buff
             },
         },
+        pandorasPlea: {
+            name: 'Pandora\'s Plea',
+            itemType: 'trinket',
+            base: {
+                int: 121, //originally 108, assume +12% ilevel buff
+            },
+        },
         solace: {
             name: 'Solace of the Fallen',
             itemType: 'trinket',

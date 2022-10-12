@@ -106,7 +106,7 @@ class Experiment {
         }
 
         // these trinkets have rng effects - if player has selected them, then add
-        for (let key of ['soup', 'eog', 'dmcg', 'soulDead']) {
+        for (let key of ['soup', 'eog', 'dmcg', 'soulDead', 'pandorasPlea']) {
             if (playerOptions.trinkets.indexOf(key) > -1) {
                 thresholds.push(key);
             }
