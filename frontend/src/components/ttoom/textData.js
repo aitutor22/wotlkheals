@@ -2,6 +2,10 @@ const textData = {
   changeLogs: {
     paladin: [
     {
+      dateAdded: '12/10/22',
+      text: 'Added support for Meteroite Crystal (P2), and assume a 6% increase in both int and proc effect inline with upcoming uldar ilevel boost.',
+    },
+    {
       dateAdded: '10/10/22',
       text: 'Updated DMCG proc effect to be 70% for paladin due to Beacon.',
     },
