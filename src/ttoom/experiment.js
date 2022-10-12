@@ -58,7 +58,6 @@ class Experiment {
             } else if (cooldownInfo['subCategory'] === 'fixed') {
                 player.addManaHelper(DATA['manaCooldowns'][manaSource]['tickAmount'], manaSource, this.logger, currentTime);
             } else if (cooldownInfo['subCategory'] === 'stackCount') {
-                console.log(currentTime)
                 player.addManaBasedOnStackCount(currentTime, DATA['manaCooldowns'][manaSource]['mp1PerStack'], manaSource, this.logger);
             }
         }
@@ -247,7 +246,10 @@ class Experiment {
             } else if (nextEvent._eventType === 'BUFF_EXPIRE') {
                 // code here sets availableForUse to false; this is fine, as we have other code that checks for availability on next spellcast
                 player.setBuffActive(nextEvent._subEvent, false, currentTime, this.logger);
-            } else if (nextEvent._eventType === 'MANA_TICK') {
+            } else if (nextEvent._eventType === 'STACK_EXPIRE') {
+                player.modifyStacks(nextEvent._subEvent, 'set', 0, currentTime);
+            } 
+            else if (nextEvent._eventType === 'MANA_TICK') {
                 this.handleManaTick(nextEvent, player, eventHeap, spellIndex);
             } else if (nextEvent._eventType === 'INITIALIZE_HOT_EVENTS') {
                 this.initializeHotEvents(nextEvent, player, eventHeap);
@@ -263,7 +265,6 @@ class Experiment {
 
         let statistics = player.calculateStatisticsAfterSimEnds(lastCastTimestamp),
             hps = Math.floor(player._statistics['overall']['healing'] / lastCastTimestamp);
-
         return {ttoom: lastCastTimestamp, statistics: statistics, logs: this.logger._resultArr, hps: hps, raidBuffedStats: player._statistics['raidBuffedStats']};
     }
 
@@ -413,6 +414,7 @@ class Experiment {
         // we run a single iteration of the median seed to get log info
         // first argument is logLevel - 2 shows most details but ommits crti details
         // note that medianEntry['seed'] refers to the specific seed of that run and not the batchSeed
+        // console.log('-----------------');
         resultSingleLoop = this.runSingleLoop(3, medianEntry['seed'], playerClass);
         // resultSingleLoop = this.runSingleLoop(1, medianEntry['seed'], playerClass);
 

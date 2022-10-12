@@ -561,10 +561,18 @@ class BasePlayer {
             // sets buff active, and returns an event for buff to expire
             this.setBuffActive(cooldownSelected['key'], true, timestamp, false, logger);
             eventsToCreate.push({timestamp: timestamp + DATA['manaCooldowns'][cooldownSelected['key']]['duration'], eventType: 'BUFF_EXPIRE', subEvent: cooldownSelected['key']});
+
+            // only for items like meteroite crystal
             if (cooldownSelected['subCategory'] === 'stackCount') {
                 eventsToCreate.push({
                     timestamp: timestamp,
                     eventType: 'CREATION_MANA_TICK_INTERVALS',
+                    subEvent: 'meteoriteCrystal'
+                });
+                // need to clear stacks at the end
+                eventsToCreate.push({
+                    timestamp: timestamp + DATA['manaCooldowns'][cooldownSelected['key']]['duration'],
+                    eventType: 'STACK_EXPIRE',
                     subEvent: 'meteoriteCrystal'
                 });
             };
@@ -726,7 +734,6 @@ class BasePlayer {
 
         // if dmcg is active, we split out the dmcg and non-dmcg portions and report both
         if (this.isBuffActive('dmcg')) {
-            // console.log(category);
             let manaRegenFromDMCG = Math.floor(percentage * this.incrementalManaFromDmcgProc);
             let dmcgKey = key + 'DMCG';
             manaRegenExcludingDMCG -= manaRegenFromDMCG;
@@ -858,6 +865,7 @@ class BasePlayer {
                 'source': newKey,
                 'MP5': Math.floor(this._statistics['manaGenerated'][key] / totalTime * 5),
             });
+            // console.log(key, this._statistics['manaGenerated'][key])
         }
 
         for (let key in this._statistics['spellsCasted']) {
