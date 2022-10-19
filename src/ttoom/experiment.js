@@ -75,7 +75,14 @@ class Experiment {
             hotSpellKey = entries[0];
             spellIndex = entries[1];
         }
-        let hotSpellData = player.classInfo['spells'].find((_spell) => _spell['key'] === hotSpellKey)
+        let hotSpellData = player.classInfo['spells'].find((_spell) => _spell['key'] === hotSpellKey);
+
+        // kinda bad code -> refactor in future
+        // 4pT8 makes SS tick every 4s instead of 6
+        if (hotSpellKey === 'SACRED_SHIELD' && player._playerClass === 'paladin' && player._options['4pT8']) {
+            hotSpellData['numIntervals'] = 15;
+            hotSpellData['secsBetweenInterval'] = 4;
+        }
 
         eventHeap.addIntervalEvents(currentTime, 'HOT_TICK', hotSpellKey, hotSpellData['numIntervals'], hotSpellData['secsBetweenInterval'], hotSpellData['startAtTimestamp'], spellIndex);
         this.logger.log(`Initialising ${hotSpellKey} HoTs`, 2);

@@ -26,6 +26,7 @@ const data = {
         tier: {
           '2pT7': true,
           '4pT7': true,
+          '4pT8': false,
         }
       },
       {
@@ -44,6 +45,26 @@ const data = {
         tier: {
           '2pT7': true,
           '4pT7': true,
+          '4pT8': false,
+        }
+      },
+      {
+        name: 'P1 bis with 4pT8',
+        default: false,
+        url: 'hhttps://eightyupgrades.com/set/9t3yye9MLjexdzhERnPqXb',
+        notes: 'Purely for comparison sakes; assumes +6% ilevel increase on gear',
+        charSheetStats: {
+          int: 1472,
+          spellpower: 2208,
+          critRating: 469,
+          hasteRating: 675,
+          mp5FromGear: 154,
+        },
+        trinkets: ['soup', 'dmcg'],
+        tier: {
+          '2pT7': false,
+          '4pT7': false,
+          '4pT8': true,
         }
       },
       ],
@@ -100,6 +121,7 @@ const data = {
         tier: {
           '2pT7': true,
           '4pT7': true,
+          '4pT8': false,
         },
         flask: 'distilledWisdom',
         finalGlyph: 'beacon',

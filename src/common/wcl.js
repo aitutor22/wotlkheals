@@ -31,6 +31,8 @@ class WclReader {
         this._reportEndTime = 0; // in miliseconds, will be updated when we call getFightTimes
         this._overrideFightId = overrideFightId;
         this._selectedFightId = null;
+        this._playerDetails = null;
+        this._playerIdToData = null;
 
         // encounterID filter doesn't work very well
         // use fightIDs instead to filter between trash/bosses if required
@@ -122,6 +124,23 @@ class WclReader {
             console.log('error with function pullData');
             console.log(error);
         }
+    }
+
+
+    async getPlayerDetails() {
+        let subQuery =  `
+            playerDetails(startTime: ${this._reportStartTime}, endTime: ${this._reportEndTime})
+        `;
+
+        let results = await this.pullData(subQuery);
+        this._playerDetails = results['playerDetails']['data']['playerDetails'];
+        this._playerIdToData = {};
+        for (let role in this._playerDetails) {
+            for (let player of this._playerDetails[role]) {
+                this._playerIdToData[player['id']] = player;
+            }
+        }
+        return [this._playerDetails, this._playerIdToData];
     }
 
     // NOTE -> need to support 'all' for fightId

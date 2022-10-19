@@ -2,8 +2,23 @@
   <div class="container">
    <div class="row" v-if="showExplanation">
     <p>
-      Preliminary guestimates of HPLD statweights by <b>Trollhealer</b>, <b>Lovelace</b> and <b>Currelius</b>.
+      Preliminary guestimates of HPLD statweights by <b>Trollhealer</b>, <b>Lovelace</b> and <b>Currelius</b>. Note that int valuation is a floor value, and please see a writeup below as to why in practice, some players choose a higher value (especially when choosing int vs spellpower enchants).
     </p>
+    <blockquote class="blockquote text-center">
+      <p>
+        It’s important to think about what your stats actually do and how stat weights reflect that. The int value in the calculator comes from comparing raw healing output increase from more spellpower to effective healing increase that int provides by allowing you to better manage when you use divine plea.
+      </p>
+      <p>
+        While it’s a good sandbox model and lets you peg mana stats like mp5 to other throughput stats, it gives a poor valuation of spellpower in particular since your raw healing output is mostly irrelevant. Holy Light and Beacon has very high overheal, and there is often no functional difference between an 11k or a 12k holy light in terms of whether your tank lives or dies. Basically, spellpower is worth significantly less than the model suggests.
+      </p>
+      <p>
+        So if the size of your HL doesn’t really matter, what is spellpower even good for? Three things in practice: a) bigger sacred shield; b) bigger heals during plea where their size matters more; c) slightly more healing with glyph of holy light splash.
+      </p>
+      <p>
+        When using a value for int, decide for yourself how important you think spellpower is vs. the sheer longevity (and flexibility with plea) that int provides, in the context of your kill times, how fast your raid moves, and your healing composition. The answer will always be “it depends”.
+      </p>
+      <footer class="blockquote-footer">Lovelace</footer>
+    </blockquote>
     <p>
       IMPORTANT NOTE FOR HASTE: the higher the existing haste, the lower the marginal value of adding more haste. If you wish to see what are your stat weights based on your current gear to determine incremental upgrades, then put your existing haste. But if you are trying to determine phase bis, put a low to midrange haste value to avoid undervaluing haste (this will not affect your mp5, int or crit weights).
     </p>
@@ -428,4 +443,8 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+blockquote p {
+  font-size: 0.8em;
+  font-style: italic;
+}
 </style>

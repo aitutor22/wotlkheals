@@ -2,6 +2,10 @@ const textData = {
   changeLogs: {
     paladin: [
     {
+      dateAdded: '19/10/22',
+      text: 'Added support for 4pT8 + offpiece chest and assume a 6% increase in stats. Only 4PT8 is implemented - 2P is not.',
+    },
+    {
       dateAdded: '12/10/22',
       text: 'Added support for Meteroite Crystal (P2) and Pandora\'s Plea (P2), and assume a 6% increase in both stats and proc effect inline with upcoming Uldar ilevel boost.',
     },

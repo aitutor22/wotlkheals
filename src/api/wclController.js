@@ -4,6 +4,7 @@ const ShamanAnalyzer = require('../wcl/shamanAnalyzer');
 const PaladinOverhealingAnalyzer = require('../wcl/paladinOverhealingAnalyzer');
 const PaladinDivinePleaAnalyzer = require('../wcl/paladinDivinePleaAnalyzer');
 const PriestRaptureAnalyzer = require('../wcl/priestRaptureAnalyzer');
+const PriestShieldAnalyzer = require('../wcl/priestShieldAnalyzer');
 const DruidRevitalizeAnalyzer = require('../wcl/druidAnalyzer');
 
 const analyzerOptions = require('../wcl/analyzerOptions');
@@ -11,23 +12,23 @@ const analyzerOptions = require('../wcl/analyzerOptions');
 // // // rapture
 // // https://classic.warcraftlogs.com/reports/nXarWYFR3tx1dJBH#type=resources&fight=4&view=events&pins=2%24Off%24%23244F4B%24expression%24ability.name%3D%22Rapture%22&spell=101
 // async function a() {
-//         let wclReader = new WclReader('https://classic.warcraftlogs.com/reports/qtZMRdhV43K7fc28#boss=-2&difficulty=0&type=deaths');
+//         let wclReader = new WclReader('https://classic.warcraftlogs.com/reports/HnjJ4MfADp7hTt36#fight=56&type=healing&source=7');
 //         let reportData = await wclReader.runQuery([
-//             {key: 'deaths', dataType: 'Deaths'}
+//             {key: 'healing', dataType: 'Healing', filterExpression: "ability.name='Power Word: Shield'"}
 //         ]);
-//         console.log(reportData['deaths']['data'].length)
-//         // console.log(reportData['revitalize']['data'])
-//         // console.log(reportData['revitalize']['data'].length)
-//         // fs = require('fs');
-//         // let text = JSON.stringify(reportData['revitalize']['data']);
-//         // fs.writeFile('data.txt', text, function (err) {
-//         //   if (err) return console.log(err);
-//         //   console.log('finshed saving');
-//         //   // console.log('Hello World > helloworld.txt');
-//         // });
+//         console.log(reportData['healing']['data'])
+// //         // console.log(reportData['revitalize']['data'])
+// //         // console.log(reportData['revitalize']['data'].length)
+// //         // fs = require('fs');
+// //         // let text = JSON.stringify(reportData['revitalize']['data']);
+// //         // fs.writeFile('data.txt', text, function (err) {
+// //         //   if (err) return console.log(err);
+// //         //   console.log('finshed saving');
+// //         //   // console.log('Hello World > helloworld.txt');
+// //         // });
 // }
 
-// a();
+// // a();
 
 exports.chainheal = async (req, res) => {
     const link = req.body.wclLink;
@@ -125,6 +126,52 @@ exports.rapture = async (req, res) => {
         });
     } catch (error) {
         res.status(400).send(error.message)
+    }
+};
+
+// we let the frontend handle most of the data processing
+exports.shield = async (req, res) => {
+    const link = req.body.wclLink;
+    // need to pass in fight and source
+    if (link.indexOf('fight=') === -1) {
+        return res.status(400).send({message: 'Invalid url link'});
+    }
+
+    if (link.indexOf('source=') === -1) {
+        return res.status(400).send({message: 'Invalid url link'});
+    }
+
+    let overrideFightId = null;
+
+    console.log(req.body);
+    // if a specific fightId is passed, then use it
+    if (req.body['fightId']) {
+        overrideFightId = Number(req.body['fightId'])
+    } 
+    try {
+        let wclReader = new WclReader(link);
+        let reportData = await wclReader.runQuery([
+            {key: 'casts', dataType: 'Casts', filterExpression: "ability.name='Power Word: Shield'"},
+            {key: 'healing', dataType: 'Healing', filterExpression: "ability.name='Power Word: Shield'"},
+        ]);
+
+        let analyzer = new PriestShieldAnalyzer(reportData);
+        let [playerDetails, playerIdToData] = await wclReader.getPlayerDetails();
+        let sourcePlayerData = playerIdToData[wclReader._defaultLinkData['sourceId']];
+        if (sourcePlayerData['type'] !== 'Priest') {
+            throw new Error('Source Id is not a priest');
+        }
+        let startTime = wclReader.fightTime['startTime'];
+        let combinedData = await analyzer.run(startTime);
+        res.send({
+            data: combinedData,
+            playerIdToData: playerIdToData,
+            otherFightOptions: wclReader._otherFightOptions,
+            currentFightId: wclReader._selectedFightId,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(400).send(error.message);
     }
 };
 

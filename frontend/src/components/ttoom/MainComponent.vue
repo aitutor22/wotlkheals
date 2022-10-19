@@ -305,6 +305,11 @@ export default {
           return;
         }
 
+        if (this.oomOptions['tier']['4pT8'] && (this.oomOptions['tier']['2pT7'] || this.oomOptions['tier']['4pT7'])) {
+          alert('4PT8 was selected as well as other T7 pieces');
+          return;
+        }
+
         if (this.oomOptions['talents']['enlightenedJudgements'] < 0 || this.oomOptions['talents']['enlightenedJudgements'] > 2
             || !Number.isInteger(this.oomOptions['talents']['enlightenedJudgements'])) {
           alert('Please input a valid value for Enlightened Judgements');

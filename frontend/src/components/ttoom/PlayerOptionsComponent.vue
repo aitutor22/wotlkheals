@@ -52,6 +52,11 @@
                   <label class="form-check-label" for="4pT7"
                     v-b-tooltip.hover title="The cost of your Holy Light is reduced by 5%.">4PT7</label>
                 </div>
+                <div v-if="playerClass === 'paladin'" class="form-check form-check-inline ml-4">
+                  <input class="form-check-input" type="checkbox" id="4pT8" v-model="oomOptions['tier']['4pT8']">
+                  <label class="form-check-label" for="4pT8"
+                    v-b-tooltip.hover title="Your Sacred Shield can now trigger its effect every 4 sec instead of every 6.">4PT8</label>
+                </div>
 
                 <!-- shaman tier -->
                 <div v-if="playerClass === 'shaman'" class="form-check form-check-inline">
