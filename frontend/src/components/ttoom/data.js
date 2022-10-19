@@ -51,7 +51,7 @@ const data = {
       {
         name: 'P1 bis with 4pT8',
         default: false,
-        url: 'hhttps://eightyupgrades.com/set/9t3yye9MLjexdzhERnPqXb',
+        url: 'https://eightyupgrades.com/set/9t3yye9MLjexdzhERnPqXb',
         notes: 'Purely for comparison sakes; assumes +6% ilevel increase on gear',
         charSheetStats: {
           int: 1472,
