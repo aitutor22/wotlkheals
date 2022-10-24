@@ -9,7 +9,7 @@
           This tool aims to show you what Power Word: Shields whiffed (aka expired without absorbing a single bit of damage).
         </p>
         <p>
-          To start, paste the wcl link of a specific fight.
+          To start, paste the wcl link of a specific fight with your priest selected (there should be a source=x in your url). If you want to only analyze the first x seconds of a fight (e.g. P1 of Heigan), you can manually set an endpoint timestamp, and the tool will analyze shields casted from the start of the fight to your inputted endpoint (damage absorbed within 30s of the end point will still be tracked).
         </p>
       </div>
     </div>
@@ -77,7 +77,6 @@ export default {
     currentFightId(newVal, oldVal) {
       // we only want to repull when user has already run once, and is selecting from select input
       if (oldVal === '' || isNaN(oldVal) || newVal === oldVal) return;
-      console.log(oldVal, newVal)
       this.runHelper(newVal);
     },
     results: {
@@ -103,7 +102,6 @@ export default {
   methods: {
     // if a specific fight id is passed, then we use that, regardless of what the fight id is on the wcl link
     runHelper(specificFightId=null) {
-      console.log('run helper');
       this.fetching = true;
       this.results = null;
       let toPass = {wclLink: this.wclLink};
@@ -114,10 +112,12 @@ export default {
       axios
           .post(`analyzer/priest/shield`, toPass)
           .then((response) => {
+            console.log(response.data);
             this.fetching = false;
             this.results = response.data;
             this.currentFightId = Number(response.data['currentFightId']);
             this.showExplanation = false;
+            this.endAnalysisTimeOffset = response.data['fightLength'];
           })
           .catch((error)  => {
             console.log(error);

@@ -143,13 +143,12 @@ exports.shield = async (req, res) => {
 
     let overrideFightId = null;
 
-    console.log(req.body);
     // if a specific fightId is passed, then use it
     if (req.body['fightId']) {
         overrideFightId = Number(req.body['fightId'])
     } 
     try {
-        let wclReader = new WclReader(link);
+        let wclReader = new WclReader(link, overrideFightId);
         let reportData = await wclReader.runQuery([
             {key: 'casts', dataType: 'Casts', filterExpression: "ability.name='Power Word: Shield'"},
             {key: 'healing', dataType: 'Healing', filterExpression: "ability.name='Power Word: Shield'"},
@@ -163,11 +162,14 @@ exports.shield = async (req, res) => {
         }
         let startTime = wclReader.fightTime['startTime'];
         let combinedData = await analyzer.run(startTime);
+        let fightLength = Math.ceil((wclReader.fightTime['endTime'] - wclReader.fightTime['startTime']) / 1000);
+
         res.send({
             data: combinedData,
             playerIdToData: playerIdToData,
             otherFightOptions: wclReader._otherFightOptions,
             currentFightId: wclReader._selectedFightId,
+            fightLength: fightLength,
         });
     } catch (error) {
         console.log(error);

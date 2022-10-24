@@ -132,12 +132,60 @@ class WclReader {
             playerDetails(startTime: ${this._reportStartTime}, endTime: ${this._reportEndTime})
         `;
 
+// Paladin
+// Druid
+// DeathKnight
+// DeathKnight
+// Paladin
+// Paladin
+// Warrior
+// Druid
+// Rogue
+// Warlock
+// Rogue
+// Priest
+// Mage
+// DeathKnight
+// Hunter
+// Warlock
+// Druid
+// Priest
+// Druid
+// Warrior
+// Paladin
+// Shaman
+// Druid
+
         let results = await this.pullData(subQuery);
         this._playerDetails = results['playerDetails']['data']['playerDetails'];
         this._playerIdToData = {};
+        // classes that are definitely melee dps
+        const MELEE_DPS = ['Warrior', 'DeathKnight', 'Rogue', 'Paladin'];
+        const RANGED_DPS = ['Mage', 'Warlock', 'Priest', 'Hunter'];
+        const MELEE_SPECS = ['Feral', 'Enhancement'];
         for (let role in this._playerDetails) {
             for (let player of this._playerDetails[role]) {
                 this._playerIdToData[player['id']] = player;
+                if (role === 'healers' || role === 'tanks') {
+                    this._playerIdToData[player['id']]['role'] = role;
+                } else {
+                    // for dps, we want to split into melee dps and ranged rps
+                    if (MELEE_DPS.indexOf(player.type) > -1) {
+                        this._playerIdToData[player['id']]['role'] = 'melee_dps';
+                    } else if (RANGED_DPS.indexOf(player.type) > -1) {
+                        this._playerIdToData[player['id']]['role'] = 'ranged_dps';
+                    } else {
+                        try {
+                            // sometimes wcl shows 2 specs, we take the higher one
+                            player.specs.sort((a, b) => (b['count'] - a['count']));
+                            let dominantSpec = player.specs[0]['spec'];
+                            this._playerIdToData[player['id']]['role'] = MELEE_SPECS.indexOf(dominantSpec)
+                                ? 'melee_dps' : 'ranged_dps';
+                        } catch(error) {
+                            this._playerIdToData[player['id']]['role'] = 'hybrid_dps';    
+                        }
+                    }
+                }
             }
         }
         return [this._playerDetails, this._playerIdToData];
@@ -161,6 +209,7 @@ class WclReader {
             }
             
             if (fightId === 'last') fightId = this._lastFightId;
+
             this._selectedFightId = fightId;
 
             let subQuery = '',

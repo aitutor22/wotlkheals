@@ -108,6 +108,7 @@ export default {
     currentFightId(newVal, oldVal) {
       // we only want to repull when user has already run once, and is selecting from select input
       if (oldVal === '' || isNaN(oldVal) || newVal === oldVal) return;
+      // console.log(oldVal, newVal);
       this.runHelper(newVal);
     },
   },
@@ -176,7 +177,9 @@ export default {
             this.fetching = false;
             console.log(response.data);
             this.results = response.data;
+            // console.log('old currentFightId: ' + this.currentFightId);
             this.currentFightId = Number(response.data['currentFightId']);
+            // console.log('new currentFightId: ' + this.currentFightId);
             this.showExplanation = false;
           })
           .catch((error)  => {
