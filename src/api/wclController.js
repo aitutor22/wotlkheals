@@ -155,7 +155,7 @@ exports.shield = async (req, res) => {
         ]);
 
         let analyzer = new PriestShieldAnalyzer(reportData);
-        let [playerDetails, playerIdToData] = await wclReader.getPlayerDetails();
+        let [playerDetails, playerIdToData] = await wclReader.getPlayerDetails(true);
         let sourcePlayerData = playerIdToData[wclReader._defaultLinkData['sourceId']];
         if (sourcePlayerData['type'] !== 'Priest') {
             throw new Error('Source Id is not a priest');

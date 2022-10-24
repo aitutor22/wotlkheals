@@ -49,7 +49,7 @@
           <h4>Whiffed Casts: {{ totalWhiffedCasts }} whiffed / {{ totalCasts }} total ({{ percentageWhiffed }}%)</h4>
           <ul class="light-grey">
             <li v-for="(row, index) in logs" :key="index">
-              Shield casted at {{ row.timestamp }}s on <span :class="row.playerClass">{{ row.name}}</span> whiffed!
+              Shield casted at {{ row.timestamp }}s on <span :class="row.playerClass">{{ row.name}}</span> whiffed! ({{ row.playerRole }})
             </li>
           </ul>
         </div>
@@ -174,7 +174,7 @@ export default {
           } else {
             name = 'Pet';
             playerClass = 'Pet';
-            playerRole = 'melee_dps';
+            playerRole = 'pet';
           }
           return [name, playerClass, playerRole];
         }
@@ -187,6 +187,7 @@ export default {
             timestamp: pwsCastedTimestamp,
             name: name,
             playerClass: playerClass,
+            playerRole: playerRole,
           });
 
           if (!(playerRole in whiffedCastsByRole)) {
@@ -212,25 +213,25 @@ export default {
             for (let event of castsSequence[targetID]) {
                 // initial cast of PWS on this target -> we only start counting from this onwards
                 if (event['type'] === 'cast') {
-                    if (!startedCounting) {
-                        if (event['timestamp'] > endAnalysisTimeOffset) break;
-                        startedCounting = true;
-                        pwsCastedTimestamp = event['timestamp'];
-                        // totalCasts++;
-                        addCast(targetID);
-                        continue;
-                    }
-                    checkIfShouldAddToWhiffed(pwsCastedTimestamp, targetID, totalDamageAbsorbed);
-                    // resets for next pws
-                    totalDamageAbsorbed = 0;
+                  if (!startedCounting) {
+                    if (event['timestamp'] > endAnalysisTimeOffset) break;
+                    startedCounting = true;
                     pwsCastedTimestamp = event['timestamp'];
-
-                    // if we find a pws cast after the end of analysis time, it means we stop analysing after this
-                    if (event['timestamp'] > endAnalysisTimeOffset) {
-                        finishedCountingForPlayer = true;
-                        break;
-                    }
+                    // totalCasts++;
                     addCast(targetID);
+                    continue;
+                  }
+                  checkIfShouldAddToWhiffed(pwsCastedTimestamp, targetID, totalDamageAbsorbed);
+                  // resets for next pws
+                  totalDamageAbsorbed = 0;
+                  pwsCastedTimestamp = event['timestamp'];
+
+                  // if we find a pws cast after the end of analysis time, it means we stop analysing after this
+                  if (event['timestamp'] > endAnalysisTimeOffset) {
+                    finishedCountingForPlayer = true;
+                    break;
+                  }
+                  addCast(targetID);
                 } else {
                     if (!startedCounting) continue;
                     // we stop counting until 30s after last pws cast since that's how long pws lasts
@@ -251,8 +252,7 @@ export default {
         this.totalCasts = totalCasts;
         this.totalWhiffedCasts = totalWhiffedCasts;
         this.whiffedCastsByRoleTableData = [];
-        console.log(totalCastsByRole);
-        for (let role of ['tanks', 'melee_dps', 'ranged_dps', 'healers']) {
+        for (let role of ['tanks', 'melee_dps', 'ranged_dps', 'healers', 'pet']) {
           let entry = {};
           entry['role'] = role;
           entry['casts'] = (role in totalCastsByRole) ? totalCastsByRole[role] : 0;

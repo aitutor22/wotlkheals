@@ -46,7 +46,7 @@
           Rapture Analyzer
         </b-dropdown-item>
         <b-dropdown-item to="/priest/analyzer/shield/">
-          Shield Analyzer
+          Whiffed Shield Analyzer
         </b-dropdown-item>
       </b-nav-item-dropdown>
     </b-nav>

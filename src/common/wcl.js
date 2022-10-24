@@ -126,16 +126,28 @@ class WclReader {
         }
     }
 
+    // pulling playerDetails from the whole report sometimes gives weird resukts
+    // for instance, a druid player can appear as all three specs (happened on https://classic.warcraftlogs.com/reports/1Zx8BDnMNXGHz6FK#type=summary&boss=-3&difficulty=0)
+    // to solve this, use playerDetails for the specific fight if passed
+    async getPlayerDetails(lookAtSelectedFightIdOnly=true) {
+        let subQuery;
 
-    async getPlayerDetails() {
-        let subQuery =  `
-            playerDetails(startTime: ${this._reportStartTime}, endTime: ${this._reportEndTime})
-        `;
+        if (!lookAtSelectedFightIdOnly) {
+            subQuery =  `
+                playerDetails(startTime: ${this._reportStartTime}, endTime: ${this._reportEndTime})
+            `;
+        } else {
+            let startTime = this._fightTimesMap[this._selectedFightId]['startTime'],
+                endTime = this._fightTimesMap[this._selectedFightId]['endTime'];
+            subQuery =  `
+                playerDetails(startTime: ${startTime}, endTime: ${endTime})
+            `;
+        }
 
         let results = await this.pullData(subQuery);
         this._playerDetails = results['playerDetails']['data']['playerDetails'];
         this._playerIdToData = {};
-        // classes that are definitely melee dps
+        // dps classes that are definitely melee
         const MELEE_DPS = ['Warrior', 'DeathKnight', 'Rogue', 'Paladin'];
         const RANGED_DPS = ['Mage', 'Warlock', 'Priest', 'Hunter'];
         const MELEE_SPECS = ['Feral', 'Enhancement'];
