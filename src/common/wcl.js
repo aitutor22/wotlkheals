@@ -132,30 +132,6 @@ class WclReader {
             playerDetails(startTime: ${this._reportStartTime}, endTime: ${this._reportEndTime})
         `;
 
-// Paladin
-// Druid
-// DeathKnight
-// DeathKnight
-// Paladin
-// Paladin
-// Warrior
-// Druid
-// Rogue
-// Warlock
-// Rogue
-// Priest
-// Mage
-// DeathKnight
-// Hunter
-// Warlock
-// Druid
-// Priest
-// Druid
-// Warrior
-// Paladin
-// Shaman
-// Druid
-
         let results = await this.pullData(subQuery);
         this._playerDetails = results['playerDetails']['data']['playerDetails'];
         this._playerIdToData = {};

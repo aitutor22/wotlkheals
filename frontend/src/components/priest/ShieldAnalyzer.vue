@@ -40,12 +40,20 @@
         </div>
       </div>
       <hr>
-      <p>Whiffed Casts: {{ totalWhiffedCasts }} whiffed / {{ totalCasts }} total ({{ percentageWhiffed }}%)</p>
-      <ul class="light-grey">
-        <li v-for="(row, index) in logs" :key="index">
-          Shield casted at {{ row.timestamp }}s on <span :class="row.playerClass">{{ row.name}}</span> whiffed!
-        </li>
-      </ul>
+      <div class="row">
+        <div class="col-md-6">
+          <h4 class="">Whiffed casts by role</h4>
+          <b-table :items="whiffedCastsByRoleTableData"></b-table>
+        </div>
+        <div class="col-md-6">
+          <h4>Whiffed Casts: {{ totalWhiffedCasts }} whiffed / {{ totalCasts }} total ({{ percentageWhiffed }}%)</h4>
+          <ul class="light-grey">
+            <li v-for="(row, index) in logs" :key="index">
+              Shield casted at {{ row.timestamp }}s on <span :class="row.playerClass">{{ row.name}}</span> whiffed!
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -71,6 +79,8 @@ export default {
       endAnalysisTimeOffset: 30, // analyze spellcasts from 0s to xs
       totalCasts: 0,
       totalWhiffedCasts: 0,
+      whiffedCastsByRole: {},
+      whiffedCastsByRoleTableData: [],
     };
   },
   watch: {
@@ -144,6 +154,8 @@ export default {
         let logs = [];
         let totalCasts = 0; // refers to total pws casts (not just whiffed casts)
         let totalWhiffedCasts = 0;
+        let whiffedCastsByRole = {};
+        let totalCastsByRole = {};
 
         for (let entry of combined) {
             let key = entry['targetID'];
@@ -153,24 +165,43 @@ export default {
             castsSequence[key].push(entry);
         }
 
+        function getDetails(targetID) {
+          let name, playerClass, playerRole;
+          if (targetID in playerIdToData) {
+            name = playerIdToData[targetID]['name'];
+            playerClass = playerIdToData[targetID]['type'];
+            playerRole = playerIdToData[targetID]['role'];
+          } else {
+            name = 'Pet';
+            playerClass = 'Pet';
+            playerRole = 'melee_dps';
+          }
+          return [name, playerClass, playerRole];
+        }
+
         function checkIfShouldAddToWhiffed(pwsCastedTimestamp, targetID, damageTaken) {
-            if (damageTaken > minDamageAbsorbedThreshold) return;
-            // if (!(targetID in whiffed)) whiffed[targetID] = 0;
-            // whiffed[targetID]++;
-            totalWhiffedCasts++;
-            let name, playerClass;
-            if (targetID in playerIdToData) {
-              name = playerIdToData[targetID]['name'];
-              playerClass = playerIdToData[targetID]['type'];
-            } else {
-              name = 'Pet';
-              playerClass = 'Pet';
-            }
-            logs.push({
-              timestamp: pwsCastedTimestamp,
-              name: name,
-              playerClass: playerClass,
-            });
+          if (damageTaken > minDamageAbsorbedThreshold) return;
+          totalWhiffedCasts++;
+          let [name, playerClass, playerRole] = getDetails(targetID);
+          logs.push({
+            timestamp: pwsCastedTimestamp,
+            name: name,
+            playerClass: playerClass,
+          });
+
+          if (!(playerRole in whiffedCastsByRole)) {
+            whiffedCastsByRole[playerRole] = 0;  
+          }
+          whiffedCastsByRole[playerRole]++;
+        }
+
+        function addCast(targetID) {
+          let [name, playerClass, playerRole] = getDetails(targetID);
+          totalCasts++;
+          if (!(playerRole in totalCastsByRole)) {
+            totalCastsByRole[playerRole] = 0;  
+          }
+          totalCastsByRole[playerRole]++;
         }
 
         for (let targetID in castsSequence) {
@@ -185,7 +216,8 @@ export default {
                         if (event['timestamp'] > endAnalysisTimeOffset) break;
                         startedCounting = true;
                         pwsCastedTimestamp = event['timestamp'];
-                        totalCasts++;
+                        // totalCasts++;
+                        addCast(targetID);
                         continue;
                     }
                     checkIfShouldAddToWhiffed(pwsCastedTimestamp, targetID, totalDamageAbsorbed);
@@ -198,7 +230,7 @@ export default {
                         finishedCountingForPlayer = true;
                         break;
                     }
-                    totalCasts++;
+                    addCast(targetID);
                 } else {
                     if (!startedCounting) continue;
                     // we stop counting until 30s after last pws cast since that's how long pws lasts
@@ -218,6 +250,24 @@ export default {
         this.logs = logs;
         this.totalCasts = totalCasts;
         this.totalWhiffedCasts = totalWhiffedCasts;
+        this.whiffedCastsByRoleTableData = [];
+        console.log(totalCastsByRole);
+        for (let role of ['tanks', 'melee_dps', 'ranged_dps', 'healers']) {
+          let entry = {};
+          entry['role'] = role;
+          entry['casts'] = (role in totalCastsByRole) ? totalCastsByRole[role] : 0;
+          entry['whiffed'] = (role in whiffedCastsByRole) ? whiffedCastsByRole[role] : 0;
+          entry['whiffed_%'] = entry['casts'] > 0 ?
+            Math.floor(entry['whiffed'] / entry['casts'] * 100): 0;
+          entry['casts_%'] = totalCasts > 0 ?
+            Math.floor(entry['casts'] / totalCasts * 100): 0;
+
+          if (entry['whiffed_%'] > 50) {
+            entry['_rowVariant'] = 'danger';
+          }
+
+          this.whiffedCastsByRoleTableData.push(entry);
+        }
     }
   },
   mounted() {
