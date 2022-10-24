@@ -149,9 +149,11 @@ exports.shield = async (req, res) => {
     } 
     try {
         let wclReader = new WclReader(link, overrideFightId);
+        // to avoid translation issues, we avoid ability.name ="Power Word: Shield" as that wont work for german, etc log
+        let filterExpression = 'ability.id in (48066, 48065, 25218, 25217, 10901, 10900, 10899, 10898, 6066, 6065, 3747, 600, 592, 17)'
         let reportData = await wclReader.runQuery([
-            {key: 'casts', dataType: 'Casts', filterExpression: "ability.name='Power Word: Shield'"},
-            {key: 'healing', dataType: 'Healing', filterExpression: "ability.name='Power Word: Shield'"},
+            {key: 'casts', dataType: 'Casts', filterExpression: filterExpression},
+            {key: 'healing', dataType: 'Healing', filterExpression: filterExpression},
         ]);
 
         let analyzer = new PriestShieldAnalyzer(reportData);
