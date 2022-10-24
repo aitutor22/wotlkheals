@@ -167,7 +167,7 @@ class WclReader {
                             // sometimes wcl shows 2 specs, we take the higher one
                             player.specs.sort((a, b) => (b['count'] - a['count']));
                             let dominantSpec = player.specs[0]['spec'];
-                            this._playerIdToData[player['id']]['role'] = MELEE_SPECS.indexOf(dominantSpec)
+                            this._playerIdToData[player['id']]['role'] = MELEE_SPECS.indexOf(dominantSpec) > -1
                                 ? 'melee_dps' : 'ranged_dps';
                         } catch(error) {
                             this._playerIdToData[player['id']]['role'] = 'hybrid_dps';    
