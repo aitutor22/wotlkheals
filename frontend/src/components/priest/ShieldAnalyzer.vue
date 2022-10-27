@@ -41,20 +41,32 @@
       </div>
       <hr>
       <div class="row">
-        <div class="col-md-12">
-          <h4 class="">Whiffed casts by role</h4>
+        <div class="col-md-8">
+          <h4>Whiffed casts by role</h4>
           <b-table :items="whiffedCastsByRoleTableData"></b-table>
+        </div>
+        <div class="col-md-4">
+          <h4>Rapture Statistics</h4>
+          <p v-b-tooltip.hover title="Note that when a PWS on the priest is the one that triggered rapture, it counts as two procs">
+            Total Raptures: {{ totalRaptures }} ({{ rapturesPerMin }} per min)
+          </p>
+          <p v-b-tooltip.hover title="Raptures that occur within 1s of each other are grouped together">Amount of raptures</p>
+          <ul>
+            <li v-for="(num, timestamp, index) in rapturesBreakdown" :key="index">
+              {{ timestamp }}s: {{ num }} raptures
+            </li>
+          </ul>
         </div>
       </div>
       <div class="row mt-4">
-        <div class="col-md-6 center">
+        <div class="col-md-8 center">
           <h4>Damage Taken By Role</h4>
           <PieChart
             :chart-data="chartData"
             :chart-options="chartOptions"
             />
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
           <h4>Whiffed Logs</h4>
           <ul class="light-grey">
             <li v-for="(row, index) in logs" :key="index">
@@ -90,7 +102,10 @@ export default {
       totalWhiffedCasts: 0,
       whiffedCastsByRole: {},
       whiffedCastsByRoleTableData: [],
+      totalRaptures: 0,
+      rapturesPerMin: 0,
       chartData: null,
+      rapturesBreakdown: null,
     };
   },
   components: {
@@ -106,7 +121,7 @@ export default {
       deep: true,
       handler() {
         if (!this.results) return;
-        this.analyze(this.results['data'], 0, this.endAnalysisTimeOffset, this.results['playerIdToData'], this.results['damageTaken']);
+        this.analyze(this.results['data'], 0, this.endAnalysisTimeOffset, this.results['playerIdToData'], this.results['damageTaken'], this.results['rapturesData']);
       },
     },
     // this is being called everytime results is changed aka everytime we change a fight, analyze is called twice
@@ -114,7 +129,7 @@ export default {
     endAnalysisTimeOffset: {
       handler() {
         if (!this.results) return;
-        this.analyze(this.results['data'], 0, this.endAnalysisTimeOffset, this.results['playerIdToData'], this.results['damageTaken']);
+        this.analyze(this.results['data'], 0, this.endAnalysisTimeOffset, this.results['playerIdToData'], this.results['damageTaken'], this.results['rapturesData']);
       },
     },
   },
@@ -174,8 +189,37 @@ export default {
       }
       this.runHelper();
     },
+    analyzerRaptures(data) {
+      let totalRaptures = 0;
+      let counter = {};
+      let previousTimestamp = -99;
+      let currentTimestamp = 0;
+      for (let entry of data) {
+        currentTimestamp = entry['timestamp'];
+        if (currentTimestamp <= this.endAnalysisTimeOffset) {
+          // there could be slight delay between raptures (especially for own priest proc)
+          // thus we use a threshold of 1s to determine if same rapture
+          if (currentTimestamp - previousTimestamp < 1) {
+            currentTimestamp = previousTimestamp;
+          } else {
+            previousTimestamp = currentTimestamp;
+          }
+
+          if (!(currentTimestamp in counter)) {
+            counter[currentTimestamp] = 0;
+          }
+          counter[currentTimestamp]++;
+          totalRaptures++;
+        } else {
+          break;
+        }
+      }
+      this.totalRaptures = totalRaptures;
+      this.rapturesPerMin = this.endAnalysisTimeOffset > 0 ? (totalRaptures / (this.endAnalysisTimeOffset) * 60).toFixed(1) : 0;
+      this.rapturesBreakdown = counter;
+    },
     // we check for all PWS casts from startTime to endTime, how many casts whiffed (note that we will need to check up to 30s)
-    analyze(combined, startAnalysisTimeOffset, endAnalysisTimeOffset, playerIdToData, overallDamageTakenData, minDamageAbsorbedThreshold=0) {
+    analyze(combined, startAnalysisTimeOffset, endAnalysisTimeOffset, playerIdToData, overallDamageTakenData, rapturesData, minDamageAbsorbedThreshold=0) {
         console.log('running analze');
         let castsSequence = {};
         let logs = [];
@@ -304,7 +348,7 @@ export default {
           }
           this.whiffedCastsByRoleTableData.push(entry);
         }
-        // lastly we add a totals row
+        // we add a totals row
         let totalEntry = {};
         totalEntry['role'] = 'total';
         totalEntry['casts'] = totalCasts;
@@ -325,6 +369,8 @@ export default {
             }
           ]
         };
+
+        this.analyzerRaptures(rapturesData);
     }
   },
   mounted() {

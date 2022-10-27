@@ -8,6 +8,7 @@ class Analyzer {
         this._rawdata = JSON.parse(JSON.stringify(data));
         this._castsData = this._rawdata['casts']['data'];
         this._healsData = this._rawdata['healing']['data'];
+        this._rapturesData = this._rawdata['raptures']['data'];
     }
 
     run(startTime) {
@@ -15,8 +16,11 @@ class Analyzer {
         combined.sort((a, b) => (a['timestamp'] - b['timestamp']));
         for (let entry of combined) {
             entry['timestamp'] = (entry['timestamp'] - startTime) / 1000;
-        }   
-        return combined;
+        }
+        for (let raptureEntry of this._rapturesData) {
+            raptureEntry['timestamp'] = (raptureEntry['timestamp'] - startTime) / 1000;
+        }
+        return [combined, this._rapturesData];
     }
 }
 

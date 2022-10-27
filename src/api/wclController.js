@@ -154,6 +154,7 @@ exports.shield = async (req, res) => {
         let reportData = await wclReader.runQuery([
             {key: 'casts', dataType: 'Casts', filterExpression: filterExpression},
             {key: 'healing', dataType: 'Healing', filterExpression: filterExpression},
+            {key: 'raptures', dataType: 'Resources', filterExpression: 'ability.id in (47755, 63654)'},
         ]);
 
         let analyzer = new PriestShieldAnalyzer(reportData);
@@ -163,11 +164,12 @@ exports.shield = async (req, res) => {
             throw new Error('Source Id is not a priest');
         }
         let startTime = wclReader.fightTime['startTime'];
-        let combinedData = await analyzer.run(startTime);
+        let [combinedData, rapturesData] = analyzer.run(startTime);
         let fightLength = Math.ceil((wclReader.fightTime['endTime'] - wclReader.fightTime['startTime']) / 1000);
 
         res.send({
             data: combinedData,
+            rapturesData: rapturesData,
             playerIdToData: playerIdToData,
             otherFightOptions: wclReader._otherBossFightOptions, // for shield, we only want to analyze boss fights
             currentFightId: wclReader._selectedFightId,
