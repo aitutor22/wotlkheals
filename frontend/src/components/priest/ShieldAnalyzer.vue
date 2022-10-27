@@ -41,12 +41,21 @@
       </div>
       <hr>
       <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-12">
           <h4 class="">Whiffed casts by role</h4>
           <b-table :items="whiffedCastsByRoleTableData"></b-table>
         </div>
+      </div>
+      <div class="row mt-4">
+        <div class="col-md-6 center">
+          <h4>Damage Taken By Role</h4>
+          <PieChart
+            :chart-data="chartData"
+            :chart-options="chartOptions"
+            />
+        </div>
         <div class="col-md-6">
-          <h4>Whiffed Casts: {{ totalWhiffedCasts }} whiffed / {{ totalCasts }} total ({{ percentageWhiffed }}%)</h4>
+          <h4>Whiffed Logs</h4>
           <ul class="light-grey">
             <li v-for="(row, index) in logs" :key="index">
               Shield casted at {{ row.timestamp }}s on <span :class="row.playerClass">{{ row.name}}</span> whiffed! ({{ row.playerRole }})
@@ -61,7 +70,7 @@
 <script>
 
 import axios from 'axios';
-
+import PieChart from './PieChart';
 
 export default {
   name: 'PriestShieldAnalyzer',
@@ -81,7 +90,11 @@ export default {
       totalWhiffedCasts: 0,
       whiffedCastsByRole: {},
       whiffedCastsByRoleTableData: [],
+      chartData: null,
     };
+  },
+  components: {
+    PieChart,
   },
   watch: {
     currentFightId(newVal, oldVal) {
@@ -93,13 +106,15 @@ export default {
       deep: true,
       handler() {
         if (!this.results) return;
-        this.analyze(this.results['data'], 0, this.endAnalysisTimeOffset, this.results['playerIdToData']);
+        this.analyze(this.results['data'], 0, this.endAnalysisTimeOffset, this.results['playerIdToData'], this.results['damageTaken']);
       },
     },
+    // this is being called everytime results is changed aka everytime we change a fight, analyze is called twice
+    // need to refactor in future
     endAnalysisTimeOffset: {
       handler() {
         if (!this.results) return;
-        this.analyze(this.results['data'], 0, this.endAnalysisTimeOffset, this.results['playerIdToData']);
+        this.analyze(this.results['data'], 0, this.endAnalysisTimeOffset, this.results['playerIdToData'], this.results['damageTaken']);
       },
     },
   },
@@ -107,7 +122,18 @@ export default {
     percentageWhiffed() {
       if (this.totalCasts === 0) return 0;
       return Math.floor(this.totalWhiffedCasts / this.totalCasts * 100);
-    }
+    },
+    chartOptions() {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+          },
+        },
+      };
+    },
   },
   methods: {
     // if a specific fight id is passed, then we use that, regardless of what the fight id is on the wcl link
@@ -149,7 +175,8 @@ export default {
       this.runHelper();
     },
     // we check for all PWS casts from startTime to endTime, how many casts whiffed (note that we will need to check up to 30s)
-    analyze(combined, startAnalysisTimeOffset, endAnalysisTimeOffset, playerIdToData, minDamageAbsorbedThreshold=0) {
+    analyze(combined, startAnalysisTimeOffset, endAnalysisTimeOffset, playerIdToData, overallDamageTakenData, minDamageAbsorbedThreshold=0) {
+        console.log('running analze');
         let castsSequence = {};
         let logs = [];
         let totalCasts = 0; // refers to total pws casts (not just whiffed casts)
@@ -252,6 +279,13 @@ export default {
         this.totalCasts = totalCasts;
         this.totalWhiffedCasts = totalWhiffedCasts;
         this.whiffedCastsByRoleTableData = [];
+
+
+        let totalDamageTaken = 0;
+        for (let key in overallDamageTakenData) {
+          totalDamageTaken += overallDamageTakenData[key];
+        }
+
         for (let role of ['tanks', 'melee_dps', 'ranged_dps', 'healers', 'pet']) {
           let entry = {};
           entry['role'] = role;
@@ -262,12 +296,35 @@ export default {
           entry['casts_%'] = totalCasts > 0 ?
             Math.floor(entry['casts'] / totalCasts * 100): 0;
 
+          entry['damage_taken_%'] = (totalDamageTaken > 0) && (role in overallDamageTakenData) ?
+            Math.floor(overallDamageTakenData[role] / totalDamageTaken * 100) : 0
+
           if (entry['whiffed_%'] > 50) {
             entry['_rowVariant'] = 'danger';
           }
-
           this.whiffedCastsByRoleTableData.push(entry);
         }
+        // lastly we add a totals row
+        let totalEntry = {};
+        totalEntry['role'] = 'total';
+        totalEntry['casts'] = totalCasts;
+        totalEntry['whiffed'] = totalWhiffedCasts;
+        totalEntry['whiffed_%'] = Math.floor(this.totalWhiffedCasts / this.totalCasts * 100);
+        totalEntry['casts_%'] = 100;
+        totalEntry['damage_taken_%'] = 100;
+        this.whiffedCastsByRoleTableData.push(totalEntry);
+
+
+        // pie chart of damage taken
+        this.chartData = {
+          labels: Object.keys(overallDamageTakenData),
+          datasets: [
+            {
+              backgroundColor: ['#41B883', '#E46651', '#00D8FF', '#DD1B16', '#f58cba'],
+              data: Object.values(overallDamageTakenData),
+            }
+          ]
+        };
     }
   },
   mounted() {
@@ -278,6 +335,10 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.center {
+  text-align: center!important;
+}
+
 .no-pad-left {
   padding-left: 0px;
 }

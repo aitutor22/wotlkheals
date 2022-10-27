@@ -43,6 +43,7 @@ class WclReader {
 
         // to pass to frontend, allows user to select between fights
         this._otherFightOptions = [];
+        this._otherBossFightOptions = [];
 
         // code starts here - extract info fromlink
         let getWclCodeRegex = '',
@@ -129,22 +130,25 @@ class WclReader {
     // pulling playerDetails from the whole report sometimes gives weird resukts
     // for instance, a druid player can appear as all three specs (happened on https://classic.warcraftlogs.com/reports/1Zx8BDnMNXGHz6FK#type=summary&boss=-3&difficulty=0)
     // to solve this, use playerDetails for the specific fight if passed
-    async getPlayerDetails(lookAtSelectedFightIdOnly=true) {
-        let subQuery;
-
+    // adds a role field - tanks, healers, ranged_dps, caster_dps
+    async getDamageAndPlayerDetails(lookAtSelectedFightIdOnly=true) {
+        let startTime, endTime;
         if (!lookAtSelectedFightIdOnly) {
-            subQuery =  `
-                playerDetails(startTime: ${this._reportStartTime}, endTime: ${this._reportEndTime})
-            `;
+            startTime = this._reportStartTime;
+            endTime: this._reportEndTime;
         } else {
-            let startTime = this._fightTimesMap[this._selectedFightId]['startTime'],
-                endTime = this._fightTimesMap[this._selectedFightId]['endTime'];
-            subQuery =  `
-                playerDetails(startTime: ${startTime}, endTime: ${endTime})
-            `;
+            startTime = this._fightTimesMap[this._selectedFightId]['startTime'];
+            endTime = this._fightTimesMap[this._selectedFightId]['endTime'];
         }
+        let subQuery = `
+            playerDetails(startTime: ${startTime}, endTime: ${endTime})
+            damageTaken: table(startTime: ${startTime}, endTime: ${endTime}, dataType: DamageTaken)
+            petDamageTaken: table(startTime: ${startTime}, endTime: ${endTime}, dataType: DamageDone, hostilityType: Enemies, targetClass: "Pet")
+        `;
 
         let results = await this.pullData(subQuery);
+
+        // it's possible for a player to not be tracked due to wcl error with playerdetails
         this._playerDetails = results['playerDetails']['data']['playerDetails'];
         this._playerIdToData = {};
         // dps classes that are definitely melee
@@ -176,7 +180,31 @@ class WclReader {
                 }
             }
         }
-        return [this._playerDetails, this._playerIdToData];
+
+        // calculating damage taken
+        // WCL damage taken table doesn't show pets, so we need to obtain this in a different way
+        let totalDamageTaken = {
+            'tanks': 0,
+            'healers': 0,
+            'melee_dps': 0,
+            'ranged_dps': 0,
+            'pet': 0,
+            'unknown': 0,
+        };
+        for (let petEntry of results['petDamageTaken']['data']['entries']) {
+            totalDamageTaken['pet'] += petEntry['total'];
+        }
+
+        for (let playerEntry of results['damageTaken']['data']['entries']) {
+            try {
+                let role = this._playerIdToData[playerEntry['id']]['role'];
+                totalDamageTaken[role] += playerEntry['total'];
+            } catch(error) {
+                totalDamageTaken['unknown'] += playerEntry['total'];
+            }
+        }
+
+        return [this._playerDetails, this._playerIdToData, totalDamageTaken];
     }
 
     // NOTE -> need to support 'all' for fightId
@@ -381,6 +409,13 @@ class WclReader {
                     label: `${entry['name']} (${timeString})`,
                     fightId: entry['id'],
                 });
+
+                if (entry['encounterID'] > 0) {
+                    this._otherBossFightOptions.push({
+                        label: `${entry['name']} (${timeString})`,
+                        fightId: entry['id'],
+                    });
+                };
 
                 // for last fight, id isn't passed, and instead the string 'last' is used instead
                 // # NOTE: last refers to LAST BOSS FIGHT (trash not included)

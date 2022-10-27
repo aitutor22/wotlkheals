@@ -157,7 +157,7 @@ exports.shield = async (req, res) => {
         ]);
 
         let analyzer = new PriestShieldAnalyzer(reportData);
-        let [playerDetails, playerIdToData] = await wclReader.getPlayerDetails(true);
+        let [playerDetails, playerIdToData, damageTaken] = await wclReader.getDamageAndPlayerDetails(true);
         let sourcePlayerData = playerIdToData[wclReader._defaultLinkData['sourceId']];
         if (sourcePlayerData['type'] !== 'Priest') {
             throw new Error('Source Id is not a priest');
@@ -169,11 +169,13 @@ exports.shield = async (req, res) => {
         res.send({
             data: combinedData,
             playerIdToData: playerIdToData,
-            otherFightOptions: wclReader._otherFightOptions,
+            otherFightOptions: wclReader._otherBossFightOptions, // for shield, we only want to analyze boss fights
             currentFightId: wclReader._selectedFightId,
             fightLength: fightLength,
+            damageTaken: damageTaken,
         });
     } catch (error) {
+        console.log('error trying to analyze: ' + link);
         console.log(error);
         res.status(400).send(error.message);
     }
