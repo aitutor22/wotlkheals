@@ -34,8 +34,10 @@ exports.chainheal = async (req, res) => {
     const link = req.body.wclLink;
     try {
         let wclReader = new WclReader(link);
+        // using chain heal ids instead of name to avoid translation errors
+        let filterExpression = 'ability.id in (1064, 10622, 10623, 25422, 25423, 55458, 55459)';
         let reportData = await wclReader.runQuery([
-            {key: 'healing', dataType: 'Healing', useAbilityIDs: true, limit: 10000, filterExpression: "ability.name='Chain Heal'"},
+            {key: 'healing', dataType: 'Healing', useAbilityIDs: true, limit: 10000, filterExpression: filterExpression},
             {key: 'natureSwiftness', dataType: 'Casts', useAbilityIDs: true, limit: 10000, abilityID: 16188},
         ]);
 
