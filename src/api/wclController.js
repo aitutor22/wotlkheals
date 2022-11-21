@@ -71,6 +71,7 @@ exports.overhealing = async (req, res) => {
     }
 };
 
+
 exports.divinePlea = async (req, res) => {
     const link = req.body.wclLink;
     if (link.indexOf('fight=') === -1) {

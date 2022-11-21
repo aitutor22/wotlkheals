@@ -18,6 +18,9 @@ import PaladinOverhealingAnalyzer from
 
 import PaladinDivinePleaAnalyzer from
   '../components/paladin/DivinePleaAnalyzer.vue';
+
+import PaladinSacredShieldAnalyzer from
+  '../components/paladin/SacredShieldAnalyzer.vue';
   
 import ShamanChainHealAnalyzer from
   '../components/shaman/ChainHealAnalyzer.vue';
@@ -67,6 +70,11 @@ const routes: Array<RouteConfig> = [
     path: '/paladin/analyzer/divinecum/',
     name: 'paladin-divine-cum-analyzer',
     component: PaladinDivinePleaAnalyzer,
+  },
+  {
+    path: '/paladin/analyzer/sacredshield/',
+    name: 'paladin-sacred-shield-analyzer',
+    component: PaladinSacredShieldAnalyzer,
   },
   {
     path: '/priest/analyzer/rapture/',
