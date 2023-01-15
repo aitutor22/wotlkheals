@@ -328,15 +328,19 @@ class WclReader {
 
         endTime = (['bosses', 'all', 'trash'].indexOf(fightId) > -1) ? this._reportEndTime : this._fightTimesMap[fightId]['endTime'];
 
-        // adds sourceId if an argument is passed or if it exists in the initial wcl link
-        if (typeof options['sourceID'] !== 'undefined' && options['sourceID'] !== '') {
-            otherQueryFields += `, sourceID: ${options['sourceID']}`
-        } else if ((typeof options['sourceID'] === 'undefined') && this._defaultLinkData['sourceId'] !== null) {
-            otherQueryFields += `, sourceID: ${this._defaultLinkData['sourceId']}`;
+        // add sourceID unless we have explicit commands not to
+        if (typeof options['commands'] === 'undefined' || typeof options['commands']['noSourceId'] === 'undefined' || !options['commands']['noSourceId']) {
+            // adds sourceId if an argument is passed or if it exists in the initial wcl link
+            if (typeof options['sourceID'] !== 'undefined' && options['sourceID'] !== '') {
+                otherQueryFields += `, sourceID: ${options['sourceID']}`
+            } else if ((typeof options['sourceID'] === 'undefined') && this._defaultLinkData['sourceId'] !== null) {
+                otherQueryFields += `, sourceID: ${this._defaultLinkData['sourceId']}`;
+            }            
         }
 
         for (let key in options) {
-            if (key === 'key' || key === 'sourceID') continue;
+            // commands dictionary is to pass on extra info to subqueryHelper, should not actually be in message
+            if (key === 'key' || key === 'sourceID' || key === 'commands') continue;
             if (typeof options[key] !== 'undefined') {
                 otherQueryFields += (key !== 'filterExpression') ? `, ${key}: ${options[key]}` :
                     `, ${key}: "${options[key]}"`;

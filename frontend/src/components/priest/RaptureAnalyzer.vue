@@ -10,6 +10,7 @@
       <p>
         For each ability, the highest bubble rank that can be used to ensure it is broken immediately is shown for your convenience. To see a breakdown of PWS values by rank, please see <a href="https://docs.google.com/spreadsheets/d/1QPo0d4rUYFvvsRt2Fpu5_2DlcWeeGylJNx6qCCI9ybk/edit#gid=0"><b>Bael's sheet</b></a>.
       </p>
+      <p>Note: if you are wearing 4pT8, please add 250 to the spellpower field.</p>
     </div>
 
     <div class="row">
@@ -29,7 +30,6 @@
       >
       </v-select>      
     </div>
-
 
     <div class="row margin-top-40" v-if="results && results['data'].length === 0">
       <h3>No rapture opportunities found.</h3>
@@ -67,6 +67,21 @@
         </div>
       </div>
 
+      <div class="row">
+        <b-form-group
+          label="Sort By"
+        >
+          <b-form-radio-group
+            id="btn-radios-2"
+            v-model="selectedSortOption"
+            :options="sortOptions"
+            button-variant="outline-primary"
+            name="radio-btn-outline"
+            buttons
+          ></b-form-radio-group>
+        </b-form-group>
+      </div>
+
       <br>
       <div class="row">
         <b-table :items="tableData"></b-table>
@@ -99,9 +114,16 @@ export default {
       results: null,
       showHighDamageItemsOnly: true,
       currentFightId: '',
-      damageThreshold: 3000, // to determine what to show
-      spellPower: 2000,
-      hitsThreshold: 2,
+      damageThreshold: 4000, // to determine what to show
+      spellPower: 2600,
+      hitsThreshold: 3,
+
+      selectedSortOption: 'pwsRank',
+      sortOptions: [
+        { text: 'PWS Rank', value: 'pwsRank' },
+        { text: 'Timestamp', value: 'timestamp' },
+        { text: 'Spell Name', value: 'spellName' },
+      ]
     };
   },
   watch: {
@@ -129,7 +151,15 @@ export default {
 
       // https://www.benmvp.com/blog/quick-way-sort-javascript-array-multiple-fields/
       // sort first by pws rank, then by number of hits
-      data.sort((a, b) => (b['PWS Rank'] - a['PWS Rank']) || (b['numHits'] - a['numHits']) || (b['avgDamageTaken'] - a['avgDamageTaken']));
+      if (this.selectedSortOption === 'pwsRank') {
+        data.sort((a, b) => (b['PWS Rank'] - a['PWS Rank']) || (b['numHits'] - a['numHits']) || (b['avgDamageTaken'] - a['avgDamageTaken']));
+      } else if (this.selectedSortOption === 'timestamp') {
+        // sort by timestamp
+        data.sort((a, b) => (a['timestamp'] - b['timestamp']) || (b['PWS Rank'] - a['PWS Rank']) || (b['numHits'] - a['numHits']) || (b['avgDamageTaken'] - a['avgDamageTaken']));
+      } else {
+        // sort by name
+        data.sort((a, b) => (a['name'].localeCompare(b['name'])) || (b['PWS Rank'] - a['PWS Rank']) || (b['numHits'] - a['numHits']) || (b['avgDamageTaken'] - a['avgDamageTaken']));
+      }
 
       // we want to ensure that the key colors are taken by abilities that appear at the top (hence need rank -> hits)
       let colorMap = {},

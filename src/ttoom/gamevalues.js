@@ -94,7 +94,7 @@ const data = {
             name: 'Meteorite Crystal',
             itemType: 'trinket',
             base: {
-                int: 118, //originally 111, assume +6% ilevel buff
+                int: 125,
             },
             stackEffectOnSpellCast: {
                 requireActivation: true, // will only stack if buff is present
@@ -119,7 +119,7 @@ const data = {
                 overwrittenChanceBasedOnClass: {
                     paladin: 0.2, // paladin has 20% chance; assume works similarly to dmcg
                 },
-                spellpower: 796, // originally 751, assume +6% ilevel buff
+                spellpower: 794, // originally 751, 794 after buff
                 duration: 10,
                 createsBuff: true, // if this is true, creates a buff with the same name
             },
@@ -515,7 +515,7 @@ const data = {
             startAtTimestamp: false,
             subCategory: 'stackCount', // mp5 gains is based off stacks; 
             // converts to mp1 for more accurate calculation
-            mp1PerStack: 60 / 5 * 1.06, // originally 60mp5 per stack, but assume +6% ilevel buff
+            mp1PerStack: 79 / 5, // originally 60mp5 per stack, increased to 79 after ilevel buff
         },
         DIVINE_PLEA: {
             key: 'DIVINE_PLEA',

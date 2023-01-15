@@ -157,11 +157,14 @@ exports.shield = async (req, res) => {
         let reportData = await wclReader.runQuery([
             {key: 'casts', dataType: 'Casts', filterExpression: filterExpression},
             {key: 'healing', dataType: 'Healing', filterExpression: filterExpression},
+            // commands dictionary will not be added to subqery, meant to pass on some additional options
+            // buffs are quite weird, and you need can't enter sourceID otherwise it will only pull buffs that are applied on sourceID on itself and
+            {key: 'shieldBreaks', dataType: 'Buffs', filterExpression: filterExpression, commands: {noSourceId: true}},
             {key: 'raptures', dataType: 'Resources', filterExpression: 'ability.id in (47755, 63654)'},
         ]);
 
-        let analyzer = new PriestShieldAnalyzer(reportData);
         let [playerDetails, playerIdToData, damageTaken] = await wclReader.getDamageAndPlayerDetails(true);
+        let analyzer = new PriestShieldAnalyzer(reportData, playerIdToData);
         let sourcePlayerData = playerIdToData[wclReader._defaultLinkData['sourceId']];
         if (sourcePlayerData['type'] !== 'Priest') {
             throw new Error('Source Id is not a priest');

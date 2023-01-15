@@ -52,8 +52,14 @@
           </p>
           <p v-b-tooltip.hover title="Raptures that occur within 1s of each other are grouped together">Amount of raptures</p>
           <ul>
-            <li v-for="(num, timestamp, index) in rapturesBreakdown" :key="index">
-              {{ timestamp }}s: {{ num }} raptures
+            <!-- (value, key, index) for object -->
+            <li v-for="(data, timestamp, index) in rapturesBreakdown" :key="index">
+              <span v-if="data['amount'] > 1">
+                {{ timestamp }}s: {{ data['amount'] }} raptures
+              </span>
+              <span v-else>
+                {{ timestamp }}s: 1 rapture ({{ data['proccers'][0] }})
+              </span>
             </li>
           </ul>
         </div>
@@ -194,11 +200,13 @@ export default {
       let counter = {};
       let previousTimestamp = -99;
       let currentTimestamp = 0;
+      // loops through each rapture event, and aggregates to determine how many raptures actually occurred at each timestamp
       for (let entry of data) {
         currentTimestamp = entry['timestamp'];
         if (currentTimestamp <= this.endAnalysisTimeOffset) {
           // there could be slight delay between raptures (especially for own priest proc)
           // thus we use a threshold of 1s to determine if same rapture
+          // since rapture has 12s ICD (thus successive raptures should be 12s apart, 1s leeway is fine)
           if (currentTimestamp - previousTimestamp < 1) {
             currentTimestamp = previousTimestamp;
           } else {
@@ -206,9 +214,10 @@ export default {
           }
 
           if (!(currentTimestamp in counter)) {
-            counter[currentTimestamp] = 0;
+            counter[currentTimestamp] = {amount: 0, proccers: []};
           }
-          counter[currentTimestamp]++;
+          counter[currentTimestamp]['amount']++;
+          counter[currentTimestamp]['proccers'].push(entry['proccerName']);
           totalRaptures++;
         } else {
           break;
@@ -220,7 +229,6 @@ export default {
     },
     // we check for all PWS casts from startTime to endTime, how many casts whiffed (note that we will need to check up to 30s)
     analyze(combined, startAnalysisTimeOffset, endAnalysisTimeOffset, playerIdToData, overallDamageTakenData, rapturesData, minDamageAbsorbedThreshold=0) {
-        console.log('running analze');
         let castsSequence = {};
         let logs = [];
         let totalCasts = 0; // refers to total pws casts (not just whiffed casts)

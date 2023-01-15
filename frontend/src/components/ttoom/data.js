@@ -274,7 +274,7 @@ const data = {
             name: 'Meteorite Crystal',
             itemType: 'trinket',
             base: {
-                int: 118, //originally 111, assume +6% ilevel buff
+                int: 125, //originally 111, 125 after ilevel buff
             },
         },
         pandorasPlea: {
