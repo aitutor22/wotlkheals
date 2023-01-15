@@ -359,6 +359,7 @@ class WclReader {
         }
 
         let subQuery = `${key}: events(startTime: ${startTime}, endTime: ${endTime}${otherQueryFields}) { data }`
+        // console.log(subQuery)
         return subQuery;
     }
 

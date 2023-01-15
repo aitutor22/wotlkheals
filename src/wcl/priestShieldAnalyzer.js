@@ -11,12 +11,11 @@ class Analyzer {
         this._rapturesData = this._rawdata['raptures']['data'];
         this._shieldBreaksData = this._rawdata['shieldBreaks']['data'].filter((entry) => entry.type === 'removebuff');
         this._playerIdToData = playerIdToData;
-        // console.log(this._shieldBreaksData);
-        // console.log(this._rapturesData)
+        // this._damageTakenShieldBreaksData = this._rawdata['damageTakenShieldBreaks']['data'];
     }
 
     // determines which player led to a rapture proc
-    getRaptureProccer() {
+    getRaptureProccer(pwsHealedWhichAbilityMap) {
         let results = [];
 
         // to deal with the case of multiple raptures, we count backwards instead
@@ -34,10 +33,29 @@ class Analyzer {
                 break;
             }
 
-            // console.log(currentRapture, this._shieldBreaksData[j])
-            let target = this._playerIdToData[this._shieldBreaksData[j]['targetID']]
-            results.unshift({timestamp: currentRapture['timestamp'], name: target['name'], id: target['id']})
-            // console.log(target['name']);
+            // console.log(pwsHealedWhichAbilityMap)
+            let targetID = this._shieldBreaksData[j]['targetID'],
+                timestamp = this._shieldBreaksData[j]['timestamp'],
+                target = this._playerIdToData[targetID];
+            // trying to get which ability caused it to proc
+            let abilityNames = [];
+            // console.log(pwsHealedWhichAbilityMap)
+            if (targetID in pwsHealedWhichAbilityMap) {
+                if (timestamp in pwsHealedWhichAbilityMap[targetID]) {
+                    abilityNames = pwsHealedWhichAbilityMap[targetID][timestamp]
+                } else {
+                    // sometimes there is a lag between healing event and shield breaking (buff gone)
+                    // healing event should come before shield breaking, and in that case, we look for the next closet event
+                    let prev = [];
+                    for (let _ts in pwsHealedWhichAbilityMap[targetID]) {
+                        if (_ts > timestamp) break;
+                        prev = pwsHealedWhichAbilityMap[targetID][_ts];   
+                    }
+                    abilityNames = prev;
+                }
+            }
+            
+            results.unshift({timestamp: currentRapture['timestamp'], name: target['name'], id: target['id'], abilityNames: abilityNames})
             j--;
         }
         return results;
@@ -46,9 +64,30 @@ class Analyzer {
     run(startTime) {
         let combined = this._healsData.concat(this._castsData);
         combined.sort((a, b) => (a['timestamp'] - b['timestamp']));
+        // track 
+        let pwsHealedWhichAbilityMap = {},
+            pwsHealedWhichAbilityList = [];
         for (let entry of combined) {
             entry['timestamp'] = (entry['timestamp'] - startTime) / 1000;
+            // we want to track what each pws healed
+            // that way we can link each rapture to a specific enemy ability
+            if (entry['type'] === 'absorbed') {
+                if (!(entry['targetID'] in pwsHealedWhichAbilityMap)) {
+                    pwsHealedWhichAbilityMap[entry['targetID']] = {}
+                }
+                // pwsHealedWhichAbilityMap[entry['targetID']].push({
+                //     timestamp: entry['timestamp'],
+                //     abilityName: entry['extraAbility']['name'],
+                // });
+                if (!(entry['timestamp'] in pwsHealedWhichAbilityMap[entry['targetID']])) {
+                    pwsHealedWhichAbilityMap[entry['targetID']][entry['timestamp']] = [];
+                }
+                if (pwsHealedWhichAbilityMap[entry['targetID']][entry['timestamp']].indexOf(entry['extraAbility']['name']) === -1) {
+                    pwsHealedWhichAbilityMap[entry['targetID']][entry['timestamp']].push(entry['extraAbility']['name']);
+                }
+            }
         }
+
         for (let raptureEntry of this._rapturesData) {
             raptureEntry['timestamp'] = (raptureEntry['timestamp'] - startTime) / 1000;
         }
@@ -56,12 +95,15 @@ class Analyzer {
         for (let shieldBreakEntry of this._shieldBreaksData) {
             shieldBreakEntry['timestamp'] = (shieldBreakEntry['timestamp'] - startTime) / 1000;
         }
-        let raptureProccers = this.getRaptureProccer();
+
+        let raptureProccers = this.getRaptureProccer(pwsHealedWhichAbilityMap);
         // add the name and id of the player who actually caused the rapture proc
         for (let i = 0; i < this._rapturesData.length; i++) {
             this._rapturesData[i]['proccerID'] = raptureProccers[i]['id'];
             this._rapturesData[i]['proccerName'] = raptureProccers[i]['name'];
+            this._rapturesData[i]['abilitiesCausingProc'] = raptureProccers[i]['abilityNames'];
         }
+        // console.log(raptureProccers)
 
         return [combined, this._rapturesData, raptureProccers];
     }

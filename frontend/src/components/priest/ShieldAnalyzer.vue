@@ -2,14 +2,14 @@
   <div class="container">
     <div class="row" v-if="showExplanation">
       <div class="col-md-12">
-        <blockquote class="blockquote">
-          <p>If a shield is casted on a player and no damage lands on it, does it count as a shield?</p>
-        </blockquote>
         <p>
-          This tool aims to show you what Power Word: Shields whiffed (aka expired without absorbing a single bit of damage).
+          This tool aims to show you what Power Word: Shields whiffed (aka expired without absorbing a single bit of damage) as well as who and what spell caused your rapture to proc. This knowledge will ideally help the priest player improve his or her raptures, by both reducing useless shields as well as avoiding certain players prior to a rapture chain.
         </p>
         <p>
           To start, paste the wcl link of a specific fight with your priest selected (there should be a source=x in your url). If you want to only analyze the first x seconds of a fight (e.g. P1 of Heigan), you can manually set an endpoint timestamp, and the tool will analyze shields casted from the start of the fight to your inputted endpoint (damage absorbed within 30s of the end point will still be tracked).
+        </p>
+        <p>
+          Note: if a rapture procs on the priest itself, this is counted as 1 rapture and not 2, even though it technically triggers two different rapture events in WCL.
         </p>
       </div>
     </div>
@@ -54,12 +54,14 @@
           <ul>
             <!-- (value, key, index) for object -->
             <li v-for="(data, timestamp, index) in rapturesBreakdown" :key="index">
-              <span v-if="data['amount'] > 1">
-                {{ timestamp }}s: {{ data['amount'] }} raptures
-              </span>
-              <span v-else>
-                {{ timestamp }}s: 1 rapture ({{ data['proccers'][0] }})
-              </span>
+              <p v-if="data['amount'] > 1">
+                <b>{{ timestamp }}s: {{ data['amount'] }} raptures</b>
+                <br><i>{{ data['abilityCausingProcStr'] }}</i>
+              </p>
+              <p v-else>
+                <b>{{ timestamp }}s: 1 rapture ({{ data['proccers'][0] }})</b>
+                <br><i>{{ data['abilityCausingProcStr'] }}</i>
+              </p>
             </li>
           </ul>
         </div>
@@ -214,10 +216,14 @@ export default {
           }
 
           if (!(currentTimestamp in counter)) {
-            counter[currentTimestamp] = {amount: 0, proccers: []};
+            counter[currentTimestamp] = {amount: 0, proccers: [], abilityCausingProc: []};
           }
           counter[currentTimestamp]['amount']++;
           counter[currentTimestamp]['proccers'].push(entry['proccerName']);
+          counter[currentTimestamp]['abilityCausingProc'] = counter[currentTimestamp]['abilityCausingProc'].concat(entry['abilitiesCausingProc']);
+          // unique items
+          counter[currentTimestamp]['abilityCausingProc'] = [...new Set(counter[currentTimestamp]['abilityCausingProc'])];
+          counter[currentTimestamp]['abilityCausingProcStr'] = counter[currentTimestamp]['abilityCausingProc'].join(', ');
           totalRaptures++;
         } else {
           break;

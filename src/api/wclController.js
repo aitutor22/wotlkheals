@@ -156,11 +156,16 @@ exports.shield = async (req, res) => {
         let filterExpression = 'ability.id in (48066, 48065, 25218, 25217, 10901, 10900, 10899, 10898, 6066, 6065, 3747, 600, 592, 17)'
         let reportData = await wclReader.runQuery([
             {key: 'casts', dataType: 'Casts', filterExpression: filterExpression},
-            {key: 'healing', dataType: 'Healing', filterExpression: filterExpression},
+            {key: 'healing', dataType: 'Healing', filterExpression: filterExpression, useAbilityIDs: false},
             // commands dictionary will not be added to subqery, meant to pass on some additional options
             // buffs are quite weird, and you need can't enter sourceID otherwise it will only pull buffs that are applied on sourceID on itself and
             {key: 'shieldBreaks', dataType: 'Buffs', filterExpression: filterExpression, commands: {noSourceId: true}},
-            {key: 'raptures', dataType: 'Resources', filterExpression: 'ability.id in (47755, 63654)'},
+
+            // initially, we looked for both 63654 (self rapture that is 2% of mana) and normal rapture (47755)
+            // however, self rapture causes issues as system will try to look for a cause for self rapture since it creates 2 rapture events events for a single damage event
+            {key: 'raptures', dataType: 'Resources', filterExpression: 'ability.id in (47755)'},
+            // we only pull events that leads to shield breaks because we want to know which ability caused it
+            // {key: 'damageTakenShieldBreaks', dataType: 'DamageTaken', useAbilityIDs: false, limit: 10000, filterExpression: "effectiveDamage > 0 and absorbedDamage > 0", commands: {noSourceId: true}},
         ]);
 
         let [playerDetails, playerIdToData, damageTaken] = await wclReader.getDamageAndPlayerDetails(true);
