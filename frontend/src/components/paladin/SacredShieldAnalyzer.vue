@@ -66,6 +66,15 @@ export default {
         let totalSacredShieldHealing = 0;
         let sacredShieldRemaining = 0;
         for (let entry of rawData) {
+
+          if (sacredShieldRemaining > 0) {
+            let damage = entry['amount'] + (entry['absorbed'] || 0);
+            let absorbed = Math.min(damage, sacredShieldRemaining);
+            sacredShieldRemaining -= absorbed;
+            totalSacredShieldHealing += absorbed;
+            console.log(`adding ${absorbed} at ${entry['timestamp'] / 1000}`)
+          }
+
           // add/refresh sacred shield
           if (entry['timestamp'] > sacredShieldAvailableTimestamp) {
             sacredShieldRemaining = sacredShieldAmount;
@@ -75,12 +84,6 @@ export default {
             continue
           }
 
-          if (sacredShieldRemaining > 0) {
-            let damage = entry['amount'] + (entry['absorbed'] || 0);
-            let absorbed = Math.min(damage, sacredShieldRemaining);
-            sacredShieldRemaining -= absorbed;
-            totalSacredShieldHealing += absorbed;
-          }
         }
 
         return [logs, totalSacredShieldProcs, totalSacredShieldHealing];
